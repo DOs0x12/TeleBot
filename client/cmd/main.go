@@ -11,8 +11,7 @@ import (
 )
 
 func main() {
-	ctx := context.Background()
-	signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
+	ctx, _ := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 
 	w := &kafka.Writer{
 		Addr:     kafka.TCP("localhost:9092"),
