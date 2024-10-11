@@ -3,8 +3,8 @@ package service
 import (
 	"TeleBot/internal/entities/service"
 	"context"
-	"encoding/json"
 	"fmt"
+	"strings"
 
 	kafka "github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"
@@ -15,10 +15,7 @@ type KafkaTransmitter struct {
 	port    string
 }
 
-type ServiceOutDataDto struct {
-	ChatID int64
-	Value  string
-}
+var lastCommand string
 
 func NewKafkaTransmitter(address, port string) KafkaTransmitter {
 	return KafkaTransmitter{address: address, port: port}
@@ -43,24 +40,42 @@ func transmitData(ctx context.Context, dataChan chan service.OutData, w *kafka.W
 		case <-ctx.Done():
 			return
 		case data := <-dataChan:
-			msg, err := json.Marshal(ServiceOutDataDto{ChatID: data.ChatID, Value: data.Value})
-			if err != nil {
-				logrus.Error("failed to marshal an object to message:", err)
+			if lastCommand == "" && data.CommName == "" {
+				continue
 			}
 
-			err = w.WriteMessages(ctx,
-				kafka.Message{
-					Topic: data.CommName,
-					Value: msg,
-				},
-			)
+			topicName := strings.Trim(data.CommName, "/")
+
+			err := SendMessage(ctx, w, topicName, data.Value)
 			if err != nil {
-				logrus.Error("failed to write messages:", err)
+				if err == kafka.UnknownTopicOrPartition {
+					createDataTopic(topicName, w.Addr.String())
+					err = SendMessage(ctx, w, topicName, data.Value)
+				}
+
+				if err != nil {
+					logrus.Error("failed to write messages:", err)
+				}
 			}
 
 			if err := w.Close(); err != nil {
 				logrus.Error("failed to close writer:", err)
+
+				continue
+			}
+
+			if data.CommName != "" {
+				lastCommand = data.CommName
 			}
 		}
 	}
+}
+
+func SendMessage(ctx context.Context, w *kafka.Writer, commName, data string) error {
+	return w.WriteMessages(ctx,
+		kafka.Message{
+			Topic: commName,
+			Value: []byte(data),
+		},
+	)
 }
