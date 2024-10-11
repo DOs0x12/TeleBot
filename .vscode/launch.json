@@ -10,6 +10,13 @@
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/server/cmd/"
+        },
+        {
+            "name": "Debug Client",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/client/cmd/"
         }
     ]
 }
