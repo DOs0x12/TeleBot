@@ -33,8 +33,8 @@ func RegisterCommand(ctx context.Context, w *kafka.Writer, commData CommandData)
 	)
 }
 
-func SendData(ctx context.Context, w *kafka.Writer, chatID int64, data string) error {
-	botData, err := json.Marshal(BotData{ChatID: chatID, Value: data})
+func SendData(ctx context.Context, w *kafka.Writer, botData BotData) error {
+	data, err := json.Marshal(botData)
 	if err != nil {
 		return err
 	}
@@ -42,7 +42,7 @@ func SendData(ctx context.Context, w *kafka.Writer, chatID int64, data string) e
 		kafka.Message{
 			Topic: "botdata",
 			Key:   []byte("data"),
-			Value: botData,
+			Value: data,
 		},
 	)
 }
