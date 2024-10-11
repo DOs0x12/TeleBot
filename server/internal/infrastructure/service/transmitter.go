@@ -3,6 +3,7 @@ package service
 import (
 	"TeleBot/internal/entities/service"
 	"context"
+	"encoding/json"
 	"fmt"
 
 	kafka "github.com/segmentio/kafka-go"
@@ -12,6 +13,11 @@ import (
 type KafkaTransmitter struct {
 	address string
 	port    string
+}
+
+type ServiceOutDataDto struct {
+	ChatID int64
+	Value  string
 }
 
 func NewKafkaTransmitter(address, port string) KafkaTransmitter {
@@ -37,18 +43,23 @@ func transmitData(ctx context.Context, dataChan chan service.OutData, w *kafka.W
 		case <-ctx.Done():
 			return
 		case data := <-dataChan:
-			err := w.WriteMessages(ctx,
+			msg, err := json.Marshal(ServiceOutDataDto{ChatID: data.ChatID, Value: data.Value})
+			if err != nil {
+				logrus.Error("failed to marshal an object to message:", err)
+			}
+
+			err = w.WriteMessages(ctx,
 				kafka.Message{
 					Topic: data.CommName,
-					Value: []byte(data.Value),
+					Value: msg,
 				},
 			)
 			if err != nil {
-				logrus.Fatal("failed to write messages:", err)
+				logrus.Error("failed to write messages:", err)
 			}
 
 			if err := w.Close(); err != nil {
-				logrus.Fatal("failed to close writer:", err)
+				logrus.Error("failed to close writer:", err)
 			}
 		}
 	}
