@@ -40,12 +40,12 @@ func (t Telebot) Start(ctx context.Context) chan botEnt.Data {
 	botInDataChan := make(chan botEnt.Data)
 	updChan := t.bot.GetUpdatesChan(updConfig)
 
-	go piplineInData(ctx, updChan, botInDataChan)
+	go receiveInData(ctx, updChan, botInDataChan)
 
 	return botInDataChan
 }
 
-func piplineInData(ctx context.Context,
+func receiveInData(ctx context.Context,
 	updChan tgbot.UpdatesChannel,
 	botInDataChan chan botEnt.Data) {
 	for {
