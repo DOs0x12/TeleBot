@@ -3,7 +3,6 @@ package service
 import (
 	"TeleBot/internal/entities/service"
 	"context"
-	"encoding/json"
 	"fmt"
 	"net"
 	"strconv"
@@ -15,11 +14,6 @@ import (
 type KafkaReceiver struct {
 	address string
 	port    string
-}
-
-type ServiceMessageDto struct {
-	IsCommand bool
-	Value     string
 }
 
 func NewKafkaReceiver(address, port string) KafkaReceiver {
@@ -82,17 +76,11 @@ func consumeMessages(ctx context.Context, dataChan chan service.InData, r *kafka
 			continue
 		}
 
+		commandKey := "command"
+		isCommand := string(msg.Key) == commandKey
+
+		dataChan <- service.InData{IsCommand: isCommand, Value: string(msg.Value)}
 		r.CommitMessages(ctx, msg)
-
-		var serviceMsg ServiceMessageDto
-		err = json.Unmarshal(msg.Value, &serviceMsg)
-		if err != nil {
-			logrus.Error("can not unmarshal a service message:", err)
-
-			continue
-		}
-
-		dataChan <- service.InData{IsCommand: serviceMsg.IsCommand, Value: serviceMsg.Value}
 	}
 
 	if err := r.Close(); err != nil {
