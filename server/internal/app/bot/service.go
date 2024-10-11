@@ -70,7 +70,15 @@ func processServiceInData(data serviceEnt.InData,
 		return botEnt.OutData{}
 	}
 
-	return botEnt.OutData{ChatID: data.ChatID, Value: data.Value}
+	var botData BotDataDto
+	err := json.Unmarshal([]byte(data.Value), &botData)
+	if err != nil {
+		logrus.Error("can not unmarshal a bot data:", err)
+
+		return botEnt.OutData{}
+	}
+
+	return botEnt.OutData{ChatID: botData.ChatID, Value: botData.Value}
 }
 
 func processBotInData(data botEnt.InData,
