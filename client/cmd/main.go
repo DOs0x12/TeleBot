@@ -3,18 +3,12 @@ package main
 import (
 	"Telebot/client/pkg/service"
 	"context"
-	"encoding/json"
 	"os/signal"
 	"syscall"
 
 	kafka "github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"
 )
-
-type CommandData struct {
-	Name        string
-	Description string
-}
 
 func main() {
 	ctx := context.Background()
@@ -25,15 +19,9 @@ func main() {
 		Balancer: &kafka.LeastBytes{},
 	}
 
-	commData := CommandData{Name: "/test", Description: "testCommand"}
-	data, err := json.Marshal(commData)
-	if err != nil {
-		logrus.Error("Can not marshal command data object:", err)
+	commData := service.CommandData{Name: "/test", Description: "testCommand"}
 
-		return
-	}
-
-	err = service.RegisterCommand(ctx, w, data)
+	err := service.RegisterCommand(ctx, w, commData)
 	if err != nil {
 		logrus.Error("Failed to register a command:", err)
 
