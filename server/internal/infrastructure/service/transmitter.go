@@ -46,11 +46,11 @@ func transmitData(ctx context.Context, dataChan chan service.OutData, w *kafka.W
 
 			topicName := strings.Trim(data.CommName, "/")
 
-			err := SendMessage(ctx, w, topicName, data.Value)
+			err := sendMessage(ctx, w, topicName, data.Value)
 			if err != nil {
 				if err == kafka.UnknownTopicOrPartition {
 					createDataTopic(topicName, w.Addr.String())
-					err = SendMessage(ctx, w, topicName, data.Value)
+					err = sendMessage(ctx, w, topicName, data.Value)
 				}
 
 				if err != nil {
@@ -71,7 +71,7 @@ func transmitData(ctx context.Context, dataChan chan service.OutData, w *kafka.W
 	}
 }
 
-func SendMessage(ctx context.Context, w *kafka.Writer, commName, data string) error {
+func sendMessage(ctx context.Context, w *kafka.Writer, commName, data string) error {
 	return w.WriteMessages(ctx,
 		kafka.Message{
 			Topic: commName,
