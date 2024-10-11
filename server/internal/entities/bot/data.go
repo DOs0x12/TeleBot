@@ -1,6 +1,6 @@
 package bot
 
-type InData struct {
+type Data struct {
 	ChatID int64
 	Value  string
 }

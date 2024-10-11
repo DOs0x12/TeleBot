@@ -35,9 +35,9 @@ func NewTelebot(configer config.Configer, commands []*botEnt.Command) (Telebot, 
 	return Telebot{bot: botApi, commands: commands}, nil
 }
 
-func (t Telebot) Start(ctx context.Context) chan botEnt.InData {
+func (t Telebot) Start(ctx context.Context) chan botEnt.Data {
 	updConfig := tgbot.NewUpdate(0)
-	botInDataChan := make(chan botEnt.InData)
+	botInDataChan := make(chan botEnt.Data)
 	updChan := t.bot.GetUpdatesChan(updConfig)
 
 	go piplineInData(ctx, updChan, botInDataChan)
@@ -47,7 +47,7 @@ func (t Telebot) Start(ctx context.Context) chan botEnt.InData {
 
 func piplineInData(ctx context.Context,
 	updChan tgbot.UpdatesChannel,
-	botInDataChan chan botEnt.InData) {
+	botInDataChan chan botEnt.Data) {
 	for {
 		select {
 		case <-ctx.Done():
@@ -57,7 +57,7 @@ func piplineInData(ctx context.Context,
 				continue
 			}
 
-			botInDataChan <- botEnt.InData{ChatID: upd.Message.Chat.ID, Value: upd.Message.Text}
+			botInDataChan <- botEnt.Data{ChatID: upd.Message.Chat.ID, Value: upd.Message.Text}
 		}
 	}
 }

@@ -36,7 +36,7 @@ func Process(ctx context.Context,
 			bot.Stop()
 			return nil
 		case serviceInData := <-serviceInDataChan:
-			var zeroBotData botEnt.OutData
+			var zeroBotData botEnt.Data
 			botOutData := processServiceInData(serviceInData, bot, botCommands)
 			if botOutData != zeroBotData {
 				if err := bot.SendMessage(botOutData.Value, botOutData.ChatID); err != nil {
@@ -54,20 +54,20 @@ func Process(ctx context.Context,
 
 func processServiceInData(data serviceEnt.InData,
 	bot botInterf.Worker,
-	botCommands []*botEnt.Command) botEnt.OutData {
+	botCommands []*botEnt.Command) botEnt.Data {
 	if data.IsCommand {
 		var botNewComm botEnt.Command
 		err := json.Unmarshal([]byte(data.Value), &botNewComm)
 		if err != nil {
 			logrus.Error("can not unmarshal a command object:", err)
 
-			return botEnt.OutData{}
+			return botEnt.Data{}
 		}
 
 		botCommands = append(botCommands, &botNewComm)
 		bot.RegisterCommands(botCommands)
 
-		return botEnt.OutData{}
+		return botEnt.Data{}
 	}
 
 	var botData BotDataDto
@@ -75,13 +75,13 @@ func processServiceInData(data serviceEnt.InData,
 	if err != nil {
 		logrus.Error("can not unmarshal a bot data:", err)
 
-		return botEnt.OutData{}
+		return botEnt.Data{}
 	}
 
-	return botEnt.OutData{ChatID: botData.ChatID, Value: botData.Value}
+	return botEnt.Data{ChatID: botData.ChatID, Value: botData.Value}
 }
 
-func processBotInData(data botEnt.InData,
+func processBotInData(data botEnt.Data,
 	commands []*botEnt.Command) serviceEnt.OutData {
 
 	for _, command := range commands {
