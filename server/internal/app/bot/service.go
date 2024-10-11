@@ -25,7 +25,7 @@ func Process(ctx context.Context,
 	bot botInterf.Worker,
 	receiver serviceInterf.DataReceiver,
 	transmitter serviceInterf.DataTransmitter,
-	botCommands []*botEnt.Command) error {
+	botCommands *[]botEnt.Command) error {
 	serviceInDataChan := receiver.StartReceivingData(ctx)
 	serviceOutDataChan := transmitter.StartTransmittingData(ctx)
 	botInDataChan := bot.Start(ctx)
@@ -54,7 +54,7 @@ func Process(ctx context.Context,
 
 func processServiceInData(data serviceEnt.InData,
 	bot botInterf.Worker,
-	botCommands []*botEnt.Command) botEnt.Data {
+	botCommands *[]botEnt.Command) botEnt.Data {
 	if data.IsCommand {
 		var botNewComm botEnt.Command
 		err := json.Unmarshal([]byte(data.Value), &botNewComm)
@@ -64,7 +64,7 @@ func processServiceInData(data serviceEnt.InData,
 			return botEnt.Data{}
 		}
 
-		botCommands = append(botCommands, &botNewComm)
+		*botCommands = append(*botCommands, botNewComm)
 		bot.RegisterCommands(botCommands)
 
 		return botEnt.Data{}
@@ -82,9 +82,9 @@ func processServiceInData(data serviceEnt.InData,
 }
 
 func processBotInData(data botEnt.Data,
-	commands []*botEnt.Command) serviceEnt.OutData {
+	commands *[]botEnt.Command) serviceEnt.OutData {
 
-	for _, command := range commands {
+	for _, command := range *commands {
 		if data.Value != command.Name {
 			continue
 		}

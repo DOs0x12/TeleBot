@@ -24,7 +24,7 @@ func main() {
 
 	configer := config.NewConfiger(configPath)
 	helloComm := botCommCreator.CreateHelloCommand()
-	commands := []*botEnt.Command{&helloComm}
+	commands := &[]botEnt.Command{helloComm}
 	bot, err := botInfra.NewTelebot(configer, commands)
 	if err != nil {
 		logrus.Errorf("A bot error occurs: %v", err)
