@@ -1,0 +1,8 @@
+services:
+  telebot:
+    image: telebot:v0.1
+    build: .
+    container_name: telebot
+    restart: unless-stopped
+networks:
+  telebot-network:
