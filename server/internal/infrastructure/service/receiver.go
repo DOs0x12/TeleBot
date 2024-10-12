@@ -3,7 +3,6 @@ package service
 import (
 	"TeleBot/internal/entities/service"
 	"context"
-	"fmt"
 
 	kafka "github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"
@@ -11,21 +10,20 @@ import (
 
 type KafkaReceiver struct {
 	address string
-	port    string
 }
 
-func NewKafkaReceiver(address, port string) KafkaReceiver {
-	return KafkaReceiver{address: address, port: port}
+func NewKafkaReceiver(address string) KafkaReceiver {
+	return KafkaReceiver{address: address}
 }
 
 func (kr KafkaReceiver) StartReceivingData(ctx context.Context) <-chan service.InData {
 	dataTopicName := "botdata"
-	createDataTopic(dataTopicName, fmt.Sprintf("%v:%v", kr.address, kr.port))
+	createDataTopic(dataTopicName, kr.address)
 	dataChan := make(chan service.InData)
 
 	r := kafka.NewReader(kafka.ReaderConfig{
 		GroupID:     "regdfgd1",
-		Brokers:     []string{fmt.Sprintf("%v:%v", kr.address, kr.port)},
+		Brokers:     []string{kr.address},
 		Topic:       dataTopicName,
 		Partition:   0,
 		MaxBytes:    10e6,

@@ -39,8 +39,8 @@ func main() {
 		return
 	}
 
-	receiver := serviceInfra.NewKafkaReceiver("localhost", "9092")
-	transmitter := serviceInfra.NewKafkaTransmitter("localhost", "9092")
+	receiver := serviceInfra.NewKafkaReceiver(config.KafkaAddress)
+	transmitter := serviceInfra.NewKafkaTransmitter(config.KafkaAddress)
 
 	err = botApp.Process(appCtx, bot, receiver, transmitter, commands)
 	if err != nil {

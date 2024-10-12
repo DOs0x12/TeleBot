@@ -1,5 +1,6 @@
 package config
 
 type Config struct {
-	BotKey string
+	BotKey       string
+	KafkaAddress string
 }

@@ -40,5 +40,5 @@ func unmarshalConf(data []byte) (config.Config, error) {
 }
 
 func cast(confDto ConfigDto) config.Config {
-	return config.Config{BotKey: confDto.BotKey}
+	return config.Config{BotKey: confDto.BotKey, KafkaAddress: confDto.KafkaAddress}
 }
