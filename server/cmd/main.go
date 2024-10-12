@@ -15,6 +15,7 @@ import (
 
 func main() {
 	configPath := flag.String("conf", "../etc/config.yml", "Config path.")
+	flag.Parse()
 
 	appCtx, appCancel := context.WithCancel(context.Background())
 
