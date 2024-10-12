@@ -2,7 +2,6 @@ package main
 
 import (
 	botApp "TeleBot/internal/app/bot"
-	botCommCreator "TeleBot/internal/app/bot/command"
 	"TeleBot/internal/app/interruption"
 	botEnt "TeleBot/internal/entities/bot"
 	botInfra "TeleBot/internal/infrastructure/bot"
@@ -23,8 +22,7 @@ func main() {
 	interruption.WatchForInterruption(appCancel)
 
 	configer := config.NewConfiger(configPath)
-	helloComm := botCommCreator.CreateHelloCommand()
-	commands := &[]botEnt.Command{helloComm}
+	commands := &[]botEnt.Command{}
 	bot, err := botInfra.NewTelebot(configer, commands)
 	if err != nil {
 		logrus.Errorf("A bot error occurs: %v", err)
