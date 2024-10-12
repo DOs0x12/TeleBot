@@ -8,20 +8,21 @@ import (
 	"TeleBot/internal/infrastructure/config"
 	serviceInfra "TeleBot/internal/infrastructure/service"
 	"context"
+	"flag"
 
 	"github.com/sirupsen/logrus"
 )
 
-const configPath = "../etc/config.yml"
-
 func main() {
+	configPath := flag.String("conf", "../etc/config.yml", "Config path.")
+
 	appCtx, appCancel := context.WithCancel(context.Background())
 
 	logrus.Infoln("Start the application")
 
 	interruption.WatchForInterruption(appCancel)
 
-	configer := config.NewConfiger(configPath)
+	configer := config.NewConfiger(*configPath)
 	commands := &[]botEnt.Command{}
 	bot, err := botInfra.NewTelebot(configer, commands)
 	if err != nil {
