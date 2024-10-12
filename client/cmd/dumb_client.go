@@ -37,7 +37,7 @@ func main() {
 		case <-ctx.Done():
 			return
 		case inData := <-inDataChan:
-			outData := service.BotData{ChatID: inData.ChatID, Value: "Test!"}
+			outData := service.BotData{ChatID: inData.ChatID, Value: "I have got your message!"}
 			service.SendData(ctx, w, outData)
 		}
 	}
