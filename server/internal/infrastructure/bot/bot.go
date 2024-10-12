@@ -2,7 +2,6 @@ package bot
 
 import (
 	botEnt "TeleBot/internal/entities/bot"
-	"TeleBot/internal/infrastructure/config"
 	"context"
 	"fmt"
 	"time"
@@ -15,15 +14,8 @@ type Telebot struct {
 	commands *[]botEnt.Command
 }
 
-func NewTelebot(configer config.Configer, commands *[]botEnt.Command) (Telebot, error) {
-	config, err := configer.LoadConfig()
-	if err != nil {
-		var zero Telebot
-
-		return zero, fmt.Errorf("can not get the config data: %v", err)
-	}
-
-	botApi, err := tgbot.NewBotAPI(config.BotKey)
+func NewTelebot(botKey string, commands *[]botEnt.Command) (Telebot, error) {
+	botApi, err := tgbot.NewBotAPI(botKey)
 	if err != nil {
 		var zero Telebot
 

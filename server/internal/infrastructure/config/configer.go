@@ -8,7 +8,8 @@ import (
 )
 
 type ConfigDto struct {
-	BotKey string `yaml:"botKey"`
+	BotKey       string `yaml:"botKey"`
+	KafkaAddress string `yaml:"kafkaAddress"`
 }
 
 type Configer struct {

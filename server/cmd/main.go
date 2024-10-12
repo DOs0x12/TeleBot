@@ -24,8 +24,15 @@ func main() {
 	interruption.WatchForInterruption(appCancel)
 
 	configer := config.NewConfiger(*configPath)
+	config, err := configer.LoadConfig()
+	if err != nil {
+		logrus.Errorf("Can not get the config data: %v", err)
+
+		return
+	}
+
 	commands := &[]botEnt.Command{}
-	bot, err := botInfra.NewTelebot(configer, commands)
+	bot, err := botInfra.NewTelebot(config.BotKey, commands)
 	if err != nil {
 		logrus.Errorf("A bot error occurs: %v", err)
 
