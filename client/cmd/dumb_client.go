@@ -20,7 +20,7 @@ func main() {
 		Balancer: &kafka.LeastBytes{},
 	}
 
-	commData := service.CommandData{Name: "/test", Description: "testCommand"}
+	commData := service.CommandData{Name: "/hello", Description: "Say hello to the bot"}
 
 	err := service.RegisterCommand(ctx, w, commData)
 	if err != nil {
