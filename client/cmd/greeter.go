@@ -3,6 +3,7 @@ package main
 import (
 	"Telebot/client/pkg/service"
 	"context"
+	"flag"
 	"os/signal"
 	"strings"
 	"syscall"
@@ -13,10 +14,11 @@ import (
 
 func main() {
 	ctx, _ := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	kafkaAddr := flag.String("conn", "kafka:9092", "The kafka connection string.")
+	flag.Parse()
 
-	kafkaAddr := "localhost:9092"
 	w := &kafka.Writer{
-		Addr:     kafka.TCP(kafkaAddr),
+		Addr:     kafka.TCP(*kafkaAddr),
 		Balancer: &kafka.LeastBytes{},
 	}
 
@@ -30,14 +32,14 @@ func main() {
 	}
 
 	readingTopic := strings.Trim(commData.Name, "/")
-	inDataChan := service.StartGetData(ctx, readingTopic, kafkaAddr)
+	inDataChan := service.StartGetData(ctx, readingTopic, *kafkaAddr)
 
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		case inData := <-inDataChan:
-			outData := service.BotData{ChatID: inData.ChatID, Value: "I have got your message!"}
+			outData := service.BotData{ChatID: inData.ChatID, Value: "Hello there!"}
 			service.SendData(ctx, w, outData)
 		}
 	}
