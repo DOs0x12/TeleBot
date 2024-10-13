@@ -17,7 +17,8 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/client/cmd/"
+            "program": "${workspaceFolder}/client/cmd/",
+            "args": ["--conn", "localhost:9093"]
         }
     ]
 }
