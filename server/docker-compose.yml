@@ -4,5 +4,8 @@ services:
     build: .
     container_name: telebot
     restart: unless-stopped
+    networks:
+      - "kafka-network"
 networks:
-  telebot-network:
+  kafka-network:
+    external: true
