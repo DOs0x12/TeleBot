@@ -36,6 +36,10 @@ func transmitData(ctx context.Context, dataChan chan service.OutData, w *kafka.W
 	for {
 		select {
 		case <-ctx.Done():
+			if err := w.Close(); err != nil {
+				logrus.Error("failed to close writer:", err)
+			}
+
 			return
 		case data := <-dataChan:
 			if lastCommand == "" && data.CommName == "" {
@@ -54,12 +58,6 @@ func transmitData(ctx context.Context, dataChan chan service.OutData, w *kafka.W
 				if err != nil {
 					logrus.Error("failed to write messages:", err)
 				}
-			}
-
-			if err := w.Close(); err != nil {
-				logrus.Error("failed to close writer:", err)
-
-				continue
 			}
 
 			if data.CommName != "" {
