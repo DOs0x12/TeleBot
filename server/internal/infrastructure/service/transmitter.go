@@ -1,9 +1,10 @@
 package service
 
 import (
-	"TeleBot/internal/entities/service"
 	"context"
 	"strings"
+
+	"github.com/Guise322/TeleBot/server/internal/entities/service"
 
 	kafka "github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"

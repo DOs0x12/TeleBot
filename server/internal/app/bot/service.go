@@ -1,12 +1,13 @@
 package telebot
 
 import (
-	botEnt "TeleBot/internal/entities/bot"
-	serviceEnt "TeleBot/internal/entities/service"
-	botInterf "TeleBot/internal/interfaces/bot"
-	serviceInterf "TeleBot/internal/interfaces/service"
 	"context"
 	"encoding/json"
+
+	botEnt "github.com/Guise322/TeleBot/server/internal/entities/bot"
+	serviceEnt "github.com/Guise322/TeleBot/server/internal/entities/service"
+	botInterf "github.com/Guise322/TeleBot/server/internal/interfaces/bot"
+	serviceInterf "github.com/Guise322/TeleBot/server/internal/interfaces/service"
 
 	"github.com/sirupsen/logrus"
 )

@@ -1,14 +1,15 @@
 package main
 
 import (
-	botApp "TeleBot/internal/app/bot"
-	"TeleBot/internal/app/interruption"
-	botEnt "TeleBot/internal/entities/bot"
-	botInfra "TeleBot/internal/infrastructure/bot"
-	"TeleBot/internal/infrastructure/config"
-	serviceInfra "TeleBot/internal/infrastructure/service"
 	"context"
 	"flag"
+
+	botApp "github.com/Guise322/TeleBot/server/internal/app/bot"
+	"github.com/Guise322/TeleBot/server/internal/app/interruption"
+	botEnt "github.com/Guise322/TeleBot/server/internal/entities/bot"
+	botInfra "github.com/Guise322/TeleBot/server/internal/infrastructure/bot"
+	"github.com/Guise322/TeleBot/server/internal/infrastructure/config"
+	serviceInfra "github.com/Guise322/TeleBot/server/internal/infrastructure/service"
 
 	"github.com/sirupsen/logrus"
 )

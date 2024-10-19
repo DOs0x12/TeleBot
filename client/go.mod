@@ -1,4 +1,4 @@
-module Telebot/client
+module github.com/Guise322/TeleBot/client
 
 go 1.23.1
 

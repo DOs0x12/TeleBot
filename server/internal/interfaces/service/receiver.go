@@ -1,8 +1,9 @@
 package service
 
 import (
-	"TeleBot/internal/entities/service"
 	"context"
+
+	"github.com/Guise322/TeleBot/server/internal/entities/service"
 )
 
 type DataReceiver interface {

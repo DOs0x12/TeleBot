@@ -1,8 +1,9 @@
 package bot
 
 import (
-	"TeleBot/internal/entities/bot"
 	"context"
+
+	"github.com/Guise322/TeleBot/server/internal/entities/bot"
 )
 
 type Worker interface {

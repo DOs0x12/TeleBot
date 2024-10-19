@@ -1,8 +1,9 @@
 package config
 
 import (
-	"TeleBot/internal/entities/config"
 	"os"
+
+	"github.com/Guise322/TeleBot/server/internal/entities/config"
 
 	"gopkg.in/yaml.v3"
 )

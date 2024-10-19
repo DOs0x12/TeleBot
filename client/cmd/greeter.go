@@ -1,12 +1,13 @@
 package main
 
 import (
-	"Telebot/client/pkg/service"
 	"context"
 	"flag"
 	"os/signal"
 	"strings"
 	"syscall"
+
+	"github.com/Guise322/TeleBot/client/pkg/service"
 
 	kafka "github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"

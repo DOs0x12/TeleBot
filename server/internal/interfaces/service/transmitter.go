@@ -1,8 +1,9 @@
 package service
 
 import (
-	serviceEnt "TeleBot/internal/entities/service"
 	"context"
+
+	serviceEnt "github.com/Guise322/TeleBot/server/internal/entities/service"
 )
 
 type DataTransmitter interface {

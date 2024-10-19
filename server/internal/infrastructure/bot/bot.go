@@ -1,10 +1,11 @@
 package bot
 
 import (
-	botEnt "TeleBot/internal/entities/bot"
 	"context"
 	"fmt"
 	"time"
+
+	botEnt "github.com/Guise322/TeleBot/server/internal/entities/bot"
 
 	tgbot "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )

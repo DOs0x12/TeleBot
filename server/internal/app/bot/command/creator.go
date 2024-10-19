@@ -1,7 +1,7 @@
 package command
 
 import (
-	"TeleBot/internal/entities/bot"
+	"github.com/Guise322/TeleBot/server/internal/entities/bot"
 )
 
 func CreateCommand(name, desc string) bot.Command {
