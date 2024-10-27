@@ -3,7 +3,6 @@ package bot
 import (
 	"context"
 	"fmt"
-	"time"
 
 	botEnt "github.com/Guise322/TeleBot/server/internal/entities/bot"
 
@@ -82,20 +81,7 @@ func (t Telebot) Stop() {
 func (t Telebot) SendMessage(msg string, chatID int64) error {
 	tgMsg := tgbot.NewMessage(chatID, msg)
 
-	maxRetries := 10
-	cnt := 0
-	var err error
-
-	for cnt < maxRetries {
-		if _, err = t.bot.Send(tgMsg); err != nil {
-			time.Sleep(5 * time.Second)
-			cnt++
-
-			continue
-		}
-
-		return nil
-	}
+	_, err := t.bot.Send(tgMsg)
 
 	return err
 }

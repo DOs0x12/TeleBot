@@ -3,6 +3,7 @@ package telebot
 import (
 	"context"
 	"encoding/json"
+	"time"
 
 	botEnt "github.com/Guise322/TeleBot/server/internal/entities/bot"
 	serviceEnt "github.com/Guise322/TeleBot/server/internal/entities/service"
@@ -42,11 +43,7 @@ func Process(ctx context.Context,
 			var zeroBotData botEnt.Data
 			botOutData := processServiceInData(serviceInData, bot, botCommands)
 			if botOutData != zeroBotData {
-				if err := bot.SendMessage(botOutData.Value, botOutData.ChatID); err != nil {
-					logrus.Errorf("Cannot send a message: %v", err)
-
-					continue
-				}
+				go sendMessageWithRetries(ctx, bot, botOutData)
 			}
 		case botInData := <-botInDataChan:
 			serviceOutData := processBotInData(botInData, botCommands)
@@ -82,6 +79,23 @@ func processServiceInData(data serviceEnt.InData,
 	}
 
 	return botEnt.Data{ChatID: botData.ChatID, Value: botData.Value}
+}
+
+func sendMessageWithRetries(ctx context.Context, bot botInterf.Worker, botOutData botEnt.Data) {
+	numOfRetries := 10
+	timeBetweenRetries := 5 * time.Second
+
+	for i := 0; i < numOfRetries; i++ {
+		if ctx.Err() != nil {
+			return
+		}
+
+		if err := bot.SendMessage(botOutData.Value, botOutData.ChatID); err != nil {
+			logrus.Errorf("Cannot send a message: %v", err)
+
+			time.Sleep(timeBetweenRetries)
+		}
+	}
 }
 
 func processBotInData(data botEnt.Data,
