@@ -90,11 +90,14 @@ func sendMessageWithRetries(ctx context.Context, bot botInterf.Worker, botOutDat
 			return
 		}
 
-		if err := bot.SendMessage(botOutData.Value, botOutData.ChatID); err != nil {
-			logrus.Errorf("Cannot send a message: %v", err)
-
-			time.Sleep(timeBetweenRetries)
+		err := bot.SendMessage(botOutData.Value, botOutData.ChatID)
+		if err == nil {
+			break
 		}
+
+		logrus.Errorf("Cannot send a message: %v", err)
+
+		time.Sleep(timeBetweenRetries)
 	}
 }
 
