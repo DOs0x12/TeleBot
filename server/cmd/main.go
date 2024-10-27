@@ -3,9 +3,10 @@ package main
 import (
 	"context"
 	"flag"
+	"os/signal"
+	"syscall"
 
 	botApp "github.com/Guise322/TeleBot/server/internal/app/bot"
-	"github.com/Guise322/TeleBot/server/internal/app/interruption"
 	botEnt "github.com/Guise322/TeleBot/server/internal/entities/bot"
 	botInfra "github.com/Guise322/TeleBot/server/internal/infrastructure/bot"
 	"github.com/Guise322/TeleBot/server/internal/infrastructure/config"
@@ -18,11 +19,9 @@ func main() {
 	configPath := flag.String("conf", "../etc/config.yml", "Config path.")
 	flag.Parse()
 
-	appCtx, appCancel := context.WithCancel(context.Background())
-
 	logrus.Infoln("Start the application")
 
-	interruption.WatchForInterruption(appCancel)
+	appCtx, _ := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 
 	configer := config.NewConfiger(*configPath)
 	config, err := configer.LoadConfig()
