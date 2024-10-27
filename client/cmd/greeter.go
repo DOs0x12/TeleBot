@@ -7,9 +7,8 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/Guise322/TeleBot/client/pkg/service"
+	service "github.com/Guise322/TeleBot/client/pkg/broker"
 
-	kafka "github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"
 )
 
@@ -18,14 +17,11 @@ func main() {
 	kafkaAddr := flag.String("conn", "kafka:9092", "The kafka connection string.")
 	flag.Parse()
 
-	w := &kafka.Writer{
-		Addr:     kafka.TCP(*kafkaAddr),
-		Balancer: &kafka.LeastBytes{},
-	}
+	b := service.NewBroker(*kafkaAddr)
 
 	commData := service.CommandData{Name: "/hello", Description: "Say hello to the bot"}
 
-	err := service.RegisterCommand(ctx, w, commData)
+	err := b.RegisterCommand(ctx, commData)
 	if err != nil {
 		logrus.Error("Failed to register a command:", err)
 
@@ -33,7 +29,7 @@ func main() {
 	}
 
 	readingTopic := strings.Trim(commData.Name, "/")
-	inDataChan := service.StartGetData(ctx, readingTopic, *kafkaAddr)
+	inDataChan := b.StartGetData(ctx, readingTopic, *kafkaAddr)
 
 	for {
 		select {
@@ -41,7 +37,7 @@ func main() {
 			return
 		case inData := <-inDataChan:
 			outData := service.BotData{ChatID: inData.ChatID, Value: "Hello there!"}
-			service.SendData(ctx, w, outData)
+			b.SendData(ctx, outData)
 		}
 	}
 }

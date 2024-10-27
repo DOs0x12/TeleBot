@@ -18,13 +18,26 @@ type BotData struct {
 	Value  string
 }
 
-func RegisterCommand(ctx context.Context, w *kafka.Writer, commData CommandData) error {
+type Broker struct {
+	w *kafka.Writer
+}
+
+func NewBroker(address string) Broker {
+	w := &kafka.Writer{
+		Addr:     kafka.TCP(address),
+		Balancer: &kafka.LeastBytes{},
+	}
+
+	return Broker{w: w}
+}
+
+func (b Broker) RegisterCommand(ctx context.Context, commData CommandData) error {
 	data, err := json.Marshal(commData)
 	if err != nil {
 		return err
 	}
 
-	return w.WriteMessages(ctx,
+	return b.w.WriteMessages(ctx,
 		kafka.Message{
 			Topic: "botdata",
 			Key:   []byte("command"),
@@ -33,12 +46,12 @@ func RegisterCommand(ctx context.Context, w *kafka.Writer, commData CommandData)
 	)
 }
 
-func SendData(ctx context.Context, w *kafka.Writer, botData BotData) error {
+func (b Broker) SendData(ctx context.Context, botData BotData) error {
 	data, err := json.Marshal(botData)
 	if err != nil {
 		return err
 	}
-	return w.WriteMessages(ctx,
+	return b.w.WriteMessages(ctx,
 		kafka.Message{
 			Topic: "botdata",
 			Key:   []byte("data"),
@@ -47,7 +60,7 @@ func SendData(ctx context.Context, w *kafka.Writer, botData BotData) error {
 	)
 }
 
-func StartGetData(ctx context.Context, topicName, address string) <-chan BotData {
+func (b Broker) StartGetData(ctx context.Context, topicName, address string) <-chan BotData {
 	r := kafka.NewReader(kafka.ReaderConfig{
 		GroupID:     "regdfgd1",
 		Brokers:     []string{address},
