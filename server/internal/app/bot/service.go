@@ -35,13 +35,15 @@ func Process(ctx context.Context,
 		select {
 		case <-ctx.Done():
 			bot.Stop()
+			logrus.Info("The bot is stopped")
+
 			return nil
 		case serviceInData := <-serviceInDataChan:
 			var zeroBotData botEnt.Data
 			botOutData := processServiceInData(serviceInData, bot, botCommands)
 			if botOutData != zeroBotData {
 				if err := bot.SendMessage(botOutData.Value, botOutData.ChatID); err != nil {
-					logrus.Errorf("cannot send a message: %v", err)
+					logrus.Errorf("Cannot send a message: %v", err)
 
 					continue
 				}
@@ -60,7 +62,7 @@ func processServiceInData(data serviceEnt.InData,
 		var botNewComm botEnt.Command
 		err := json.Unmarshal([]byte(data.Value), &botNewComm)
 		if err != nil {
-			logrus.Error("can not unmarshal a command object:", err)
+			logrus.Error("Can not unmarshal a command object:", err)
 
 			return botEnt.Data{}
 		}
@@ -74,7 +76,7 @@ func processServiceInData(data serviceEnt.InData,
 	var botData BotDataDto
 	err := json.Unmarshal([]byte(data.Value), &botData)
 	if err != nil {
-		logrus.Error("can not unmarshal a bot data:", err)
+		logrus.Error("Can not unmarshal a bot data:", err)
 
 		return botEnt.Data{}
 	}
