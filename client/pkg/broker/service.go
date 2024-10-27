@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"
@@ -101,4 +102,12 @@ func consumeMessages(ctx context.Context, dataChan chan<- BotData, r *kafka.Read
 	if err := r.Close(); err != nil {
 		logrus.Fatal("failed to close reader:", err)
 	}
+}
+
+func (b Broker) Stop() error {
+	if err := b.w.Close(); err != nil {
+		return fmt.Errorf("failed to stop the broker: %w", err)
+	}
+
+	return nil
 }
