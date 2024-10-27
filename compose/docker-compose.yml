@@ -2,14 +2,12 @@ services:
   telebot:
     image: telebot:${TAG}
     build: ../server
-    container_name: telebot
     restart: unless-stopped
     networks:
       - "kafka-network"
   greeter:
     image: greeter:${TAG}
     build: ../client
-    container_name: greeter
     restart: unless-stopped
     networks:
       - "kafka-network"
