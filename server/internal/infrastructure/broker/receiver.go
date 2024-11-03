@@ -75,6 +75,6 @@ func consumeMessages(ctx context.Context, dataChan chan service.InData, r *kafka
 	}
 
 	if err := r.Close(); err != nil {
-		logrus.Fatal("failed to close reader:", err)
+		logrus.Fatal("Failed to close the reader:", err)
 	}
 }
