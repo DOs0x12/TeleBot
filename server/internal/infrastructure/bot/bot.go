@@ -17,12 +17,14 @@ type Telebot struct {
 func NewTelebot(botKey string, commands []botEnt.Command) (Telebot, error) {
 	botApi, err := tgbot.NewBotAPI(botKey)
 	if err != nil {
-		var zero Telebot
-
-		return zero, fmt.Errorf("an error of connecting to the bot occurs: %w", err)
+		return Telebot{}, fmt.Errorf("an error of connecting to the bot occurs: %w", err)
 	}
 
-	botApi.Request(configureCommands(commands))
+	resp, err := botApi.Request(configureCommands(commands))
+	if err != nil {
+		return Telebot{}, fmt.Errorf("register commands of a new bot: get an response from the bot API %v wiht an error: %w",
+			resp.Result, err)
+	}
 
 	return Telebot{bot: botApi, commands: &commands}, nil
 }
@@ -57,11 +59,13 @@ func receiveInData(ctx context.Context,
 func (t Telebot) RegisterCommands(commands []botEnt.Command) error {
 	conf := configureCommands(commands)
 
-	if _, err := t.bot.Request(conf); err != nil {
-		return fmt.Errorf("an error of registering commands occurs: %w", err)
+	resp, err := t.bot.Request(conf)
+	if err != nil {
+		err = fmt.Errorf("register commands: get an response from the bot API %v wiht an error: %w",
+			resp.Result, err)
 	}
 
-	return nil
+	return err
 }
 
 func configureCommands(commands []botEnt.Command) tgbot.SetMyCommandsConfig {
