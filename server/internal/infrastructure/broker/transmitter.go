@@ -59,6 +59,8 @@ func transmitData(ctx context.Context, dataChan chan service.OutData, w *kafka.W
 				if err != nil {
 					logrus.Error("Failed to write messages:", err)
 				}
+
+				continue
 			}
 
 			if data.CommName != "" {
