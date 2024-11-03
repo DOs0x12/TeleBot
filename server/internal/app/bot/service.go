@@ -29,12 +29,12 @@ func Process(ctx context.Context,
 	receiver serviceInterf.DataReceiver,
 	transmitter serviceInterf.DataTransmitter,
 	botCommands *[]botEnt.Command) error {
-	serviceInDataChan, err := receiver.StartReceivingData(ctx)
+	brokerInDataChan, err := receiver.StartReceivingData(ctx)
 	if err != nil {
 		return fmt.Errorf("an error of the data receiver occurs: %w", err)
 	}
 
-	serviceOutDataChan := transmitter.StartTransmittingData(ctx)
+	brokerOutDataChan := transmitter.StartTransmittingData(ctx)
 	botInDataChan := bot.Start(ctx)
 
 	for {
@@ -44,23 +44,23 @@ func Process(ctx context.Context,
 			logrus.Info("The bot is stopped")
 
 			return nil
-		case serviceInData := <-serviceInDataChan:
-			botOutData := processServiceInData(serviceInData, bot, botCommands)
+		case brokerInData := <-brokerInDataChan:
+			botOutData := processBrokerInData(brokerInData, bot, botCommands)
 			var zeroBotData botEnt.Data
 			if botOutData != zeroBotData {
 				go sendMessageWithRetries(ctx, bot, botOutData)
 			}
 		case botInData := <-botInDataChan:
-			serviceOutData := processBotInData(botInData, *botCommands)
+			brokerOutData := processBotInData(botInData, *botCommands)
 			var zeroBotOutData serviceEnt.OutData
-			if serviceOutData != zeroBotOutData {
-				serviceOutDataChan <- serviceOutData
+			if brokerOutData != zeroBotOutData {
+				brokerOutDataChan <- brokerOutData
 			}
 		}
 	}
 }
 
-func processServiceInData(data serviceEnt.InData,
+func processBrokerInData(data serviceEnt.InData,
 	bot botInterf.Worker,
 	botCommands *[]botEnt.Command) botEnt.Data {
 	if data.IsCommand {
