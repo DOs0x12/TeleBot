@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/Guise322/TeleBot/server/internal/entities/service"
 
@@ -46,9 +47,13 @@ func consumeMessages(ctx context.Context, dataChan chan service.InData, r *kafka
 			break
 		}
 
+		waitTime := 500 * time.Millisecond
+
 		msg, err := r.FetchMessage(ctx)
 		if err != nil {
 			logrus.Errorf("Can not get a message from the broker: %v", err)
+
+			time.Sleep(waitTime)
 
 			continue
 		}
@@ -61,8 +66,12 @@ func consumeMessages(ctx context.Context, dataChan chan service.InData, r *kafka
 		if err != nil {
 			logrus.Errorf("Can not commit a message: %v", err)
 
-			return
+			time.Sleep(waitTime)
+
+			continue
 		}
+
+		time.Sleep(waitTime)
 	}
 
 	if err := r.Close(); err != nil {
