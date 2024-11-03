@@ -58,18 +58,13 @@ func consumeMessages(ctx context.Context, dataChan chan service.InData, r *kafka
 			continue
 		}
 
-		commandKey := "command"
-		isCommand := string(msg.Key) == commandKey
-
-		dataChan <- service.InData{IsCommand: isCommand, Value: string(msg.Value)}
-		err = r.CommitMessages(ctx, msg)
-		if err != nil {
-			logrus.Errorf("Can not commit a message: %v", err)
-
-			time.Sleep(waitTime)
-
+		if !commitMesWithRetries(ctx, msg, r) {
 			continue
 		}
+
+		commandKey := "command"
+		isCommand := string(msg.Key) == commandKey
+		dataChan <- service.InData{IsCommand: isCommand, Value: string(msg.Value)}
 
 		time.Sleep(waitTime)
 	}
@@ -77,4 +72,22 @@ func consumeMessages(ctx context.Context, dataChan chan service.InData, r *kafka
 	if err := r.Close(); err != nil {
 		logrus.Fatal("Failed to close the reader:", err)
 	}
+}
+
+func commitMesWithRetries(ctx context.Context, msg kafka.Message, r *kafka.Reader) bool {
+	retryNum := 10
+	waitTime := 5 * time.Second
+
+	for i := 0; i < retryNum; i++ {
+		err := r.CommitMessages(ctx, msg)
+		if err == nil {
+			return true
+		}
+
+		logrus.Errorf("Can not commit a message: %v", err)
+
+		time.Sleep(waitTime)
+	}
+
+	return false
 }
