@@ -14,7 +14,7 @@ type Telebot struct {
 	commands *[]botEnt.Command
 }
 
-func NewTelebot(botKey string, commands *[]botEnt.Command) (Telebot, error) {
+func NewTelebot(botKey string, commands []botEnt.Command) (Telebot, error) {
 	botApi, err := tgbot.NewBotAPI(botKey)
 	if err != nil {
 		var zero Telebot
@@ -24,7 +24,7 @@ func NewTelebot(botKey string, commands *[]botEnt.Command) (Telebot, error) {
 
 	botApi.Request(configureCommands(commands))
 
-	return Telebot{bot: botApi, commands: commands}, nil
+	return Telebot{bot: botApi, commands: &commands}, nil
 }
 
 func (t Telebot) Start(ctx context.Context) chan botEnt.Data {
@@ -54,7 +54,7 @@ func receiveInData(ctx context.Context,
 	}
 }
 
-func (t Telebot) RegisterCommands(commands *[]botEnt.Command) error {
+func (t Telebot) RegisterCommands(commands []botEnt.Command) error {
 	conf := configureCommands(commands)
 
 	if _, err := t.bot.Request(conf); err != nil {
@@ -64,10 +64,10 @@ func (t Telebot) RegisterCommands(commands *[]botEnt.Command) error {
 	return nil
 }
 
-func configureCommands(commands *[]botEnt.Command) tgbot.SetMyCommandsConfig {
-	commandSet := make([]tgbot.BotCommand, len(*commands))
+func configureCommands(commands []botEnt.Command) tgbot.SetMyCommandsConfig {
+	commandSet := make([]tgbot.BotCommand, len(commands))
 
-	for i, command := range *commands {
+	for i, command := range commands {
 		commandSet[i] = tgbot.BotCommand{Command: command.Name, Description: command.Description}
 	}
 
