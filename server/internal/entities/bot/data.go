@@ -1,6 +1,7 @@
 package bot
 
 type Data struct {
-	ChatID int64
-	Value  string
+	ChatID    int64
+	Value     string
+	IsCommand bool
 }

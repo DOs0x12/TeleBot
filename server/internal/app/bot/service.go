@@ -112,6 +112,20 @@ func sendMessageWithRetries(ctx context.Context, bot botInterf.Worker, botOutDat
 func processBotInData(data botEnt.Data,
 	commands []botEnt.Command) serviceEnt.OutData {
 
+	if !data.IsCommand {
+		chatID := data.ChatID
+		message := data.Value
+		dataDto := BotDataDto{ChatID: chatID, Value: message}
+		dataValue, err := json.Marshal(dataDto)
+		if err != nil {
+			logrus.Error("Cannot marshal a BotDataDto with data:", err)
+
+			return serviceEnt.OutData{}
+		}
+
+		return serviceEnt.OutData{Value: string(dataValue)}
+	}
+
 	for _, command := range commands {
 		if data.Value != command.Name {
 			continue
@@ -129,15 +143,5 @@ func processBotInData(data botEnt.Data,
 		return serviceEnt.OutData{CommName: command.Name, Value: string(dataValue)}
 	}
 
-	chatID := data.ChatID
-	message := data.Value
-	dataDto := BotDataDto{ChatID: chatID, Value: message}
-	dataValue, err := json.Marshal(dataDto)
-	if err != nil {
-		logrus.Error("Cannot marshal a BotDataDto with data:", err)
-
-		return serviceEnt.OutData{}
-	}
-
-	return serviceEnt.OutData{Value: string(dataValue)}
+	return serviceEnt.OutData{}
 }

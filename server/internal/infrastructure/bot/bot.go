@@ -51,7 +51,10 @@ func receiveInData(ctx context.Context,
 				continue
 			}
 
-			botInDataChan <- botEnt.Data{ChatID: upd.Message.Chat.ID, Value: upd.Message.Text}
+			isComm := upd.Message.Command() != ""
+			botInDataChan <- botEnt.Data{ChatID: upd.Message.Chat.ID,
+				Value:     upd.Message.Text,
+				IsCommand: isComm}
 		}
 	}
 }
