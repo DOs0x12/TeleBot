@@ -31,7 +31,7 @@ func main() {
 		return
 	}
 
-	commands := &[]botEnt.Command{}
+	commands := []botEnt.Command{}
 	bot, err := botInfra.NewTelebot(config.BotKey, commands)
 	if err != nil {
 		logrus.Errorf("A bot loading error occurs: %v", err)
@@ -44,7 +44,7 @@ func main() {
 
 	logrus.Infoln("Start the application")
 
-	err = botApp.Process(appCtx, bot, receiver, transmitter, commands)
+	err = botApp.Process(appCtx, bot, receiver, transmitter, &commands)
 	if err != nil {
 		logrus.Errorf("An error occurs: %v", err)
 

@@ -65,7 +65,7 @@ func processServiceInData(data serviceEnt.InData,
 		}
 
 		*botCommands = append(*botCommands, botNewComm)
-		bot.RegisterCommands(botCommands)
+		bot.RegisterCommands(*botCommands)
 
 		return botEnt.Data{}
 	}
