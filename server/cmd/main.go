@@ -6,7 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	botApp "github.com/Guise322/TeleBot/server/internal/app/bot"
+	botApp "github.com/Guise322/TeleBot/server/internal/app"
 	botEnt "github.com/Guise322/TeleBot/server/internal/entities/bot"
 	botInfra "github.com/Guise322/TeleBot/server/internal/infrastructure/bot"
 	serviceInfra "github.com/Guise322/TeleBot/server/internal/infrastructure/broker"
