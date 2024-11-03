@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Guise322/TeleBot/server/common"
 	botEnt "github.com/Guise322/TeleBot/server/internal/entities/bot"
 	serviceEnt "github.com/Guise322/TeleBot/server/internal/entities/service"
 	botInterf "github.com/Guise322/TeleBot/server/internal/interfaces/bot"
@@ -105,7 +106,7 @@ func sendMessageWithRetries(ctx context.Context, bot botInterf.Worker, botOutDat
 
 		logrus.Error("Cannot send a message:", err)
 
-		time.Sleep(timeBetweenRetries)
+		common.WaitWithContext(ctx, timeBetweenRetries)
 	}
 }
 

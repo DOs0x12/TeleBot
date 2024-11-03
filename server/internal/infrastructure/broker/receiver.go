@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Guise322/TeleBot/server/common"
 	"github.com/Guise322/TeleBot/server/internal/entities/service"
 
 	kafka "github.com/segmentio/kafka-go"
@@ -53,7 +54,7 @@ func consumeMessages(ctx context.Context, dataChan chan service.InData, r *kafka
 		if err != nil {
 			logrus.Errorf("Can not get a message from the broker: %v", err)
 
-			time.Sleep(waitTime)
+			common.WaitWithContext(ctx, waitTime)
 
 			continue
 		}
@@ -66,7 +67,7 @@ func consumeMessages(ctx context.Context, dataChan chan service.InData, r *kafka
 		isCommand := string(msg.Key) == commandKey
 		dataChan <- service.InData{IsCommand: isCommand, Value: string(msg.Value)}
 
-		time.Sleep(waitTime)
+		common.WaitWithContext(ctx, waitTime)
 	}
 
 	if err := r.Close(); err != nil {
@@ -86,7 +87,7 @@ func commitMesWithRetries(ctx context.Context, msg kafka.Message, r *kafka.Reade
 
 		logrus.Errorf("Can not commit a message: %v", err)
 
-		time.Sleep(waitTime)
+		common.WaitWithContext(ctx, waitTime)
 	}
 
 	return false
