@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Guise322/TeleBot/server/internal/entities/service"
 
@@ -17,9 +18,12 @@ func NewKafkaReceiver(address string) KafkaReceiver {
 	return KafkaReceiver{address: address}
 }
 
-func (kr KafkaReceiver) StartReceivingData(ctx context.Context) <-chan service.InData {
+func (kr KafkaReceiver) StartReceivingData(ctx context.Context) (<-chan service.InData, error) {
 	dataTopicName := "botdata"
-	createDataTopic(dataTopicName, kr.address)
+	if err := createDataTopic(dataTopicName, kr.address); err != nil {
+		return nil, fmt.Errorf("an error occurs of creating the data topic: %w", err)
+	}
+
 	dataChan := make(chan service.InData)
 
 	r := kafka.NewReader(kafka.ReaderConfig{
@@ -33,7 +37,7 @@ func (kr KafkaReceiver) StartReceivingData(ctx context.Context) <-chan service.I
 
 	go consumeMessages(ctx, dataChan, r)
 
-	return dataChan
+	return dataChan, nil
 }
 
 func consumeMessages(ctx context.Context, dataChan chan service.InData, r *kafka.Reader) {
@@ -44,6 +48,8 @@ func consumeMessages(ctx context.Context, dataChan chan service.InData, r *kafka
 
 		msg, err := r.FetchMessage(ctx)
 		if err != nil {
+			logrus.Errorf("Can not get a message from the broker: %v", err)
+
 			continue
 		}
 
@@ -51,7 +57,12 @@ func consumeMessages(ctx context.Context, dataChan chan service.InData, r *kafka
 		isCommand := string(msg.Key) == commandKey
 
 		dataChan <- service.InData{IsCommand: isCommand, Value: string(msg.Value)}
-		r.CommitMessages(ctx, msg)
+		err = r.CommitMessages(ctx, msg)
+		if err != nil {
+			logrus.Errorf("Can not commit a message: %v", err)
+
+			return
+		}
 	}
 
 	if err := r.Close(); err != nil {

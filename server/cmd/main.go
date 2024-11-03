@@ -9,8 +9,8 @@ import (
 	botApp "github.com/Guise322/TeleBot/server/internal/app/bot"
 	botEnt "github.com/Guise322/TeleBot/server/internal/entities/bot"
 	botInfra "github.com/Guise322/TeleBot/server/internal/infrastructure/bot"
+	serviceInfra "github.com/Guise322/TeleBot/server/internal/infrastructure/broker"
 	"github.com/Guise322/TeleBot/server/internal/infrastructure/config"
-	serviceInfra "github.com/Guise322/TeleBot/server/internal/infrastructure/service"
 
 	"github.com/sirupsen/logrus"
 )

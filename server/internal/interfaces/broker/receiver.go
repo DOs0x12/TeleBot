@@ -7,5 +7,5 @@ import (
 )
 
 type DataReceiver interface {
-	StartReceivingData(ctx context.Context) <-chan service.InData
+	StartReceivingData(ctx context.Context) (<-chan service.InData, error)
 }

@@ -3,12 +3,13 @@ package telebot
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"time"
 
 	botEnt "github.com/Guise322/TeleBot/server/internal/entities/bot"
 	serviceEnt "github.com/Guise322/TeleBot/server/internal/entities/service"
 	botInterf "github.com/Guise322/TeleBot/server/internal/interfaces/bot"
-	serviceInterf "github.com/Guise322/TeleBot/server/internal/interfaces/service"
+	serviceInterf "github.com/Guise322/TeleBot/server/internal/interfaces/broker"
 
 	"github.com/sirupsen/logrus"
 )
@@ -28,7 +29,11 @@ func Process(ctx context.Context,
 	receiver serviceInterf.DataReceiver,
 	transmitter serviceInterf.DataTransmitter,
 	botCommands *[]botEnt.Command) error {
-	serviceInDataChan := receiver.StartReceivingData(ctx)
+	serviceInDataChan, err := receiver.StartReceivingData(ctx)
+	if err != nil {
+		return fmt.Errorf("an error of the data receiver occurs: %w", err)
+	}
+
 	serviceOutDataChan := transmitter.StartTransmittingData(ctx)
 	botInDataChan := bot.Start(ctx)
 
