@@ -19,7 +19,7 @@ func NewTelebot(botKey string, commands *[]botEnt.Command) (Telebot, error) {
 	if err != nil {
 		var zero Telebot
 
-		return zero, fmt.Errorf("getting an error at connecting to the bot: %v", err)
+		return zero, fmt.Errorf("an error of connecting to the bot occurs: %w", err)
 	}
 
 	botApi.Request(configureCommands(commands))
@@ -58,7 +58,7 @@ func (t Telebot) RegisterCommands(commands *[]botEnt.Command) error {
 	conf := configureCommands(commands)
 
 	if _, err := t.bot.Request(conf); err != nil {
-		return fmt.Errorf("getting an error at registering commands: %v", err)
+		return fmt.Errorf("an error of registering commands occurs: %w", err)
 	}
 
 	return nil
@@ -82,6 +82,9 @@ func (t Telebot) SendMessage(msg string, chatID int64) error {
 	tgMsg := tgbot.NewMessage(chatID, msg)
 
 	_, err := t.bot.Send(tgMsg)
+	if err != nil {
+		err = fmt.Errorf("an error of sending a message occurs: %w", err)
+	}
 
 	return err
 }
