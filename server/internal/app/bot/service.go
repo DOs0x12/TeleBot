@@ -51,7 +51,7 @@ func Process(ctx context.Context,
 				go sendMessageWithRetries(ctx, bot, botOutData)
 			}
 		case botInData := <-botInDataChan:
-			serviceOutData := processBotInData(botInData, botCommands)
+			serviceOutData := processBotInData(botInData, *botCommands)
 			serviceOutDataChan <- serviceOutData
 		}
 	}
@@ -107,9 +107,9 @@ func sendMessageWithRetries(ctx context.Context, bot botInterf.Worker, botOutDat
 }
 
 func processBotInData(data botEnt.Data,
-	commands *[]botEnt.Command) serviceEnt.OutData {
+	commands []botEnt.Command) serviceEnt.OutData {
 
-	for _, command := range *commands {
+	for _, command := range commands {
 		if data.Value != command.Name {
 			continue
 		}
