@@ -45,14 +45,17 @@ func Process(ctx context.Context,
 
 			return nil
 		case serviceInData := <-serviceInDataChan:
-			var zeroBotData botEnt.Data
 			botOutData := processServiceInData(serviceInData, bot, botCommands)
+			var zeroBotData botEnt.Data
 			if botOutData != zeroBotData {
 				go sendMessageWithRetries(ctx, bot, botOutData)
 			}
 		case botInData := <-botInDataChan:
 			serviceOutData := processBotInData(botInData, *botCommands)
-			serviceOutDataChan <- serviceOutData
+			var zeroBotOutData serviceEnt.OutData
+			if serviceOutData != zeroBotOutData {
+				serviceOutDataChan <- serviceOutData
+			}
 		}
 	}
 }
@@ -100,7 +103,7 @@ func sendMessageWithRetries(ctx context.Context, bot botInterf.Worker, botOutDat
 			break
 		}
 
-		logrus.Errorf("Cannot send a message: %v", err)
+		logrus.Error("Cannot send a message:", err)
 
 		time.Sleep(timeBetweenRetries)
 	}
@@ -116,7 +119,12 @@ func processBotInData(data botEnt.Data,
 
 		chatID := data.ChatID
 		dataDto := BotDataDto{ChatID: chatID}
-		dataValue, _ := json.Marshal(dataDto)
+		dataValue, err := json.Marshal(dataDto)
+		if err != nil {
+			logrus.Error("Cannot marshal a BotDataDto with a command:", err)
+
+			return serviceEnt.OutData{}
+		}
 
 		return serviceEnt.OutData{CommName: command.Name, Value: string(dataValue)}
 	}
@@ -124,7 +132,12 @@ func processBotInData(data botEnt.Data,
 	chatID := data.ChatID
 	message := data.Value
 	dataDto := BotDataDto{ChatID: chatID, Value: message}
-	dataValue, _ := json.Marshal(dataDto)
+	dataValue, err := json.Marshal(dataDto)
+	if err != nil {
+		logrus.Error("Cannot marshal a BotDataDto with data:", err)
+
+		return serviceEnt.OutData{}
+	}
 
 	return serviceEnt.OutData{Value: string(dataValue)}
 }
