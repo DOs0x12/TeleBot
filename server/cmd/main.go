@@ -19,14 +19,14 @@ func main() {
 	configPath := flag.String("conf", "../etc/config.yml", "Config path.")
 	flag.Parse()
 
-	logrus.Infoln("Load the application configuration")
+	logrus.Info("Load the application configuration")
 
 	appCtx, _ := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 
 	configer := config.NewConfiger(*configPath)
 	config, err := configer.LoadConfig()
 	if err != nil {
-		logrus.Errorf("Can not get the config data: %v", err)
+		logrus.Error("Can not get the config data:", err)
 
 		return
 	}
@@ -34,7 +34,7 @@ func main() {
 	commands := []botEnt.Command{}
 	bot, err := botInfra.NewTelebot(config.BotKey, commands)
 	if err != nil {
-		logrus.Errorf("A bot loading error occurs: %v", err)
+		logrus.Error("A bot loading error occurs:", err)
 
 		return
 	}
@@ -42,11 +42,11 @@ func main() {
 	receiver := serviceInfra.NewKafkaReceiver(config.KafkaAddress)
 	transmitter := serviceInfra.NewKafkaTransmitter(config.KafkaAddress)
 
-	logrus.Infoln("Start the application")
+	logrus.Info("Start the application")
 
 	err = botApp.Process(appCtx, bot, receiver, transmitter, &commands)
 	if err != nil {
-		logrus.Errorf("An error occurs: %v", err)
+		logrus.Error("An error occurs:", err)
 
 		return
 	}
