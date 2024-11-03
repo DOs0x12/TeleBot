@@ -19,7 +19,7 @@ func main() {
 	configPath := flag.String("conf", "../etc/config.yml", "Config path.")
 	flag.Parse()
 
-	logrus.Infoln("Start the application")
+	logrus.Infoln("Load the application configuration")
 
 	appCtx, _ := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 
@@ -41,6 +41,8 @@ func main() {
 
 	receiver := serviceInfra.NewKafkaReceiver(config.KafkaAddress)
 	transmitter := serviceInfra.NewKafkaTransmitter(config.KafkaAddress)
+
+	logrus.Infoln("Start the application")
 
 	err = botApp.Process(appCtx, bot, receiver, transmitter, commands)
 	if err != nil {
