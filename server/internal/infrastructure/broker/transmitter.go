@@ -52,6 +52,7 @@ func transmitData(ctx context.Context, dataChan chan service.OutData, w *kafka.W
 			err := sendMessage(ctx, w, topicName, data.Value)
 			if err != nil {
 				if err == kafka.UnknownTopicOrPartition {
+					logrus.Warnf("No topic with the name %v, create the one", topicName)
 					createDataTopic(topicName, w.Addr.String())
 					err = sendMessage(ctx, w, topicName, data.Value)
 				}
