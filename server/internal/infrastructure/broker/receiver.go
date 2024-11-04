@@ -52,7 +52,7 @@ func consumeMessages(ctx context.Context, dataChan chan service.InData, r *kafka
 
 		msg, err := r.FetchMessage(ctx)
 		if err != nil {
-			logrus.Error("Can not get a message from the broker", err)
+			logrus.Error("Can not get a message from the broker: ", err)
 
 			common.WaitWithContext(ctx, waitTime)
 
@@ -71,7 +71,7 @@ func consumeMessages(ctx context.Context, dataChan chan service.InData, r *kafka
 	}
 
 	if err := r.Close(); err != nil {
-		logrus.Error("Failed to close the reader:", err)
+		logrus.Error("Failed to close the reader: ", err)
 	}
 }
 
@@ -85,7 +85,7 @@ func commitMesWithRetries(ctx context.Context, msg kafka.Message, r *kafka.Reade
 			return true
 		}
 
-		logrus.Error("Can not commit a message:", err)
+		logrus.Error("Can not commit a message: ", err)
 
 		common.WaitWithContext(ctx, waitTime)
 	}

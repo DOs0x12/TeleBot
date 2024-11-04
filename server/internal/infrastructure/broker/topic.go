@@ -17,7 +17,7 @@ func createDataTopic(topicName, address string) error {
 
 	defer func() {
 		if err := conn.Close(); err != nil {
-			logrus.Error("Can not close the broker connection:", err)
+			logrus.Error("Can not close the broker connection: ", err)
 		}
 	}()
 
@@ -34,7 +34,7 @@ func createDataTopic(topicName, address string) error {
 
 	defer func() {
 		if err := contrConn.Close(); err != nil {
-			logrus.Error("Can not close the controller connection:", err)
+			logrus.Error("Can not close the controller connection: ", err)
 		}
 	}()
 
