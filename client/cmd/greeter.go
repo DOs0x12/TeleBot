@@ -23,7 +23,7 @@ func main() {
 
 	err := b.RegisterCommand(ctx, commData)
 	if err != nil {
-		logrus.Error("Failed to register a command:", err)
+		logrus.Error("Failed to register a command: ", err)
 
 		return
 	}
