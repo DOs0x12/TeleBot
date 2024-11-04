@@ -3,7 +3,9 @@ package service
 import (
 	"context"
 	"strings"
+	"time"
 
+	"github.com/Guise322/TeleBot/server/internal/common"
 	"github.com/Guise322/TeleBot/server/internal/entities/service"
 
 	kafka "github.com/segmentio/kafka-go"
@@ -11,63 +13,61 @@ import (
 )
 
 type KafkaTransmitter struct {
-	address string
+	w *kafka.Writer
 }
 
 var lastCommand string
 
 func NewKafkaTransmitter(address string) KafkaTransmitter {
-	return KafkaTransmitter{address: address}
-}
-
-func (kt KafkaTransmitter) StartTransmittingData(ctx context.Context) chan<- service.OutData {
-	dataChan := make(chan service.OutData)
-
 	w := &kafka.Writer{
-		Addr:     kafka.TCP(kt.address),
+		Addr:     kafka.TCP(address),
 		Balancer: &kafka.LeastBytes{},
 	}
 
-	go transmitData(ctx, dataChan, w)
-
-	return dataChan
+	return KafkaTransmitter{w: w}
 }
 
-func transmitData(ctx context.Context, dataChan chan service.OutData, w *kafka.Writer) {
-	for {
-		select {
-		case <-ctx.Done():
-			if err := w.Close(); err != nil {
-				logrus.Error("Failed to close writer:", err)
+func (kt KafkaTransmitter) TransmitData(ctx context.Context, data service.OutData) {
+	retryNum := 10
+	waitTime := 500 * time.Millisecond
+
+	for i := 0; i < retryNum; i++ {
+		if ctx.Err() != nil {
+			break
+		}
+
+		if lastCommand == "" && data.CommName == "" {
+			logrus.Warn("Get an empty message")
+
+			continue
+		}
+
+		if data.CommName == "" {
+			data.CommName = lastCommand
+		}
+
+		topicName := strings.Trim(data.CommName, "/")
+
+		err := sendMessage(ctx, kt.w, topicName, data.Value)
+		if err != nil {
+			if err == kafka.UnknownTopicOrPartition {
+				logrus.WithField("topiName", topicName).Warn("An unknown topic, create the one")
+				createDataTopic(topicName, kt.w.Addr.String())
+				err = sendMessage(ctx, kt.w, topicName, data.Value)
 			}
-		case data := <-dataChan:
-			if lastCommand == "" && data.CommName == "" {
-				logrus.Warn("Get an empty message")
+		}
 
-				continue
-			}
-
-			topicName := strings.Trim(data.CommName, "/")
-
-			err := sendMessage(ctx, w, topicName, data.Value)
-			if err != nil {
-				if err == kafka.UnknownTopicOrPartition {
-					logrus.WithField("topiName", topicName).Warn("An unknown topic, create the one")
-					createDataTopic(topicName, w.Addr.String())
-					err = sendMessage(ctx, w, topicName, data.Value)
-				}
-
-				if err != nil {
-					logrus.Error("Failed to write messages:", err)
-				}
-
-				continue
-			}
-
+		if err == nil {
 			if data.CommName != "" {
 				lastCommand = data.CommName
 			}
+
+			return
 		}
+
+		logrus.Error("Failed to write messages:", err)
+
+		common.WaitWithContext(ctx, waitTime)
 	}
 }
 
@@ -78,4 +78,10 @@ func sendMessage(ctx context.Context, w *kafka.Writer, commName, data string) er
 			Value: []byte(data),
 		},
 	)
+}
+
+func (kt KafkaTransmitter) Close() {
+	if err := kt.w.Close(); err != nil {
+		logrus.Error("Failed to close writer:", err)
+	}
 }
