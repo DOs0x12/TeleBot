@@ -43,12 +43,12 @@ func (kr KafkaReceiver) StartReceivingData(ctx context.Context) (<-chan service.
 }
 
 func consumeMessages(ctx context.Context, dataChan chan service.InData, r *kafka.Reader) {
+	waitTime := 500 * time.Millisecond
+
 	for {
 		if ctx.Err() != nil {
 			break
 		}
-
-		waitTime := 500 * time.Millisecond
 
 		msg, err := r.FetchMessage(ctx)
 		if err != nil {
