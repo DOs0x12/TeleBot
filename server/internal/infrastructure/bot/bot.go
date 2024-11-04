@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Guise322/TeleBot/server/common"
+	"github.com/Guise322/TeleBot/server/internal/common"
 	botEnt "github.com/Guise322/TeleBot/server/internal/entities/bot"
 	"github.com/sirupsen/logrus"
 
