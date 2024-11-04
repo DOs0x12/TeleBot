@@ -43,7 +43,7 @@ func castBrokerInData(data serviceEnt.InData) (botEnt.Data, error) {
 	var botData BotDataDto
 	err := json.Unmarshal([]byte(data.Value), &botData)
 	if err != nil {
-		return botEnt.Data{}, fmt.Errorf("can not unmarshal a bot data: %w", err)
+		return botEnt.Data{}, fmt.Errorf("can not unmarshal bot data: %w", err)
 	}
 
 	return botEnt.Data{ChatID: botData.ChatID, Value: botData.Value}, nil
