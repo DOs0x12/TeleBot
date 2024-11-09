@@ -19,6 +19,9 @@ func ExecuteWithRetries(ctx context.Context, act action) error {
 		}
 
 		err = act(ctx)
+		if err == nil {
+			return nil
+		}
 
 		waitWithContext(ctx, waitTime)
 	}
