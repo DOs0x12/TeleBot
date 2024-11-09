@@ -65,7 +65,7 @@ func (t Telebot) RegisterCommands(ctx context.Context, commands []botEnt.Command
 
 	resp, err := t.requestWithRetries(ctx, conf)
 	if err != nil {
-		return fmt.Errorf("an error of sending a request to Telegram occurs: %w with the result: %v", err, resp.Result)
+		return fmt.Errorf("an error of sending a request to Telegram occurs: %w with the result: %v", err, resp.Description)
 	}
 
 	return nil
