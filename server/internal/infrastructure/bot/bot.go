@@ -2,13 +2,10 @@ package bot
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"time"
 
 	"github.com/Guise322/TeleBot/server/internal/common"
 	botEnt "github.com/Guise322/TeleBot/server/internal/entities/bot"
-	"github.com/sirupsen/logrus"
 
 	tgbot "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -18,9 +15,6 @@ type Telebot struct {
 	commands *[]botEnt.Command
 }
 
-const numOfRetries = 10
-const timeBetweenRetries = 5 * time.Second
-
 func NewTelebot(ctx context.Context, botKey string, commands []botEnt.Command) (Telebot, error) {
 	botApi, err := tgbot.NewBotAPI(botKey)
 	if err != nil {
@@ -28,8 +22,9 @@ func NewTelebot(ctx context.Context, botKey string, commands []botEnt.Command) (
 	}
 
 	bot := Telebot{bot: botApi, commands: &commands}
-	if !bot.RegisterCommands(ctx, commands) {
-		return Telebot{}, errors.New("can not register commands in the bot")
+	err = bot.RegisterCommands(ctx, commands)
+	if err != nil {
+		return Telebot{}, fmt.Errorf("can not register commands in the bot: %w", err)
 	}
 
 	return bot, nil
@@ -65,25 +60,15 @@ func receiveInData(ctx context.Context,
 	}
 }
 
-func (t Telebot) RegisterCommands(ctx context.Context, commands []botEnt.Command) bool {
+func (t Telebot) RegisterCommands(ctx context.Context, commands []botEnt.Command) error {
 	conf := configureCommands(commands)
 
-	for i := 0; i < numOfRetries; i++ {
-		if ctx.Err() != nil {
-			return true
-		}
-
-		resp, err := t.bot.Request(conf)
-		if err == nil {
-			return true
-		}
-
-		logrus.WithField("bot_result", resp.Result).Error("An error occurs when register commands: ", err)
-
-		common.WaitWithContext(ctx, timeBetweenRetries)
+	resp, err := t.requestWithRetries(ctx, conf)
+	if err != nil {
+		return fmt.Errorf("an error of sending a request to Telegram occurs: %w with the result: %v", err, resp.Result)
 	}
 
-	return false
+	return nil
 }
 
 func configureCommands(commands []botEnt.Command) tgbot.SetMyCommandsConfig {
@@ -100,20 +85,36 @@ func (t Telebot) Stop() {
 	t.bot.StopReceivingUpdates()
 }
 
-func (t Telebot) SendMessage(ctx context.Context, msg string, chatID int64) {
-	for i := 0; i < numOfRetries; i++ {
-		if ctx.Err() != nil {
-			return
-		}
-
-		tgMsg := tgbot.NewMessage(chatID, msg)
-		_, err := t.bot.Send(tgMsg)
-		if err == nil {
-			return
-		}
-
-		logrus.Error("Can not send a message to the bot: ", err)
-
-		common.WaitWithContext(ctx, timeBetweenRetries)
+func (t Telebot) SendMessage(ctx context.Context, msg string, chatID int64) error {
+	tgMsg := tgbot.NewMessage(chatID, msg)
+	err := t.sendWithRetries(ctx, tgMsg)
+	if err != nil {
+		return fmt.Errorf("can not send a message to the telegram bot: %w", err)
 	}
+
+	return nil
+}
+
+func (t Telebot) sendWithRetries(ctx context.Context, msg tgbot.MessageConfig) error {
+	act := func(ctx context.Context) error {
+		_, err := t.bot.Send(msg)
+
+		return err
+	}
+
+	return common.ExecuteWithRetries(ctx, act)
+}
+
+func (t Telebot) requestWithRetries(ctx context.Context, conf tgbot.SetMyCommandsConfig) (*tgbot.APIResponse, error) {
+	var resp *tgbot.APIResponse
+	act := func(ctx context.Context) error {
+		var err error
+		resp, err = t.bot.Request(conf)
+
+		return err
+	}
+
+	err := common.ExecuteWithRetries(ctx, act)
+
+	return resp, err
 }

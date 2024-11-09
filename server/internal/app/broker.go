@@ -35,7 +35,12 @@ func processBrokerInData(ctx context.Context,
 		return
 	}
 
-	bot.SendMessage(ctx, botOutData.Value, botOutData.ChatID)
+	err = bot.SendMessage(ctx, botOutData.Value, botOutData.ChatID)
+	if err != nil {
+		logrus.Error("An error of sending a message to the bot occurs: ", err)
+
+		return
+	}
 }
 
 func castBrokerInData(data serviceEnt.InData) (botEnt.Data, error) {
