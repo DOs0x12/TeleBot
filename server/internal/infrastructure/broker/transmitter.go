@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"time"
 
@@ -27,19 +28,19 @@ func NewKafkaTransmitter(address string) KafkaTransmitter {
 	return KafkaTransmitter{w: w}
 }
 
-func (kt KafkaTransmitter) TransmitData(ctx context.Context, data service.OutData) {
+func (kt KafkaTransmitter) TransmitData(ctx context.Context, data service.OutData) error {
 	retryNum := 10
 	waitTime := 500 * time.Millisecond
 
 	for i := 0; i < retryNum; i++ {
 		if ctx.Err() != nil {
-			break
+			return nil
 		}
 
 		if lastCommand == "" && data.CommName == "" {
 			logrus.Warn("Get an empty message")
 
-			continue
+			return nil
 		}
 
 		if data.CommName == "" {
@@ -62,13 +63,15 @@ func (kt KafkaTransmitter) TransmitData(ctx context.Context, data service.OutDat
 				lastCommand = data.CommName
 			}
 
-			return
+			return nil
 		}
 
 		logrus.Error("Failed to write messages:", err)
 
 		common.WaitWithContext(ctx, waitTime)
 	}
+
+	return fmt.Errorf("can not transmit data: sending retries are exceeded")
 }
 
 func sendMessage(ctx context.Context, w *kafka.Writer, commName, data string) error {
