@@ -51,12 +51,12 @@ func Process(ctx context.Context,
 				continue
 			}
 
-			err = transmitter.TransmitData(ctx, brokerOutData)
-			if err != nil {
-				logrus.Error("An error of transmitting data to the broker in data occurs: ", err)
-
-				continue
-			}
+			go func() {
+				err = transmitter.TransmitData(ctx, brokerOutData)
+				if err != nil {
+					logrus.Error("An error of transmitting data to the broker in data occurs: ", err)
+				}
+			}()
 		}
 	}
 }
