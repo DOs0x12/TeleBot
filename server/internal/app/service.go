@@ -31,13 +31,13 @@ func Process(ctx context.Context,
 		return fmt.Errorf("an error of the data receiver occurs: %w", err)
 	}
 
-	brokerOutDataChan := transmitter.StartTransmittingData(ctx)
 	botInDataChan := bot.Start(ctx)
 
 	for {
 		select {
 		case <-ctx.Done():
 			bot.Stop()
+			transmitter.Close()
 			logrus.Info("The bot is stopped")
 
 			return nil
@@ -51,7 +51,12 @@ func Process(ctx context.Context,
 				continue
 			}
 
-			brokerOutDataChan <- brokerOutData
+			err = transmitter.TransmitData(ctx, brokerOutData)
+			if err != nil {
+				logrus.Error("An error of transmitting data to the broker in data occurs: ", err)
+
+				continue
+			}
 		}
 	}
 }
