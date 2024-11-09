@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/Guise322/TeleBot/server/internal/common"
 	"github.com/Guise322/TeleBot/server/internal/entities/service"
@@ -43,31 +42,28 @@ func (kr KafkaReceiver) StartReceivingData(ctx context.Context) (<-chan service.
 }
 
 func consumeMessages(ctx context.Context, dataChan chan service.InData, r *kafka.Reader) {
-	waitTime := 500 * time.Millisecond
-
 	for {
 		if ctx.Err() != nil {
 			break
 		}
 
-		msg, err := r.FetchMessage(ctx)
+		msg, err := fetchMesWithRetries(ctx, r)
 		if err != nil {
 			logrus.Error("Can not get a message from the broker: ", err)
-
-			common.WaitWithContext(ctx, waitTime)
 
 			continue
 		}
 
-		if !commitMesWithRetries(ctx, msg, r) {
+		err = commitMesWithRetries(ctx, msg, r)
+		if err != nil {
+			logrus.Error("Can not commit a message in the broker: ", err)
+
 			continue
 		}
 
 		commandKey := "command"
 		isCommand := string(msg.Key) == commandKey
 		dataChan <- service.InData{IsCommand: isCommand, Value: string(msg.Value)}
-
-		common.WaitWithContext(ctx, waitTime)
 	}
 
 	if err := r.Close(); err != nil {
@@ -75,20 +71,25 @@ func consumeMessages(ctx context.Context, dataChan chan service.InData, r *kafka
 	}
 }
 
-func commitMesWithRetries(ctx context.Context, msg kafka.Message, r *kafka.Reader) bool {
-	retryNum := 10
-	waitTime := 5 * time.Second
-
-	for i := 0; i < retryNum; i++ {
-		err := r.CommitMessages(ctx, msg)
-		if err == nil {
-			return true
-		}
-
-		logrus.Error("Can not commit a message: ", err)
-
-		common.WaitWithContext(ctx, waitTime)
+func commitMesWithRetries(ctx context.Context, msg kafka.Message, r *kafka.Reader) error {
+	act := func(ctx context.Context) error {
+		return r.CommitMessages(ctx, msg)
 	}
 
-	return false
+	return common.ExecuteWithRetries(ctx, act)
+}
+
+func fetchMesWithRetries(ctx context.Context, r *kafka.Reader) (kafka.Message, error) {
+	var msg kafka.Message
+
+	act := func(ctx context.Context) error {
+		var err error
+		msg, err = r.FetchMessage(ctx)
+
+		return err
+	}
+
+	err := common.ExecuteWithRetries(ctx, act)
+
+	return msg, err
 }
