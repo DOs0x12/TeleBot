@@ -10,7 +10,7 @@ type action func(ctx context.Context) error
 
 func ExecuteWithRetries(ctx context.Context, act action) error {
 	retryNum := 10
-	waitTime := 500 * time.Millisecond
+	waitTime := 5 * time.Second
 	var err error
 
 	for i := 0; i < retryNum; i++ {
