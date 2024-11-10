@@ -8,20 +8,17 @@ import (
 	botEnt "github.com/Guise322/TeleBot/server/internal/entities/bot"
 	brokerEnt "github.com/Guise322/TeleBot/server/internal/entities/broker"
 	botInterf "github.com/Guise322/TeleBot/server/internal/interfaces/bot"
-	"github.com/sirupsen/logrus"
 )
 
 func processBrokerInData(ctx context.Context,
 	brokerInData brokerEnt.InData,
 	bot botInterf.Worker,
-	botCommands *[]botEnt.Command) {
+	botCommands *[]botEnt.Command) error {
 	if brokerInData.IsCommand {
 		var botNewComm botEnt.Command
 		err := json.Unmarshal([]byte(brokerInData.Value), &botNewComm)
 		if err != nil {
-			logrus.Error("Can not unmarshal a command object: ", err)
-
-			return
+			return fmt.Errorf("can not unmarshal a command object: %w", err)
 		}
 
 		*botCommands = append(*botCommands, botNewComm)
@@ -30,17 +27,15 @@ func processBrokerInData(ctx context.Context,
 
 	botOutData, err := castBrokerInData(brokerInData)
 	if err != nil {
-		logrus.Error("An error of casting broker in data occurs: ", err)
-
-		return
+		return fmt.Errorf("an error of casting broker in data occurs: %w", err)
 	}
 
 	err = bot.SendMessage(ctx, botOutData.Value, botOutData.ChatID)
 	if err != nil {
-		logrus.Error("An error of sending a message to the bot occurs: ", err)
-
-		return
+		return fmt.Errorf("an error of sending a message to the bot occurs: %w", err)
 	}
+
+	return nil
 }
 
 func castBrokerInData(data brokerEnt.InData) (botEnt.Data, error) {

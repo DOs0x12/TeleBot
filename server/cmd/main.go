@@ -9,7 +9,8 @@ import (
 	botApp "github.com/Guise322/TeleBot/server/internal/app"
 	botEnt "github.com/Guise322/TeleBot/server/internal/entities/bot"
 	botInfra "github.com/Guise322/TeleBot/server/internal/infrastructure/bot"
-	serviceInfra "github.com/Guise322/TeleBot/server/internal/infrastructure/broker"
+	receiverInfra "github.com/Guise322/TeleBot/server/internal/infrastructure/broker/receiver"
+	transInfra "github.com/Guise322/TeleBot/server/internal/infrastructure/broker/transmitter"
 	"github.com/Guise322/TeleBot/server/internal/infrastructure/config"
 
 	"github.com/sirupsen/logrus"
@@ -39,8 +40,8 @@ func main() {
 		return
 	}
 
-	receiver := serviceInfra.NewKafkaReceiver(config.KafkaAddress)
-	transmitter := serviceInfra.NewKafkaTransmitter(config.KafkaAddress)
+	receiver := receiverInfra.NewKafkaReceiver(config.KafkaAddress)
+	transmitter := transInfra.NewKafkaTransmitter(config.KafkaAddress)
 
 	logrus.Info("Start the application")
 

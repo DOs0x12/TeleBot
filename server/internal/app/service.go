@@ -42,7 +42,17 @@ func Process(ctx context.Context,
 
 			return nil
 		case brokerInData := <-brokerInDataChan:
-			go processBrokerInData(ctx, brokerInData, bot, botCommands)
+			go func() {
+				err := processBrokerInData(ctx, brokerInData, bot, botCommands)
+				if err != nil {
+					logrus.Error("Can not process data from the broker: ", err)
+				}
+
+				err = receiver.Commit(ctx, brokerInData.MsgUuid)
+				if err != nil {
+					logrus.WithField("messageUuid", err).Error("Can not commit the message with UUID: ", err)
+				}
+			}()
 		case botInData := <-botInDataChan:
 			brokerOutData, err := processBotInData(botInData, *botCommands)
 			if err != nil {
