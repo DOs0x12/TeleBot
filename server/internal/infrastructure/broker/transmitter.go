@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/Guise322/TeleBot/server/internal/common"
-	"github.com/Guise322/TeleBot/server/internal/entities/service"
+	"github.com/Guise322/TeleBot/server/internal/entities/broker"
 
 	kafka "github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"
@@ -27,7 +27,7 @@ func NewKafkaTransmitter(address string) KafkaTransmitter {
 	return KafkaTransmitter{w: w}
 }
 
-func (kt KafkaTransmitter) TransmitData(ctx context.Context, data service.OutData) error {
+func (kt KafkaTransmitter) TransmitData(ctx context.Context, data broker.OutData) error {
 	act := func(ctx context.Context) error {
 		return kt.sendMessage(ctx, data)
 	}
@@ -35,7 +35,7 @@ func (kt KafkaTransmitter) TransmitData(ctx context.Context, data service.OutDat
 	return common.ExecuteWithRetries(ctx, act)
 }
 
-func (kt KafkaTransmitter) sendMessage(ctx context.Context, data service.OutData) error {
+func (kt KafkaTransmitter) sendMessage(ctx context.Context, data broker.OutData) error {
 	if lastCommand == "" && data.CommName == "" {
 		logrus.Warn("Get an empty message")
 

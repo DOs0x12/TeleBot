@@ -6,13 +6,13 @@ import (
 	"fmt"
 
 	botEnt "github.com/Guise322/TeleBot/server/internal/entities/bot"
-	serviceEnt "github.com/Guise322/TeleBot/server/internal/entities/service"
+	brokerEnt "github.com/Guise322/TeleBot/server/internal/entities/broker"
 	botInterf "github.com/Guise322/TeleBot/server/internal/interfaces/bot"
 	"github.com/sirupsen/logrus"
 )
 
 func processBrokerInData(ctx context.Context,
-	brokerInData serviceEnt.InData,
+	brokerInData brokerEnt.InData,
 	bot botInterf.Worker,
 	botCommands *[]botEnt.Command) {
 	if brokerInData.IsCommand {
@@ -43,7 +43,7 @@ func processBrokerInData(ctx context.Context,
 	}
 }
 
-func castBrokerInData(data serviceEnt.InData) (botEnt.Data, error) {
+func castBrokerInData(data brokerEnt.InData) (botEnt.Data, error) {
 
 	var botData BotDataDto
 	err := json.Unmarshal([]byte(data.Value), &botData)

@@ -6,7 +6,7 @@ import (
 
 	botEnt "github.com/Guise322/TeleBot/server/internal/entities/bot"
 	botInterf "github.com/Guise322/TeleBot/server/internal/interfaces/bot"
-	serviceInterf "github.com/Guise322/TeleBot/server/internal/interfaces/broker"
+	brokerInterf "github.com/Guise322/TeleBot/server/internal/interfaces/broker"
 
 	"github.com/sirupsen/logrus"
 )
@@ -23,8 +23,8 @@ type BotCommandDto struct {
 
 func Process(ctx context.Context,
 	bot botInterf.Worker,
-	receiver serviceInterf.DataReceiver,
-	transmitter serviceInterf.DataTransmitter,
+	receiver brokerInterf.DataReceiver,
+	transmitter brokerInterf.DataTransmitter,
 	botCommands *[]botEnt.Command) error {
 	brokerInDataChan, err := receiver.StartReceivingData(ctx)
 	if err != nil {
