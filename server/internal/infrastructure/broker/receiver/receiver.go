@@ -27,11 +27,11 @@ type processingMessage struct {
 	timeStamp time.Time
 }
 
-func NewKafkaReceiver(address string) KafkaReceiver {
-	return KafkaReceiver{address: address, processingMessages: make(map[uuid.UUID]processingMessage), mu: &sync.Mutex{}}
+func NewKafkaReceiver(address string) *KafkaReceiver {
+	return &KafkaReceiver{address: address, processingMessages: make(map[uuid.UUID]processingMessage), mu: &sync.Mutex{}}
 }
 
-func (kr KafkaReceiver) StartReceivingData(ctx context.Context) (<-chan broker.InData, error) {
+func (kr *KafkaReceiver) StartReceivingData(ctx context.Context) (<-chan broker.InData, error) {
 	dataTopicName := "botdata"
 	if err := brCom.CreateDataTopic(dataTopicName, kr.address); err != nil {
 		return nil, fmt.Errorf("an error occurs of creating the data topic: %w", err)
@@ -53,7 +53,7 @@ func (kr KafkaReceiver) StartReceivingData(ctx context.Context) (<-chan broker.I
 	return dataChan, nil
 }
 
-func (kr KafkaReceiver) consumeMessages(ctx context.Context, dataChan chan broker.InData) {
+func (kr *KafkaReceiver) consumeMessages(ctx context.Context, dataChan chan broker.InData) {
 	for {
 		if ctx.Err() != nil {
 			break
@@ -81,7 +81,7 @@ func (kr KafkaReceiver) consumeMessages(ctx context.Context, dataChan chan broke
 	}
 }
 
-func (kr KafkaReceiver) fetchMesWithRetries(ctx context.Context) (kafka.Message, error) {
+func (kr *KafkaReceiver) fetchMesWithRetries(ctx context.Context) (kafka.Message, error) {
 	var msg kafka.Message
 
 	act := func(ctx context.Context) error {
