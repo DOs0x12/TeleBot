@@ -35,16 +35,21 @@ func NewBroker(address string) Broker {
 func (b Broker) RegisterCommand(ctx context.Context, commData CommandData) error {
 	data, err := json.Marshal(commData)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to marshal a command data to json: %w", err)
 	}
 
-	return b.w.WriteMessages(ctx,
+	err = b.w.WriteMessages(ctx,
 		kafka.Message{
 			Topic: "botdata",
 			Key:   []byte("command"),
 			Value: data,
 		},
 	)
+	if err != nil {
+		return fmt.Errorf("failed to register a command: %w", err)
+	}
+
+	return nil
 }
 
 func (b Broker) SendData(ctx context.Context, botData BotData) error {
@@ -52,13 +57,19 @@ func (b Broker) SendData(ctx context.Context, botData BotData) error {
 	if err != nil {
 		return err
 	}
-	return b.w.WriteMessages(ctx,
+
+	err = b.w.WriteMessages(ctx,
 		kafka.Message{
 			Topic: "botdata",
 			Key:   []byte("data"),
 			Value: data,
 		},
 	)
+	if err != nil {
+		return fmt.Errorf("failed to send data: %v", err)
+	}
+
+	return nil
 }
 
 func (b Broker) StartGetData(ctx context.Context, topicName, address string) <-chan BotData {
@@ -100,7 +111,7 @@ func consumeMessages(ctx context.Context, dataChan chan<- BotData, r *kafka.Read
 	}
 
 	if err := r.Close(); err != nil {
-		logrus.Fatal("failed to close reader:", err)
+		logrus.Fatal("failed to close the reader:", err)
 	}
 }
 
