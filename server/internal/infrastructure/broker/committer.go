@@ -14,7 +14,7 @@ func (kr KafkaConsumer) Commit(ctx context.Context, msgUuid uuid.UUID) error {
 	kr.mu.Lock()
 
 	kr.removeOldMessages()
-	procMsg, ok := kr.uncommittedMessages[msgUuid]
+	uncomMsg, ok := kr.uncommittedMessages[msgUuid]
 	if !ok {
 		kr.mu.Unlock()
 
@@ -23,7 +23,7 @@ func (kr KafkaConsumer) Commit(ctx context.Context, msgUuid uuid.UUID) error {
 
 	kr.mu.Unlock()
 
-	err := kr.commitMesWithRetries(ctx, procMsg.msg)
+	err := kr.commitMesWithRetries(ctx, uncomMsg.msg)
 	if err != nil {
 		return fmt.Errorf("can not commit a message in the broker: %w", err)
 
