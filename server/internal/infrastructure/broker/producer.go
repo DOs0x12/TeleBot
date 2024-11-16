@@ -12,22 +12,22 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type KafkaTransmitter struct {
+type KafkaProducer struct {
 	w *kafka.Writer
 }
 
 var lastCommand string
 
-func NewKafkaTransmitter(address string) KafkaTransmitter {
+func NewKafkaProducer(address string) KafkaProducer {
 	w := &kafka.Writer{
 		Addr:     kafka.TCP(address),
 		Balancer: &kafka.LeastBytes{},
 	}
 
-	return KafkaTransmitter{w: w}
+	return KafkaProducer{w: w}
 }
 
-func (kt KafkaTransmitter) TransmitData(ctx context.Context, data broker.OutData) error {
+func (kt KafkaProducer) TransmitData(ctx context.Context, data broker.OutData) error {
 	act := func(ctx context.Context) error {
 		return kt.sendMessage(ctx, data)
 	}
@@ -35,7 +35,7 @@ func (kt KafkaTransmitter) TransmitData(ctx context.Context, data broker.OutData
 	return common.ExecuteWithRetries(ctx, act)
 }
 
-func (kt KafkaTransmitter) sendMessage(ctx context.Context, data broker.OutData) error {
+func (kt KafkaProducer) sendMessage(ctx context.Context, data broker.OutData) error {
 	if lastCommand == "" && data.CommName == "" {
 		logrus.Warn("Get an empty message")
 
@@ -69,7 +69,7 @@ func (kt KafkaTransmitter) sendMessage(ctx context.Context, data broker.OutData)
 	return fmt.Errorf("failed to write messages: %w", err)
 }
 
-func (kt KafkaTransmitter) Close() {
+func (kt KafkaProducer) Close() {
 	if err := kt.w.Close(); err != nil {
 		logrus.Error("Failed to close writer:", err)
 	}

@@ -14,7 +14,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type KafkaReceiver struct {
+type KafkaConsumer struct {
 	address            string
 	processingMessages map[uuid.UUID]processingMessage
 	mu                 *sync.Mutex
@@ -26,10 +26,10 @@ type processingMessage struct {
 	timeStamp time.Time
 }
 
-func NewKafkaReceiver(address string) (KafkaReceiver, error) {
+func NewKafkaConsumer(address string) (KafkaConsumer, error) {
 	dataTopicName := "botdata"
 	if err := createDataTopic(dataTopicName, address); err != nil {
-		return KafkaReceiver{}, fmt.Errorf("an error occurs of creating the data topic: %w", err)
+		return KafkaConsumer{}, fmt.Errorf("an error occurs of creating the data topic: %w", err)
 	}
 
 	reader := kafka.NewReader(kafka.ReaderConfig{
@@ -40,7 +40,7 @@ func NewKafkaReceiver(address string) (KafkaReceiver, error) {
 		StartOffset: kafka.LastOffset,
 	})
 
-	cons := KafkaReceiver{
+	cons := KafkaConsumer{
 		address:            address,
 		processingMessages: make(map[uuid.UUID]processingMessage),
 		mu:                 &sync.Mutex{},
@@ -50,7 +50,7 @@ func NewKafkaReceiver(address string) (KafkaReceiver, error) {
 	return cons, nil
 }
 
-func (kr KafkaReceiver) StartReceivingData(ctx context.Context) (<-chan broker.InData, error) {
+func (kr KafkaConsumer) StartReceivingData(ctx context.Context) (<-chan broker.InData, error) {
 	dataChan := make(chan broker.InData)
 
 	go kr.consumeMessages(ctx, dataChan)
@@ -58,7 +58,7 @@ func (kr KafkaReceiver) StartReceivingData(ctx context.Context) (<-chan broker.I
 	return dataChan, nil
 }
 
-func (kr KafkaReceiver) consumeMessages(ctx context.Context, dataChan chan broker.InData) {
+func (kr KafkaConsumer) consumeMessages(ctx context.Context, dataChan chan broker.InData) {
 	for {
 		if ctx.Err() != nil {
 			break
@@ -86,7 +86,7 @@ func (kr KafkaReceiver) consumeMessages(ctx context.Context, dataChan chan broke
 	}
 }
 
-func (kr KafkaReceiver) fetchMesWithRetries(ctx context.Context) (kafka.Message, error) {
+func (kr KafkaConsumer) fetchMesWithRetries(ctx context.Context) (kafka.Message, error) {
 	var msg kafka.Message
 
 	act := func(ctx context.Context) error {
