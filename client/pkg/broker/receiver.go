@@ -72,7 +72,7 @@ func (r Receiver) consumeMessages(ctx context.Context, dataChan chan<- BotData) 
 			continue
 		}
 
-		botData.msgUuid = msgUuid
+		botData.MessageUuid = msgUuid
 
 		dataChan <- botData
 	}
