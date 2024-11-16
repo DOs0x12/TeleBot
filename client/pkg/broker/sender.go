@@ -8,13 +8,26 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
-func (b Broker) SendData(ctx context.Context, botData BotData) error {
+type Sender struct {
+	w *kafka.Writer
+}
+
+func NewSender(address string) Sender {
+	w := &kafka.Writer{
+		Addr:     kafka.TCP(address),
+		Balancer: &kafka.LeastBytes{},
+	}
+
+	return Sender{w: w}
+}
+
+func (s Sender) SendData(ctx context.Context, botData BotData) error {
 	data, err := json.Marshal(botData)
 	if err != nil {
 		return err
 	}
 
-	err = b.w.WriteMessages(ctx,
+	err = s.w.WriteMessages(ctx,
 		kafka.Message{
 			Topic: "botdata",
 			Key:   []byte("data"),
