@@ -1,4 +1,4 @@
-package receiver
+package broker
 
 import (
 	"context"

@@ -1,4 +1,4 @@
-package transmitter
+package broker
 
 import (
 	"context"
@@ -7,7 +7,6 @@ import (
 
 	"github.com/Guise322/TeleBot/server/internal/common"
 	"github.com/Guise322/TeleBot/server/internal/entities/broker"
-	brCom "github.com/Guise322/TeleBot/server/internal/infrastructure/broker/common"
 
 	kafka "github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"
@@ -54,7 +53,7 @@ func (kt KafkaTransmitter) sendMessage(ctx context.Context, data broker.OutData)
 	if err != nil {
 		if err == kafka.UnknownTopicOrPartition {
 			logrus.WithField("topiName", topicName).Warn("An unknown topic, create the one")
-			brCom.CreateDataTopic(topicName, kt.w.Addr.String())
+			createDataTopic(topicName, kt.w.Addr.String())
 			err = kt.w.WriteMessages(ctx, msg)
 		}
 	}

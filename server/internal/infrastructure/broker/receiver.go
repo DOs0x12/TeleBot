@@ -1,4 +1,4 @@
-package receiver
+package broker
 
 import (
 	"context"
@@ -8,7 +8,6 @@ import (
 
 	"github.com/Guise322/TeleBot/server/internal/common"
 	"github.com/Guise322/TeleBot/server/internal/entities/broker"
-	brCom "github.com/Guise322/TeleBot/server/internal/infrastructure/broker/common"
 	"github.com/google/uuid"
 
 	kafka "github.com/segmentio/kafka-go"
@@ -29,7 +28,7 @@ type processingMessage struct {
 
 func NewKafkaReceiver(address string) (KafkaReceiver, error) {
 	dataTopicName := "botdata"
-	if err := brCom.CreateDataTopic(dataTopicName, address); err != nil {
+	if err := createDataTopic(dataTopicName, address); err != nil {
 		return KafkaReceiver{}, fmt.Errorf("an error occurs of creating the data topic: %w", err)
 	}
 
