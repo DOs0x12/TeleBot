@@ -15,13 +15,13 @@ import (
 )
 
 type KafkaConsumer struct {
-	address            string
-	processingMessages map[uuid.UUID]processingMessage
-	mu                 *sync.Mutex
-	reader             *kafka.Reader
+	address             string
+	uncommittedMessages map[uuid.UUID]uncommittedMessage
+	mu                  *sync.Mutex
+	reader              *kafka.Reader
 }
 
-type processingMessage struct {
+type uncommittedMessage struct {
 	msg       kafka.Message
 	timeStamp time.Time
 }
@@ -41,10 +41,10 @@ func NewKafkaConsumer(address string) (KafkaConsumer, error) {
 	})
 
 	cons := KafkaConsumer{
-		address:            address,
-		processingMessages: make(map[uuid.UUID]processingMessage),
-		mu:                 &sync.Mutex{},
-		reader:             reader,
+		address:             address,
+		uncommittedMessages: make(map[uuid.UUID]uncommittedMessage),
+		mu:                  &sync.Mutex{},
+		reader:              reader,
 	}
 
 	return cons, nil
@@ -73,7 +73,7 @@ func (kr KafkaConsumer) consumeMessages(ctx context.Context, dataChan chan broke
 
 		msgUuid := uuid.New()
 		kr.mu.Lock()
-		kr.processingMessages[msgUuid] = processingMessage{msg: msg, timeStamp: time.Now()}
+		kr.uncommittedMessages[msgUuid] = uncommittedMessage{msg: msg, timeStamp: time.Now()}
 		kr.mu.Unlock()
 
 		commandKey := "command"
