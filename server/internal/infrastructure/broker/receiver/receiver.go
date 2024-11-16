@@ -34,10 +34,9 @@ func NewKafkaReceiver(address string) (KafkaReceiver, error) {
 	}
 
 	reader := kafka.NewReader(kafka.ReaderConfig{
-		GroupID:     "regdfgd1",
+		GroupID:     "TeleBotWorker",
 		Brokers:     []string{address},
 		Topic:       dataTopicName,
-		Partition:   0,
 		MaxBytes:    10e6,
 		StartOffset: kafka.LastOffset,
 	})
