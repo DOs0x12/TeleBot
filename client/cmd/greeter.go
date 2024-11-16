@@ -35,7 +35,18 @@ func main() {
 			return
 		case inData := <-inDataChan:
 			outData := broker.BotData{ChatID: inData.ChatID, Value: "Hello there!"}
-			s.SendData(ctx, outData)
+			err := s.SendData(ctx, outData)
+			if err != nil {
+				logrus.Error("Failed to send data: ", err)
+
+				continue
+			}
+			err = r.Commit(ctx, inData.MessageUuid)
+			if err != nil {
+				logrus.Error("Failed to commit data: ", err)
+
+				continue
+			}
 		}
 	}
 }
