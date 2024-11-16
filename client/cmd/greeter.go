@@ -27,7 +27,7 @@ func main() {
 		return
 	}
 
-	inDataChan := r.StartGetData(ctx, *kafkaAddr)
+	inDataChan := r.StartGetData(ctx)
 
 	for {
 		select {
