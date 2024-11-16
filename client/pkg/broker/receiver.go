@@ -1,4 +1,4 @@
-package service
+package broker
 
 import (
 	"context"
@@ -8,69 +8,6 @@ import (
 	"github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"
 )
-
-type CommandData struct {
-	Name        string
-	Description string
-}
-
-type BotData struct {
-	ChatID int64
-	Value  string
-}
-
-type Broker struct {
-	w *kafka.Writer
-}
-
-func NewBroker(address string) Broker {
-	w := &kafka.Writer{
-		Addr:     kafka.TCP(address),
-		Balancer: &kafka.LeastBytes{},
-	}
-
-	return Broker{w: w}
-}
-
-func (b Broker) RegisterCommand(ctx context.Context, commData CommandData) error {
-	data, err := json.Marshal(commData)
-	if err != nil {
-		return fmt.Errorf("failed to marshal a command data to json: %w", err)
-	}
-
-	err = b.w.WriteMessages(ctx,
-		kafka.Message{
-			Topic: "botdata",
-			Key:   []byte("command"),
-			Value: data,
-		},
-	)
-	if err != nil {
-		return fmt.Errorf("failed to register a command: %w", err)
-	}
-
-	return nil
-}
-
-func (b Broker) SendData(ctx context.Context, botData BotData) error {
-	data, err := json.Marshal(botData)
-	if err != nil {
-		return err
-	}
-
-	err = b.w.WriteMessages(ctx,
-		kafka.Message{
-			Topic: "botdata",
-			Key:   []byte("data"),
-			Value: data,
-		},
-	)
-	if err != nil {
-		return fmt.Errorf("failed to send data: %v", err)
-	}
-
-	return nil
-}
 
 func (b Broker) StartGetData(ctx context.Context, topicName, address string) <-chan BotData {
 	r := kafka.NewReader(kafka.ReaderConfig{
