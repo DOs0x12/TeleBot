@@ -11,10 +11,9 @@ import (
 
 func (b Broker) StartGetData(ctx context.Context, topicName, address string) <-chan BotData {
 	r := kafka.NewReader(kafka.ReaderConfig{
-		GroupID:     "regdfgd1",
+		GroupID:     "TeleBotClient",
 		Brokers:     []string{address},
 		Topic:       topicName,
-		Partition:   0,
 		MaxBytes:    10e6,
 		StartOffset: kafka.LastOffset,
 	})
