@@ -60,12 +60,19 @@ func (r Receiver) consumeMessages(ctx context.Context, dataChan chan<- BotData) 
 			continue
 		}
 
+		msgUuid := uuid.New()
+		r.mu.Lock()
+		r.uncommittedMessages[msgUuid] = uncommittedMessage{msg: msg, timeStamp: time.Now()}
+		r.mu.Unlock()
+
 		var botData BotData
 		if err = json.Unmarshal(msg.Value, &botData); err != nil {
 			logrus.Error("failed to unmarshal an incoming data object", err)
 
 			continue
 		}
+
+		botData.msgUuid = msgUuid
 
 		dataChan <- botData
 	}
