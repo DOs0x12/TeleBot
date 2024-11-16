@@ -40,3 +40,11 @@ func (s Sender) SendData(ctx context.Context, botData BotData) error {
 
 	return nil
 }
+
+func (s Sender) Stop() error {
+	if err := s.Stop(); err != nil {
+		return fmt.Errorf("failed to stop the sender: %w", err)
+	}
+
+	return nil
+}

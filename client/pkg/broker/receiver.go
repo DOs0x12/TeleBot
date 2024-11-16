@@ -3,7 +3,6 @@ package broker
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"strings"
 	"sync"
 	"time"
@@ -75,12 +74,4 @@ func (r Receiver) consumeMessages(ctx context.Context, dataChan chan<- BotData) 
 	if err := r.reader.Close(); err != nil {
 		logrus.Fatal("failed to close the reader:", err)
 	}
-}
-
-func (b Broker) Stop() error {
-	if err := b.w.Close(); err != nil {
-		return fmt.Errorf("failed to stop the broker: %w", err)
-	}
-
-	return nil
 }
