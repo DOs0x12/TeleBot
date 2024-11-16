@@ -4,10 +4,9 @@ import (
 	"context"
 	"flag"
 	"os/signal"
-	"strings"
 	"syscall"
 
-	service "github.com/Guise322/TeleBot/client/pkg/broker"
+	"github.com/Guise322/TeleBot/client/pkg/broker"
 
 	"github.com/sirupsen/logrus"
 )
@@ -17,27 +16,26 @@ func main() {
 	kafkaAddr := flag.String("conn", "kafka:9092", "The kafka connection string.")
 	flag.Parse()
 
-	b := service.NewBroker(*kafkaAddr)
+	commData := broker.CommandData{Name: "/hello", Description: "Say hello to the bot"}
+	r := broker.NewReceiver(*kafkaAddr, commData.Name)
+	s := broker.NewSender(*kafkaAddr)
 
-	commData := service.CommandData{Name: "/hello", Description: "Say hello to the bot"}
-
-	err := b.RegisterCommand(ctx, commData)
+	err := s.RegisterCommand(ctx, commData)
 	if err != nil {
 		logrus.Error("Failed to register a command: ", err)
 
 		return
 	}
 
-	readingTopic := strings.Trim(commData.Name, "/")
-	inDataChan := b.StartGetData(ctx, readingTopic, *kafkaAddr)
+	inDataChan := r.StartGetData(ctx, *kafkaAddr)
 
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		case inData := <-inDataChan:
-			outData := service.BotData{ChatID: inData.ChatID, Value: "Hello there!"}
-			b.SendData(ctx, outData)
+			outData := broker.BotData{ChatID: inData.ChatID, Value: "Hello there!"}
+			s.SendData(ctx, outData)
 		}
 	}
 }
