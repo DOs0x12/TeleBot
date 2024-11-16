@@ -4,33 +4,59 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
+	"sync"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"
 )
 
-func (b Broker) StartGetData(ctx context.Context, topicName, address string) <-chan BotData {
+type uncommittedMessage struct {
+	msg       kafka.Message
+	timeStamp time.Time
+}
+
+type Receiver struct {
+	mu                  *sync.Mutex
+	reader              *kafka.Reader
+	uncommittedMessages map[uuid.UUID]uncommittedMessage
+}
+
+func NewReceiver(address string, command string) Receiver {
 	r := kafka.NewReader(kafka.ReaderConfig{
 		GroupID:     "TeleBotClient",
 		Brokers:     []string{address},
-		Topic:       topicName,
+		Topic:       strings.Trim(command, "/"),
 		MaxBytes:    10e6,
 		StartOffset: kafka.LastOffset,
 	})
 
+	rec := Receiver{
+		uncommittedMessages: make(map[uuid.UUID]uncommittedMessage),
+		mu:                  &sync.Mutex{},
+		reader:              r,
+	}
+
+	return rec
+}
+
+func (r Receiver) StartGetData(ctx context.Context, topicName, address string) <-chan BotData {
 	dataChan := make(chan BotData)
-	go consumeMessages(ctx, dataChan, r)
+
+	go r.consumeMessages(ctx, dataChan)
 
 	return dataChan
 }
 
-func consumeMessages(ctx context.Context, dataChan chan<- BotData, r *kafka.Reader) {
+func (r Receiver) consumeMessages(ctx context.Context, dataChan chan<- BotData) {
 	for {
 		if ctx.Err() != nil {
 			break
 		}
 
-		msg, err := r.FetchMessage(ctx)
+		msg, err := r.reader.FetchMessage(ctx)
 		if err != nil {
 			continue
 		}
@@ -43,10 +69,10 @@ func consumeMessages(ctx context.Context, dataChan chan<- BotData, r *kafka.Read
 		}
 
 		dataChan <- botData
-		r.CommitMessages(ctx, msg)
+		r.reader.CommitMessages(ctx, msg)
 	}
 
-	if err := r.Close(); err != nil {
+	if err := r.reader.Close(); err != nil {
 		logrus.Fatal("failed to close the reader:", err)
 	}
 }
