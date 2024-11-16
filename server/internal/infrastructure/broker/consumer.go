@@ -15,10 +15,9 @@ import (
 )
 
 type KafkaConsumer struct {
-	address             string
-	uncommittedMessages map[uuid.UUID]uncommittedMessage
 	mu                  *sync.Mutex
 	reader              *kafka.Reader
+	uncommittedMessages map[uuid.UUID]uncommittedMessage
 }
 
 type uncommittedMessage struct {
@@ -41,7 +40,6 @@ func NewKafkaConsumer(address string) (KafkaConsumer, error) {
 	})
 
 	cons := KafkaConsumer{
-		address:             address,
 		uncommittedMessages: make(map[uuid.UUID]uncommittedMessage),
 		mu:                  &sync.Mutex{},
 		reader:              reader,
