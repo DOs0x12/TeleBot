@@ -42,7 +42,7 @@ func (s Sender) SendData(ctx context.Context, botData BotData) error {
 }
 
 func (s Sender) Stop() error {
-	if err := s.Stop(); err != nil {
+	if err := s.w.Close(); err != nil {
 		return fmt.Errorf("failed to stop the sender: %w", err)
 	}
 
