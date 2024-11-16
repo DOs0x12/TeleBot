@@ -27,26 +27,33 @@ type processingMessage struct {
 	timeStamp time.Time
 }
 
-func NewKafkaReceiver(address string) KafkaReceiver {
-	return KafkaReceiver{address: address, processingMessages: make(map[uuid.UUID]processingMessage), mu: &sync.Mutex{}}
-}
-
-func (kr KafkaReceiver) StartReceivingData(ctx context.Context) (<-chan broker.InData, error) {
+func NewKafkaReceiver(address string) (KafkaReceiver, error) {
 	dataTopicName := "botdata"
-	if err := brCom.CreateDataTopic(dataTopicName, kr.address); err != nil {
-		return nil, fmt.Errorf("an error occurs of creating the data topic: %w", err)
+	if err := brCom.CreateDataTopic(dataTopicName, address); err != nil {
+		return KafkaReceiver{}, fmt.Errorf("an error occurs of creating the data topic: %w", err)
 	}
 
-	dataChan := make(chan broker.InData)
-
-	kr.reader = kafka.NewReader(kafka.ReaderConfig{
+	reader := kafka.NewReader(kafka.ReaderConfig{
 		GroupID:     "regdfgd1",
-		Brokers:     []string{kr.address},
+		Brokers:     []string{address},
 		Topic:       dataTopicName,
 		Partition:   0,
 		MaxBytes:    10e6,
 		StartOffset: kafka.LastOffset,
 	})
+
+	cons := KafkaReceiver{
+		address:            address,
+		processingMessages: make(map[uuid.UUID]processingMessage),
+		mu:                 &sync.Mutex{},
+		reader:             reader,
+	}
+
+	return cons, nil
+}
+
+func (kr KafkaReceiver) StartReceivingData(ctx context.Context) (<-chan broker.InData, error) {
+	dataChan := make(chan broker.InData)
 
 	go kr.consumeMessages(ctx, dataChan)
 

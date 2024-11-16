@@ -40,7 +40,11 @@ func main() {
 		return
 	}
 
-	receiver := receiverInfra.NewKafkaReceiver(config.KafkaAddress)
+	receiver, err := receiverInfra.NewKafkaReceiver(config.KafkaAddress)
+	if err != nil {
+		logrus.Error("A receiver creating error occurs:", err)
+	}
+
 	transmitter := transInfra.NewKafkaTransmitter(config.KafkaAddress)
 
 	logrus.Info("Start the application")
