@@ -41,7 +41,7 @@ func NewReceiver(address string, command string) Receiver {
 	return rec
 }
 
-func (r Receiver) StartGetData(ctx context.Context, address string) <-chan BotData {
+func (r Receiver) StartGetData(ctx context.Context) <-chan BotData {
 	dataChan := make(chan BotData)
 
 	go r.consumeMessages(ctx, dataChan)
