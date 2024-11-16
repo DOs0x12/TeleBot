@@ -3,6 +3,7 @@ module github.com/Guise322/TeleBot/client
 go 1.23.1
 
 require (
+	github.com/google/uuid v1.6.0
 	github.com/segmentio/kafka-go v0.4.47
 	github.com/sirupsen/logrus v1.9.3
 )
