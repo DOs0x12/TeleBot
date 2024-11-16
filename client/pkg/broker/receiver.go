@@ -68,7 +68,6 @@ func (r Receiver) consumeMessages(ctx context.Context, dataChan chan<- BotData) 
 		}
 
 		dataChan <- botData
-		r.reader.CommitMessages(ctx, msg)
 	}
 
 	if err := r.reader.Close(); err != nil {
