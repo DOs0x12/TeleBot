@@ -51,7 +51,7 @@ func main() {
 
 	err = botApp.Process(appCtx, bot, receiver, transmitter, &commands)
 	if err != nil {
-		logrus.Error("An error occurs:", err)
+		logrus.Error("An error of the application work occurs:", err)
 
 		return
 	}
