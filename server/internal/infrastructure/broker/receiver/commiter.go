@@ -10,7 +10,7 @@ import (
 	kafka "github.com/segmentio/kafka-go"
 )
 
-func (kr *KafkaReceiver) Commit(ctx context.Context, msgUuid uuid.UUID) error {
+func (kr KafkaReceiver) Commit(ctx context.Context, msgUuid uuid.UUID) error {
 	kr.mu.Lock()
 
 	kr.removeOldMessages()
