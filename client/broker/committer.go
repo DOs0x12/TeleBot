@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (r Receiver) Commit(ctx context.Context, msgUuid uuid.UUID) error {
+func (r *Receiver) Commit(ctx context.Context, msgUuid uuid.UUID) error {
 	r.mu.Lock()
 
 	r.removeOldMessages()
@@ -34,7 +34,7 @@ func (r Receiver) Commit(ctx context.Context, msgUuid uuid.UUID) error {
 	return nil
 }
 
-func (r Receiver) removeOldMessages() {
+func (r *Receiver) removeOldMessages() {
 	now := time.Now()
 
 	for msgUuid, procMsg := range r.uncommittedMessages {

@@ -23,7 +23,7 @@ type Receiver struct {
 	uncommittedMessages map[uuid.UUID]uncommittedMessage
 }
 
-func NewReceiver(address string, command string) Receiver {
+func NewReceiver(address string, command string) *Receiver {
 	r := kafka.NewReader(kafka.ReaderConfig{
 		GroupID:     "TeleBotClient",
 		Brokers:     []string{address},
@@ -38,10 +38,10 @@ func NewReceiver(address string, command string) Receiver {
 		reader:              r,
 	}
 
-	return rec
+	return &rec
 }
 
-func (r Receiver) StartGetData(ctx context.Context) <-chan BotData {
+func (r *Receiver) StartGetData(ctx context.Context) <-chan BotData {
 	dataChan := make(chan BotData)
 
 	go r.consumeMessages(ctx, dataChan)
@@ -49,7 +49,7 @@ func (r Receiver) StartGetData(ctx context.Context) <-chan BotData {
 	return dataChan
 }
 
-func (r Receiver) consumeMessages(ctx context.Context, dataChan chan<- BotData) {
+func (r *Receiver) consumeMessages(ctx context.Context, dataChan chan<- BotData) {
 	for {
 		if ctx.Err() != nil {
 			break
