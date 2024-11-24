@@ -10,7 +10,7 @@ import (
 	kafka "github.com/segmentio/kafka-go"
 )
 
-func (kr KafkaConsumer) Commit(ctx context.Context, msgUuid uuid.UUID) error {
+func (kr *KafkaConsumer) Commit(ctx context.Context, msgUuid uuid.UUID) error {
 	kr.mu.Lock()
 
 	kr.removeOldMessages()
@@ -30,21 +30,27 @@ func (kr KafkaConsumer) Commit(ctx context.Context, msgUuid uuid.UUID) error {
 	}
 
 	kr.mu.Lock()
+	kr.lastOffset = uncomMsg.msg.Offset
 	delete(kr.uncommittedMessages, msgUuid)
 	kr.mu.Unlock()
 
 	return nil
 }
 
-func (kr KafkaConsumer) commitMesWithRetries(ctx context.Context, msg kafka.Message) error {
+func (kr *KafkaConsumer) commitMesWithRetries(ctx context.Context, msg kafka.Message) error {
 	act := func(ctx context.Context) error {
+
+		if kr.lastOffset > msg.Offset {
+			return nil
+		}
+
 		return kr.reader.CommitMessages(ctx, msg)
 	}
 
 	return common.ExecuteWithRetries(ctx, act)
 }
 
-func (kr KafkaConsumer) removeOldMessages() {
+func (kr *KafkaConsumer) removeOldMessages() {
 	now := time.Now()
 
 	for msgUuid, procMsg := range kr.uncommittedMessages {

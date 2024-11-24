@@ -18,6 +18,7 @@ type KafkaConsumer struct {
 	mu                  *sync.Mutex
 	reader              *kafka.Reader
 	uncommittedMessages map[uuid.UUID]uncommittedMessage
+	lastOffset          int64
 }
 
 type uncommittedMessage struct {
@@ -25,10 +26,10 @@ type uncommittedMessage struct {
 	timeStamp time.Time
 }
 
-func NewKafkaConsumer(address string) (KafkaConsumer, error) {
+func NewKafkaConsumer(address string) (*KafkaConsumer, error) {
 	dataTopicName := "botdata"
 	if err := createDataTopic(dataTopicName, address); err != nil {
-		return KafkaConsumer{}, fmt.Errorf("an error occurs of creating the data topic: %w", err)
+		return nil, fmt.Errorf("an error occurs of creating the data topic: %w", err)
 	}
 
 	reader := kafka.NewReader(kafka.ReaderConfig{
@@ -45,10 +46,10 @@ func NewKafkaConsumer(address string) (KafkaConsumer, error) {
 		reader:              reader,
 	}
 
-	return cons, nil
+	return &cons, nil
 }
 
-func (kr KafkaConsumer) StartReceivingData(ctx context.Context) (<-chan broker.InData, error) {
+func (kr *KafkaConsumer) StartReceivingData(ctx context.Context) (<-chan broker.InData, error) {
 	dataChan := make(chan broker.InData)
 
 	go kr.consumeMessages(ctx, dataChan)
@@ -56,7 +57,7 @@ func (kr KafkaConsumer) StartReceivingData(ctx context.Context) (<-chan broker.I
 	return dataChan, nil
 }
 
-func (kr KafkaConsumer) consumeMessages(ctx context.Context, dataChan chan broker.InData) {
+func (kr *KafkaConsumer) consumeMessages(ctx context.Context, dataChan chan broker.InData) {
 	for {
 		if ctx.Err() != nil {
 			break
@@ -84,7 +85,7 @@ func (kr KafkaConsumer) consumeMessages(ctx context.Context, dataChan chan broke
 	}
 }
 
-func (kr KafkaConsumer) fetchMesWithRetries(ctx context.Context) (kafka.Message, error) {
+func (kr *KafkaConsumer) fetchMesWithRetries(ctx context.Context) (kafka.Message, error) {
 	var msg kafka.Message
 
 	act := func(ctx context.Context) error {
