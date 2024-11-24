@@ -6,7 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/Guise322/TeleBot/client/pkg/broker"
+	"github.com/Guise322/TeleBot/client/broker"
 
 	"github.com/sirupsen/logrus"
 )
