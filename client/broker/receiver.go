@@ -21,6 +21,7 @@ type Receiver struct {
 	mu                  *sync.Mutex
 	reader              *kafka.Reader
 	uncommittedMessages map[uuid.UUID]uncommittedMessage
+	lastOffset          int64
 }
 
 func NewReceiver(address string, command string) *Receiver {

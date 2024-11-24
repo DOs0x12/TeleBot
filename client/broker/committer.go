@@ -21,13 +21,16 @@ func (r *Receiver) Commit(ctx context.Context, msgUuid uuid.UUID) error {
 
 	r.mu.Unlock()
 
-	err := r.reader.CommitMessages(ctx, uncomMsg.msg)
-	if err != nil {
-		return fmt.Errorf("can not commit a message in the broker: %w", err)
+	if r.lastOffset < uncomMsg.msg.Offset {
+		err := r.reader.CommitMessages(ctx, uncomMsg.msg)
+		if err != nil {
+			return fmt.Errorf("can not commit a message in the broker: %w", err)
 
+		}
 	}
 
 	r.mu.Lock()
+	r.lastOffset = uncomMsg.msg.Offset
 	delete(r.uncommittedMessages, msgUuid)
 	r.mu.Unlock()
 
