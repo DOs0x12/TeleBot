@@ -18,11 +18,16 @@ type KafkaConsumer struct {
 	mu                  *sync.Mutex
 	reader              *kafka.Reader
 	uncommittedMessages map[uuid.UUID]uncommittedMessage
-	lastOffset          int64
+	offcets             map[int]offcetWithTimeStamp
 }
 
 type uncommittedMessage struct {
 	msg       kafka.Message
+	timeStamp time.Time
+}
+
+type offcetWithTimeStamp struct {
+	value     int64
 	timeStamp time.Time
 }
 
@@ -42,6 +47,7 @@ func NewKafkaConsumer(address string) (*KafkaConsumer, error) {
 
 	cons := KafkaConsumer{
 		uncommittedMessages: make(map[uuid.UUID]uncommittedMessage),
+		offcets:             make(map[int]offcetWithTimeStamp),
 		mu:                  &sync.Mutex{},
 		reader:              reader,
 	}

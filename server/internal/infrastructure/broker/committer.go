@@ -10,10 +10,11 @@ import (
 	kafka "github.com/segmentio/kafka-go"
 )
 
-func (kr *KafkaConsumer) Commit(ctx context.Context, msgUuid uuid.UUID) error {
+func (kr KafkaConsumer) Commit(ctx context.Context, msgUuid uuid.UUID) error {
 	kr.mu.Lock()
 
 	kr.removeOldMessages()
+	kr.removeOldOffcets()
 	uncomMsg, ok := kr.uncommittedMessages[msgUuid]
 	if !ok {
 		kr.mu.Unlock()
@@ -30,7 +31,7 @@ func (kr *KafkaConsumer) Commit(ctx context.Context, msgUuid uuid.UUID) error {
 	}
 
 	kr.mu.Lock()
-	kr.lastOffset = uncomMsg.msg.Offset
+	kr.offcets[uncomMsg.msg.Partition] = offcetWithTimeStamp{value: uncomMsg.msg.Offset, timeStamp: time.Now()}
 	delete(kr.uncommittedMessages, msgUuid)
 	kr.mu.Unlock()
 
@@ -39,8 +40,8 @@ func (kr *KafkaConsumer) Commit(ctx context.Context, msgUuid uuid.UUID) error {
 
 func (kr *KafkaConsumer) commitMesWithRetries(ctx context.Context, msg kafka.Message) error {
 	act := func(ctx context.Context) error {
-
-		if kr.lastOffset > msg.Offset {
+		lastOffcetWithTimeStamp, ok := kr.offcets[msg.Partition]
+		if ok && lastOffcetWithTimeStamp.value > msg.Offset {
 			return nil
 		}
 
@@ -50,12 +51,22 @@ func (kr *KafkaConsumer) commitMesWithRetries(ctx context.Context, msg kafka.Mes
 	return common.ExecuteWithRetries(ctx, act)
 }
 
-func (kr *KafkaConsumer) removeOldMessages() {
+func (kr KafkaConsumer) removeOldMessages() {
 	now := time.Now()
 
 	for msgUuid, procMsg := range kr.uncommittedMessages {
 		if procMsg.timeStamp.Add(48 * time.Hour).Before(now) {
 			delete(kr.uncommittedMessages, msgUuid)
+		}
+	}
+}
+
+func (kr KafkaConsumer) removeOldOffcets() {
+	now := time.Now()
+
+	for part, offcet := range kr.offcets {
+		if offcet.timeStamp.Add(48 * time.Hour).Before(now) {
+			delete(kr.offcets, part)
 		}
 	}
 }
