@@ -17,11 +17,16 @@ type uncommittedMessage struct {
 	timeStamp time.Time
 }
 
+type offcetWithTimeStamp struct {
+	value     int64
+	timeStamp time.Time
+}
+
 type Receiver struct {
 	mu                  *sync.Mutex
 	reader              *kafka.Reader
 	uncommittedMessages map[uuid.UUID]uncommittedMessage
-	lastOffset          int64
+	offcets             map[int]offcetWithTimeStamp
 }
 
 func NewReceiver(address string, command string) *Receiver {
@@ -35,6 +40,7 @@ func NewReceiver(address string, command string) *Receiver {
 
 	rec := Receiver{
 		uncommittedMessages: make(map[uuid.UUID]uncommittedMessage),
+		offcets:             make(map[int]offcetWithTimeStamp),
 		mu:                  &sync.Mutex{},
 		reader:              r,
 	}
@@ -42,7 +48,7 @@ func NewReceiver(address string, command string) *Receiver {
 	return &rec
 }
 
-func (r *Receiver) StartGetData(ctx context.Context) <-chan BotData {
+func (r Receiver) StartGetData(ctx context.Context) <-chan BotData {
 	dataChan := make(chan BotData)
 
 	go r.consumeMessages(ctx, dataChan)
@@ -50,7 +56,7 @@ func (r *Receiver) StartGetData(ctx context.Context) <-chan BotData {
 	return dataChan
 }
 
-func (r *Receiver) consumeMessages(ctx context.Context, dataChan chan<- BotData) {
+func (r Receiver) consumeMessages(ctx context.Context, dataChan chan<- BotData) {
 	for {
 		if ctx.Err() != nil {
 			break
