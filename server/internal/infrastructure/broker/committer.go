@@ -15,7 +15,7 @@ func (kr KafkaConsumer) Commit(ctx context.Context, msgUuid uuid.UUID) error {
 
 	threshold := 48 * time.Hour
 	removeOldMessages(kr.uncommittedMessages, threshold)
-	kr.removeOldOffcets()
+	removeOldOffcets(kr.offcets, threshold)
 	uncomMsg, ok := kr.uncommittedMessages[msgUuid]
 	if !ok {
 		kr.mu.Unlock()
@@ -62,12 +62,12 @@ func removeOldMessages(uncommittedMessages map[uuid.UUID]uncommittedMessage, thr
 	}
 }
 
-func (kr KafkaConsumer) removeOldOffcets() {
+func removeOldOffcets(offcets map[int]offcetWithTimeStamp, threashold time.Duration) {
 	now := time.Now()
 
-	for part, offcet := range kr.offcets {
-		if offcet.timeStamp.Add(48 * time.Hour).Before(now) {
-			delete(kr.offcets, part)
+	for part, offcet := range offcets {
+		if offcet.timeStamp.Add(threashold).Before(now) {
+			delete(offcets, part)
 		}
 	}
 }
