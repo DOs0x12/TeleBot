@@ -9,30 +9,28 @@ import (
 )
 
 func TestRemoveOldMessages(t *testing.T) {
-	testMessages := make(map[uuid.UUID]uncommittedMessage)
-	testUuid := uuid.New()
-	testMessages[testUuid] = uncommittedMessage{msg: kafka.Message{}, timeStamp: time.Now()}
 	threshold := 1 * time.Hour
-	removeOldMessages(testMessages, threshold)
-	want := true
-	_, ok := testMessages[testUuid]
-	if want != ok {
-		t.Error("No message in the map, want: the message is")
+	tests := []struct {
+		name  string
+		input time.Duration
+		want  bool
+	}{
+		{"Have a message", threshold, true},
+		{"Have no message with the equal threashold", -threshold, false},
+		{"Have no message with a greater threashold", -(threshold + 1*time.Millisecond), false},
 	}
 
-	testOffcet := -threshold
-	testMessages[testUuid] = uncommittedMessage{msg: kafka.Message{}, timeStamp: time.Now().Add(testOffcet)}
-	removeOldMessages(testMessages, threshold)
-	_, ok = testMessages[testUuid]
-	if want == ok {
-		t.Error("The message in the map, want: no message")
-	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testMessages := make(map[uuid.UUID]uncommittedMessage)
+			testUuid := uuid.New()
+			testMessages[testUuid] = uncommittedMessage{msg: kafka.Message{}, timeStamp: time.Now()}
 
-	testOffcet = -(threshold + 1*time.Millisecond)
-	testMessages[testUuid] = uncommittedMessage{msg: kafka.Message{}, timeStamp: time.Now().Add(testOffcet)}
-	removeOldMessages(testMessages, threshold)
-	_, ok = testMessages[testUuid]
-	if want == ok {
-		t.Error("The message in the map, want: no message")
+			removeOldMessages(testMessages, tt.input)
+			_, ok := testMessages[testUuid]
+			if tt.want != ok {
+				t.Errorf("have the message: %v, want: %v", ok, tt.want)
+			}
+		})
 	}
 }
