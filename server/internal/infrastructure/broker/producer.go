@@ -46,7 +46,7 @@ func (kt KafkaProducer) sendMessage(ctx context.Context, data broker.OutData) er
 		data.CommName = lastCommand
 	}
 
-	topicName := strings.Trim(data.CommName, "/")
+	topicName := castCommandToTopicName(data.CommName)
 
 	msg := kafka.Message{Topic: topicName, Value: []byte(data.Value)}
 	err := kt.w.WriteMessages(ctx, msg)
@@ -67,6 +67,10 @@ func (kt KafkaProducer) sendMessage(ctx context.Context, data broker.OutData) er
 	}
 
 	return fmt.Errorf("failed to write messages: %w", err)
+}
+
+func castCommandToTopicName(commandName string) string {
+	return strings.Trim(commandName, "/")
 }
 
 func (kt KafkaProducer) Close() {
