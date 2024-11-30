@@ -13,7 +13,8 @@ import (
 func (kr KafkaConsumer) Commit(ctx context.Context, msgUuid uuid.UUID) error {
 	kr.mu.Lock()
 
-	kr.removeOldMessages()
+	threshold := 48 * time.Hour
+	removeOldMessages(kr.uncommittedMessages, threshold)
 	kr.removeOldOffcets()
 	uncomMsg, ok := kr.uncommittedMessages[msgUuid]
 	if !ok {
@@ -51,12 +52,12 @@ func (kr *KafkaConsumer) commitMesWithRetries(ctx context.Context, msg kafka.Mes
 	return common.ExecuteWithRetries(ctx, act)
 }
 
-func (kr KafkaConsumer) removeOldMessages() {
+func removeOldMessages(uncommittedMessages map[uuid.UUID]uncommittedMessage, threshold time.Duration) {
 	now := time.Now()
 
-	for msgUuid, procMsg := range kr.uncommittedMessages {
-		if procMsg.timeStamp.Add(48 * time.Hour).Before(now) {
-			delete(kr.uncommittedMessages, msgUuid)
+	for msgUuid, procMsg := range uncommittedMessages {
+		if procMsg.timeStamp.Add(threshold).Before(now) {
+			delete(uncommittedMessages, msgUuid)
 		}
 	}
 }
