@@ -11,8 +11,9 @@ import (
 func (r Receiver) Commit(ctx context.Context, msgUuid uuid.UUID) error {
 	r.mu.Lock()
 
-	r.removeOldMessages()
-	r.removeOldOffcets()
+	threshold := 48 * time.Hour
+	removeOldMessages(r.uncommittedMessages, threshold)
+	removeOldOffcets(r.offcets, threshold)
 	uncomMsg, ok := r.uncommittedMessages[msgUuid]
 	if !ok {
 		r.mu.Unlock()
@@ -39,22 +40,22 @@ func (r Receiver) Commit(ctx context.Context, msgUuid uuid.UUID) error {
 	return nil
 }
 
-func (r Receiver) removeOldMessages() {
+func removeOldMessages(uncommittedMessages map[uuid.UUID]uncommittedMessage, threshold time.Duration) {
 	now := time.Now()
 
-	for msgUuid, procMsg := range r.uncommittedMessages {
-		if procMsg.timeStamp.Add(48 * time.Hour).Before(now) {
-			delete(r.uncommittedMessages, msgUuid)
+	for msgUuid, procMsg := range uncommittedMessages {
+		if procMsg.timeStamp.Add(threshold).Before(now) {
+			delete(uncommittedMessages, msgUuid)
 		}
 	}
 }
 
-func (r Receiver) removeOldOffcets() {
+func removeOldOffcets(offcets map[int]offcetWithTimeStamp, threashold time.Duration) {
 	now := time.Now()
 
-	for part, offcet := range r.offcets {
-		if offcet.timeStamp.Add(48 * time.Hour).Before(now) {
-			delete(r.offcets, part)
+	for part, offcet := range offcets {
+		if offcet.timeStamp.Add(threashold).Before(now) {
+			delete(offcets, part)
 		}
 	}
 }
