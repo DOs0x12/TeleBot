@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	botEnt "github.com/Guise322/TeleBot/server/internal/entities/bot"
-	brokerEnt "github.com/Guise322/TeleBot/server/internal/entities/broker"
-	botInterf "github.com/Guise322/TeleBot/server/internal/interfaces/bot"
+	botEnt "github.com/DOs0x12/TeleBot/server/internal/entities/bot"
+	brokerEnt "github.com/DOs0x12/TeleBot/server/internal/entities/broker"
+	botInterf "github.com/DOs0x12/TeleBot/server/internal/interfaces/bot"
 )
 
 func processBrokerInData(ctx context.Context,

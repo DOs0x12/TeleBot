@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Guise322/TeleBot/server/internal/common"
-	"github.com/Guise322/TeleBot/server/internal/entities/broker"
+	"github.com/DOs0x12/TeleBot/server/internal/common"
+	"github.com/DOs0x12/TeleBot/server/internal/entities/broker"
 
 	kafka "github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"

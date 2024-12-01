@@ -3,7 +3,7 @@ package bot
 import (
 	"context"
 
-	"github.com/Guise322/TeleBot/server/internal/entities/bot"
+	"github.com/DOs0x12/TeleBot/server/internal/entities/bot"
 )
 
 type Worker interface {

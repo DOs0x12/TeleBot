@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Guise322/TeleBot/server/internal/common"
+	"github.com/DOs0x12/TeleBot/server/internal/common"
 	"github.com/google/uuid"
 	kafka "github.com/segmentio/kafka-go"
 )

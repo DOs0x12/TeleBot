@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	botEnt "github.com/Guise322/TeleBot/server/internal/entities/bot"
-	botInterf "github.com/Guise322/TeleBot/server/internal/interfaces/bot"
-	brokerInterf "github.com/Guise322/TeleBot/server/internal/interfaces/broker"
+	botEnt "github.com/DOs0x12/TeleBot/server/internal/entities/bot"
+	botInterf "github.com/DOs0x12/TeleBot/server/internal/interfaces/bot"
+	brokerInterf "github.com/DOs0x12/TeleBot/server/internal/interfaces/broker"
 
 	"github.com/sirupsen/logrus"
 )

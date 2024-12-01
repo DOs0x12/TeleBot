@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Guise322/TeleBot/server/internal/common"
-	"github.com/Guise322/TeleBot/server/internal/entities/broker"
+	"github.com/DOs0x12/TeleBot/server/internal/common"
+	"github.com/DOs0x12/TeleBot/server/internal/entities/broker"
 	"github.com/google/uuid"
 
 	kafka "github.com/segmentio/kafka-go"

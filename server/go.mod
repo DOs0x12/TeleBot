@@ -1,4 +1,4 @@
-module github.com/Guise322/TeleBot/server
+module github.com/DOs0x12/TeleBot/server
 
 go 1.23.1
 

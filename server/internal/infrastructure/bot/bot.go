@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Guise322/TeleBot/server/internal/common"
-	botEnt "github.com/Guise322/TeleBot/server/internal/entities/bot"
+	"github.com/DOs0x12/TeleBot/server/internal/common"
+	botEnt "github.com/DOs0x12/TeleBot/server/internal/entities/bot"
 
 	tgbot "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )

@@ -3,7 +3,7 @@ package broker
 import (
 	"context"
 
-	"github.com/Guise322/TeleBot/server/internal/entities/broker"
+	"github.com/DOs0x12/TeleBot/server/internal/entities/broker"
 	"github.com/google/uuid"
 )
 

@@ -6,11 +6,11 @@ import (
 	"os/signal"
 	"syscall"
 
-	botApp "github.com/Guise322/TeleBot/server/internal/app"
-	botEnt "github.com/Guise322/TeleBot/server/internal/entities/bot"
-	botInfra "github.com/Guise322/TeleBot/server/internal/infrastructure/bot"
-	brokerInfra "github.com/Guise322/TeleBot/server/internal/infrastructure/broker"
-	"github.com/Guise322/TeleBot/server/internal/infrastructure/config"
+	botApp "github.com/DOs0x12/TeleBot/server/internal/app"
+	botEnt "github.com/DOs0x12/TeleBot/server/internal/entities/bot"
+	botInfra "github.com/DOs0x12/TeleBot/server/internal/infrastructure/bot"
+	brokerInfra "github.com/DOs0x12/TeleBot/server/internal/infrastructure/broker"
+	"github.com/DOs0x12/TeleBot/server/internal/infrastructure/config"
 
 	"github.com/sirupsen/logrus"
 )
