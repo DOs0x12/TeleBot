@@ -7,7 +7,7 @@ services:
       - "kafka-network"
   greeter:
     image: greeter:${TAG}
-    build: ../client
+    build: ../greeter
     restart: unless-stopped
     networks:
       - "kafka-network"
