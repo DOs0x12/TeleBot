@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/DOs0x12/TeleBot/server/internal/common"
+	"github.com/DOs0x12/TeleBot/server/internal/common/retry"
 	botEnt "github.com/DOs0x12/TeleBot/server/internal/entities/bot"
 
 	tgbot "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -102,7 +102,7 @@ func (t Telebot) sendWithRetries(ctx context.Context, msg tgbot.MessageConfig) e
 		return err
 	}
 
-	return common.ExecuteWithRetries(ctx, act)
+	return retry.ExecuteWithRetries(ctx, act)
 }
 
 func (t Telebot) requestWithRetries(ctx context.Context, conf tgbot.SetMyCommandsConfig) (*tgbot.APIResponse, error) {
@@ -114,7 +114,7 @@ func (t Telebot) requestWithRetries(ctx context.Context, conf tgbot.SetMyCommand
 		return err
 	}
 
-	err := common.ExecuteWithRetries(ctx, act)
+	err := retry.ExecuteWithRetries(ctx, act)
 
 	return resp, err
 }

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/DOs0x12/TeleBot/server/internal/common"
+	"github.com/DOs0x12/TeleBot/server/internal/common/retry"
 	"github.com/google/uuid"
 	kafka "github.com/segmentio/kafka-go"
 )
@@ -49,7 +49,7 @@ func (kr *KafkaConsumer) commitMesWithRetries(ctx context.Context, msg kafka.Mes
 		return kr.reader.CommitMessages(ctx, msg)
 	}
 
-	return common.ExecuteWithRetries(ctx, act)
+	return retry.ExecuteWithRetries(ctx, act)
 }
 
 func removeOldMessages(uncommittedMessages map[uuid.UUID]uncommittedMessage, threshold time.Duration) {

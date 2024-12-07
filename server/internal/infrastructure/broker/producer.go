@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/DOs0x12/TeleBot/server/internal/common"
+	"github.com/DOs0x12/TeleBot/server/internal/common/retry"
 	"github.com/DOs0x12/TeleBot/server/internal/entities/broker"
 
 	kafka "github.com/segmentio/kafka-go"
@@ -32,7 +32,7 @@ func (kt KafkaProducer) TransmitData(ctx context.Context, data broker.OutData) e
 		return kt.sendMessage(ctx, data)
 	}
 
-	return common.ExecuteWithRetries(ctx, act)
+	return retry.ExecuteWithRetries(ctx, act)
 }
 
 func (kt KafkaProducer) sendMessage(ctx context.Context, data broker.OutData) error {

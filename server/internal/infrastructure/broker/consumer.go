@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/DOs0x12/TeleBot/server/internal/common"
+	"github.com/DOs0x12/TeleBot/server/internal/common/retry"
 	"github.com/DOs0x12/TeleBot/server/internal/entities/broker"
 	"github.com/google/uuid"
 
@@ -101,7 +101,7 @@ func (kr *KafkaConsumer) fetchMesWithRetries(ctx context.Context) (kafka.Message
 		return err
 	}
 
-	err := common.ExecuteWithRetries(ctx, act)
+	err := retry.ExecuteWithRetries(ctx, act)
 
 	return msg, err
 }
