@@ -17,7 +17,7 @@ type uncommittedMessage struct {
 	timeStamp time.Time
 }
 
-type offcetWithTimeStamp struct {
+type offsetWithTimeStamp struct {
 	value     int64
 	timeStamp time.Time
 }
@@ -28,7 +28,7 @@ type Receiver struct {
 	mu                  *sync.Mutex
 	reader              *kafka.Reader
 	uncommittedMessages map[uuid.UUID]uncommittedMessage
-	offcets             map[int]offcetWithTimeStamp
+	offsets             map[int]offsetWithTimeStamp
 }
 
 // Create a receiver to read data from a Kafka instance.
@@ -43,7 +43,7 @@ func NewReceiver(address string, command string) *Receiver {
 
 	rec := Receiver{
 		uncommittedMessages: make(map[uuid.UUID]uncommittedMessage),
-		offcets:             make(map[int]offcetWithTimeStamp),
+		offsets:             make(map[int]offsetWithTimeStamp),
 		mu:                  &sync.Mutex{},
 		reader:              r,
 	}

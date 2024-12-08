@@ -15,7 +15,7 @@ func (kr KafkaConsumer) Commit(ctx context.Context, msgUuid uuid.UUID) error {
 
 	threshold := 48 * time.Hour
 	removeOldMessages(kr.uncommittedMessages, threshold)
-	removeOldOffcets(kr.offcets, threshold)
+	removeOldOffsets(kr.offsets, threshold)
 	uncomMsg, ok := kr.uncommittedMessages[msgUuid]
 	if !ok {
 		kr.mu.Unlock()
@@ -32,7 +32,7 @@ func (kr KafkaConsumer) Commit(ctx context.Context, msgUuid uuid.UUID) error {
 	}
 
 	kr.mu.Lock()
-	kr.offcets[uncomMsg.msg.Partition] = offcetWithTimeStamp{value: uncomMsg.msg.Offset, timeStamp: time.Now()}
+	kr.offsets[uncomMsg.msg.Partition] = offsetWithTimeStamp{value: uncomMsg.msg.Offset, timeStamp: time.Now()}
 	delete(kr.uncommittedMessages, msgUuid)
 	kr.mu.Unlock()
 
@@ -41,8 +41,8 @@ func (kr KafkaConsumer) Commit(ctx context.Context, msgUuid uuid.UUID) error {
 
 func (kr *KafkaConsumer) commitMesWithRetries(ctx context.Context, msg kafka.Message) error {
 	act := func(ctx context.Context) error {
-		lastOffcetWithTimeStamp, ok := kr.offcets[msg.Partition]
-		if ok && lastOffcetWithTimeStamp.value > msg.Offset {
+		lastOffsetWithTimeStamp, ok := kr.offsets[msg.Partition]
+		if ok && lastOffsetWithTimeStamp.value > msg.Offset {
 			return nil
 		}
 
@@ -62,12 +62,12 @@ func removeOldMessages(uncommittedMessages map[uuid.UUID]uncommittedMessage, thr
 	}
 }
 
-func removeOldOffcets(offcets map[int]offcetWithTimeStamp, threashold time.Duration) {
+func removeOldOffsets(offsets map[int]offsetWithTimeStamp, threashold time.Duration) {
 	now := time.Now()
 
-	for part, offcet := range offcets {
-		if offcet.timeStamp.Add(threashold).Before(now) {
-			delete(offcets, part)
+	for part, offset := range offsets {
+		if offset.timeStamp.Add(threashold).Before(now) {
+			delete(offsets, part)
 		}
 	}
 }
