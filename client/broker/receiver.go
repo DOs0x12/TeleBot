@@ -22,6 +22,8 @@ type offcetWithTimeStamp struct {
 	timeStamp time.Time
 }
 
+// Receiver gets data from the bot app. It implements a way to store
+// the uncommitted messages and offsets to commit them later.
 type Receiver struct {
 	mu                  *sync.Mutex
 	reader              *kafka.Reader
@@ -29,6 +31,7 @@ type Receiver struct {
 	offcets             map[int]offcetWithTimeStamp
 }
 
+// Create a receiver to read data from a Kafka instance.
 func NewReceiver(address string, command string) *Receiver {
 	r := kafka.NewReader(kafka.ReaderConfig{
 		GroupID:     "TeleBotClient",
@@ -48,6 +51,8 @@ func NewReceiver(address string, command string) *Receiver {
 	return &rec
 }
 
+// Start receiving data from a Kafka instance. The received data is written to
+// the return channel. The received messages are stored in a map.
 func (r Receiver) StartGetData(ctx context.Context) <-chan BotData {
 	dataChan := make(chan BotData)
 

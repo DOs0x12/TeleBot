@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 )
 
+// Commit the processed messages. The method also removes old messages and offsets.
 func (r Receiver) Commit(ctx context.Context, msgUuid uuid.UUID) error {
 	r.mu.Lock()
 
