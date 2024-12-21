@@ -7,6 +7,7 @@ import (
 	botEnt "github.com/DOs0x12/TeleBot/server/internal/entities/bot"
 	botInterf "github.com/DOs0x12/TeleBot/server/internal/interfaces/bot"
 	brokerInterf "github.com/DOs0x12/TeleBot/server/internal/interfaces/broker"
+	storInterf "github.com/DOs0x12/TeleBot/server/internal/interfaces/storage"
 
 	"github.com/sirupsen/logrus"
 )
@@ -25,13 +26,21 @@ func Process(ctx context.Context,
 	bot botInterf.Worker,
 	receiver brokerInterf.DataReceiver,
 	transmitter brokerInterf.DataTransmitter,
-	botCommands *[]botEnt.Command) error {
+	botCommands *[]botEnt.Command,
+	storage storInterf.CommandStorage) error {
 	brokerInDataChan, err := receiver.StartReceivingData(ctx)
 	if err != nil {
 		return fmt.Errorf("an error of the data receiver occurs: %w", err)
 	}
 
 	botInDataChan := bot.Start(ctx)
+	if err = loadBotCommands(botCommands, storage); err != nil {
+		return fmt.Errorf("can not load the bot commands: %w", err)
+	}
+
+	if err = bot.RegisterCommands(ctx, *botCommands); err != nil {
+		return fmt.Errorf("can not register the loaded commands: %w", err)
+	}
 
 	for {
 		select {
@@ -54,7 +63,7 @@ func Process(ctx context.Context,
 				}
 			}()
 		case botInData := <-botInDataChan:
-			brokerOutData, err := processBotInData(botInData, *botCommands)
+			brokerOutData, err := processBotInData(botInData, *botCommands, storage)
 			if err != nil {
 				logrus.Error("An error of processing bot in data occurs: ", err)
 
