@@ -14,8 +14,8 @@ type PgCommStorage struct {
 
 const tableComm = `
 CREATE TABLE IF NOT EXISTS commands (
-	name varchar(max) PRIMARY KEY,
-	description varchar(max) NOT NULL
+	name varchar(50) UNIQUE,
+	description varchar(1000) NOT NULL
 )`
 
 func NewPgCommStorage(ctx context.Context, address, database, user, pass string) (PgCommStorage, error) {
