@@ -11,6 +11,7 @@ services:
     restart: unless-stopped
     networks:
       - "kafka-network"
+      - "storage-network"
   greeter:
     image: greeter:${TAG}
     build: ../greeter
@@ -19,4 +20,6 @@ services:
       - "kafka-network"
 networks:
   kafka-network:
+    external: true
+  storage-network:
     external: true
