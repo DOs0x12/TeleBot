@@ -34,7 +34,7 @@ func Process(ctx context.Context,
 	}
 
 	botInDataChan := bot.Start(ctx)
-	if err = loadBotCommands(botCommands, storage); err != nil {
+	if err = loadBotCommands(ctx, botCommands, storage); err != nil {
 		return fmt.Errorf("can not load the bot commands: %w", err)
 	}
 
@@ -63,7 +63,7 @@ func Process(ctx context.Context,
 				}
 			}()
 		case botInData := <-botInDataChan:
-			brokerOutData, err := processBotInData(botInData, *botCommands, storage)
+			brokerOutData, err := processBotInData(ctx, botInData, *botCommands, storage)
 			if err != nil {
 				logrus.Error("An error of processing bot in data occurs: ", err)
 

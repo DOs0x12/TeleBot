@@ -33,7 +33,9 @@ func main() {
 		return
 	}
 
-	pgStorage, err := storage.NewPgCommStorage(*storageAddress, *storageDB, *storageUser, *storagePass)
+	appCtx, _ := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+
+	pgStorage, err := storage.NewPgCommStorage(appCtx, *storageAddress, *storageDB, *storageUser, *storagePass)
 	if err != nil {
 		logrus.Error("Can not create a storage: ", err)
 
@@ -41,8 +43,6 @@ func main() {
 	}
 
 	logrus.Info("Load the application configuration")
-
-	appCtx, _ := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 
 	configer := config.NewConfiger(*configPath)
 	config, err := configer.LoadConfig()

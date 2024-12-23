@@ -1,6 +1,7 @@
 package telebot
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -9,8 +10,11 @@ import (
 	"github.com/DOs0x12/TeleBot/server/internal/interfaces/storage"
 )
 
-func loadBotCommands(botCommands *[]botEnt.Command, storage storage.CommandStorage) error {
-	commands, err := storage.Load()
+func loadBotCommands(
+	ctx context.Context,
+	botCommands *[]botEnt.Command,
+	storage storage.CommandStorage) error {
+	commands, err := storage.Load(ctx)
 	if err != nil {
 		return fmt.Errorf("can not load ")
 	}
@@ -21,6 +25,7 @@ func loadBotCommands(botCommands *[]botEnt.Command, storage storage.CommandStora
 }
 
 func processBotInData(
+	ctx context.Context,
 	data botEnt.Data,
 	commands []botEnt.Command,
 	storage storage.CommandStorage) (brokerEnt.OutData, error) {
@@ -51,7 +56,7 @@ func processBotInData(
 		newComm := command
 		newComm.Description = string(dataValue)
 
-		err = storage.Save(newComm)
+		err = storage.Save(ctx, newComm)
 		if err != nil {
 			return brokerEnt.OutData{}, fmt.Errorf("can not save a command: %w", err)
 		}
