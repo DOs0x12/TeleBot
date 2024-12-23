@@ -1,13 +1,14 @@
 services:
   telebot:
-    environment:
-      STORAGE_PASSWORD: ${STORAGE_PASSWORD}
-      STORAGE_HOST: ${STORAGE_HOST}
-      STORAGE_DB: ${STORAGE_DB}
-      STORAGE_USER: ${STORAGE_USER}
-      STORAGE_PASSWORD: ${STORAGE_PASSWORD}
     image: telebot:${TAG}
-    build: ../server
+    build:
+      context: ../server
+      args:
+        STORAGE_PASSWORD: ${STORAGE_PASSWORD}
+        STORAGE_HOST: ${STORAGE_HOST}
+        STORAGE_DB: ${STORAGE_DB}
+        STORAGE_USER: ${STORAGE_USER}
+        STORAGE_PASSWORD: ${STORAGE_PASSWORD}
     restart: unless-stopped
     networks:
       - "kafka-network"
