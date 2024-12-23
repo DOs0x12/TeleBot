@@ -52,7 +52,7 @@ func Process(ctx context.Context,
 			return nil
 		case brokerInData := <-brokerInDataChan:
 			go func() {
-				err := processBrokerInData(ctx, brokerInData, bot, botCommands)
+				err := processBrokerInData(ctx, brokerInData, bot, botCommands, storage)
 				if err != nil {
 					logrus.Error("Can not process data from the broker: ", err)
 				}
@@ -63,7 +63,7 @@ func Process(ctx context.Context,
 				}
 			}()
 		case botInData := <-botInDataChan:
-			brokerOutData, err := processBotInData(ctx, botInData, *botCommands, storage)
+			brokerOutData, err := processBotInData(botInData, *botCommands)
 			if err != nil {
 				logrus.Error("An error of processing bot in data occurs: ", err)
 

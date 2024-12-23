@@ -8,12 +8,14 @@ import (
 	botEnt "github.com/DOs0x12/TeleBot/server/internal/entities/bot"
 	brokerEnt "github.com/DOs0x12/TeleBot/server/internal/entities/broker"
 	botInterf "github.com/DOs0x12/TeleBot/server/internal/interfaces/bot"
+	"github.com/DOs0x12/TeleBot/server/internal/interfaces/storage"
 )
 
 func processBrokerInData(ctx context.Context,
 	brokerInData brokerEnt.InData,
 	bot botInterf.Worker,
-	botCommands *[]botEnt.Command) error {
+	botCommands *[]botEnt.Command,
+	storage storage.CommandStorage) error {
 	if brokerInData.IsCommand {
 		var botNewComm botEnt.Command
 		err := json.Unmarshal([]byte(brokerInData.Value), &botNewComm)
@@ -23,6 +25,11 @@ func processBrokerInData(ctx context.Context,
 
 		*botCommands = append(*botCommands, botNewComm)
 		bot.RegisterCommands(ctx, *botCommands)
+
+		err = storage.Save(ctx, botNewComm)
+		if err != nil {
+			return fmt.Errorf("can not save a command: %w", err)
+		}
 	}
 
 	botOutData, err := castBrokerInData(brokerInData)
