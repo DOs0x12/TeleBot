@@ -4,7 +4,6 @@ services:
     build:
       context: ../server
       args:
-        STORAGE_PASSWORD: ${STORAGE_PASSWORD}
         STORAGE_HOST: ${STORAGE_HOST}
         STORAGE_DB: ${STORAGE_DB}
         STORAGE_USER: ${STORAGE_USER}
