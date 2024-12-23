@@ -9,4 +9,16 @@ FROM alpine AS release-stage
 WORKDIR /
 COPY --from=build-stage /telebot /telebot
 COPY --from=build-stage /app/etc/config.yml /config.yml
-ENTRYPOINT ["/telebot", "--conf", "./config.yml"]
+
+ARG STORAGE_HOST
+ARG STORAGE_DB
+ARG STORAGE_USER
+ARG STORAGE_PASSWORD
+
+ENTRYPOINT [
+    "/telebot",
+    "--conf", "./config.yml",
+    "--stAddr", "${STORAGE_HOST}",
+    "--stDB", "${STORAGE_DB}"
+    "--stUser", "${STORAGE_USER}"
+    "--stPass", "${STORAGE_PASSWORD}"]
