@@ -28,15 +28,7 @@ func processFromBotData(
 	data botEnt.Data,
 	commands []botEnt.Command) (brokerEnt.DataTo, error) {
 	if !data.IsCommand {
-		chatID := data.ChatID
-		message := data.Value
-		dataDto := BotDataDto{ChatID: chatID, Value: message}
-		dataValue, err := json.Marshal(dataDto)
-		if err != nil {
-			return brokerEnt.DataTo{}, fmt.Errorf("can not marshal a BotDataDto with data: %w", err)
-		}
-
-		return brokerEnt.DataTo{Value: string(dataValue)}, nil
+		return processFromBotCommand(data)
 	}
 
 	for _, command := range commands {
@@ -55,4 +47,16 @@ func processFromBotData(
 	}
 
 	return brokerEnt.DataTo{}, fmt.Errorf("no commands with the name %v", data.Value)
+}
+
+func processFromBotCommand(data botEnt.Data) (brokerEnt.DataTo, error) {
+	chatID := data.ChatID
+	message := data.Value
+	dataDto := BotDataDto{ChatID: chatID, Value: message}
+	dataValue, err := json.Marshal(dataDto)
+	if err != nil {
+		return brokerEnt.DataTo{}, fmt.Errorf("can not marshal a BotDataDto with data: %w", err)
+	}
+
+	return brokerEnt.DataTo{Value: string(dataValue)}, nil
 }
