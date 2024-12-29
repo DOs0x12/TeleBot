@@ -60,6 +60,8 @@ func main() {
 		return
 	}
 
+	botConf := botApp.BotConf{BotWorker: bot, BotCommands: &commands, Storage: pgStorage}
+
 	cons, err := brokerInfra.NewKafkaConsumer(config.KafkaAddress)
 	if err != nil {
 		logrus.Error("A receiver creating error occurs:", err)
@@ -67,9 +69,11 @@ func main() {
 
 	prod := brokerInfra.NewKafkaProducer(config.KafkaAddress)
 
+	brokerConf := botApp.BrokerConf{Receiver: cons, Transmitter: prod}
+
 	logrus.Info("Start the application")
 
-	err = botApp.Process(appCtx, bot, cons, prod, &commands, pgStorage)
+	err = botApp.Process(appCtx, botConf, brokerConf)
 	if err != nil {
 		logrus.Error("An error of the application work occurs:", err)
 

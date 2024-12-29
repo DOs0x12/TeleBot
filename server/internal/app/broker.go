@@ -7,15 +7,11 @@ import (
 
 	botEnt "github.com/DOs0x12/TeleBot/server/internal/entities/bot"
 	brokerEnt "github.com/DOs0x12/TeleBot/server/internal/entities/broker"
-	botInterf "github.com/DOs0x12/TeleBot/server/internal/interfaces/bot"
-	"github.com/DOs0x12/TeleBot/server/internal/interfaces/storage"
 )
 
 func processFromBrokerData(ctx context.Context,
 	fromBrokerData brokerEnt.DataFrom,
-	bot botInterf.Worker,
-	botCommands *[]botEnt.Command,
-	storage storage.CommandStorage) error {
+	botConf BotConf) error {
 	if fromBrokerData.IsCommand {
 		var botNewComm botEnt.Command
 		err := json.Unmarshal([]byte(fromBrokerData.Value), &botNewComm)
@@ -23,7 +19,7 @@ func processFromBrokerData(ctx context.Context,
 			return fmt.Errorf("can not unmarshal a command object: %w", err)
 		}
 
-		return registerBotCommand(ctx, bot, botNewComm, botCommands, storage)
+		return registerBotCommand(ctx, botNewComm, botConf)
 	}
 
 	toBotData, err := castFromBrokerData(fromBrokerData)
@@ -31,7 +27,7 @@ func processFromBrokerData(ctx context.Context,
 		return fmt.Errorf("an error of casting data from broker occurs: %w", err)
 	}
 
-	err = bot.SendMessage(ctx, toBotData.Value, toBotData.ChatID)
+	err = botConf.BotWorker.SendMessage(ctx, toBotData.Value, toBotData.ChatID)
 	if err != nil {
 		return fmt.Errorf("an error of sending a message to the bot occurs: %w", err)
 	}
