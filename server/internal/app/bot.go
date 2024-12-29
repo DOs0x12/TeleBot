@@ -24,7 +24,7 @@ func loadBotCommands(
 	return nil
 }
 
-func processBotInData(
+func processFromBotData(
 	data botEnt.Data,
 	commands []botEnt.Command) (brokerEnt.DataTo, error) {
 	if !data.IsCommand {

@@ -28,12 +28,12 @@ func Process(ctx context.Context,
 	transmitter brokerInterf.DataTransmitter,
 	botCommands *[]botEnt.Command,
 	storage storInterf.CommandStorage) error {
-	brokerInDataChan, err := receiver.StartReceivingData(ctx)
+	fromBrokerDataChan, err := receiver.StartReceivingData(ctx)
 	if err != nil {
 		return fmt.Errorf("an error of the data receiver occurs: %w", err)
 	}
 
-	botInDataChan := bot.Start(ctx)
+	fromBotDataChan := bot.Start(ctx)
 	if err = loadBotCommands(ctx, botCommands, storage); err != nil {
 		return fmt.Errorf("can not load the bot commands: %w", err)
 	}
@@ -50,20 +50,20 @@ func Process(ctx context.Context,
 			logrus.Info("The bot is stopped")
 
 			return nil
-		case brokerInData := <-brokerInDataChan:
+		case fromBrokerData := <-fromBrokerDataChan:
 			go func() {
-				err := processBrokerInData(ctx, brokerInData, bot, botCommands, storage)
+				err := processFromBrokerData(ctx, fromBrokerData, bot, botCommands, storage)
 				if err != nil {
 					logrus.Error("Can not process data from the broker: ", err)
 				}
 
-				err = receiver.Commit(ctx, brokerInData.MsgUuid)
+				err = receiver.Commit(ctx, fromBrokerData.MsgUuid)
 				if err != nil {
 					logrus.WithField("messageUuid", err).Error("Can not commit the message with UUID: ", err)
 				}
 			}()
-		case botInData := <-botInDataChan:
-			brokerOutData, err := processBotInData(botInData, *botCommands)
+		case fromBotData := <-fromBotDataChan:
+			toBrokerData, err := processFromBotData(fromBotData, *botCommands)
 			if err != nil {
 				logrus.Error("An error of processing bot in data occurs: ", err)
 
@@ -71,7 +71,7 @@ func Process(ctx context.Context,
 			}
 
 			go func() {
-				err = transmitter.TransmitData(ctx, brokerOutData)
+				err = transmitter.TransmitData(ctx, toBrokerData)
 				if err != nil {
 					logrus.Error("An error of transmitting data to the broker in data occurs: ", err)
 				}
