@@ -7,6 +7,7 @@ import (
 
 	botEnt "github.com/DOs0x12/TeleBot/server/internal/entities/bot"
 	brokerEnt "github.com/DOs0x12/TeleBot/server/internal/entities/broker"
+	botInterf "github.com/DOs0x12/TeleBot/server/internal/interfaces/bot"
 	"github.com/DOs0x12/TeleBot/server/internal/interfaces/storage"
 )
 
@@ -20,6 +21,22 @@ func loadBotCommands(
 	}
 
 	*botCommands = append(*botCommands, commands...)
+
+	return nil
+}
+
+func registerBotCommand(ctx context.Context,
+	bot botInterf.Worker,
+	botNewComm botEnt.Command,
+	botCommands *[]botEnt.Command,
+	storage storage.CommandStorage) error {
+	*botCommands = append(*botCommands, botNewComm)
+	bot.RegisterCommands(ctx, *botCommands)
+
+	err := storage.Save(ctx, botNewComm)
+	if err != nil {
+		return fmt.Errorf("can not save a command: %w", err)
+	}
 
 	return nil
 }

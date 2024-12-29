@@ -23,13 +23,7 @@ func processFromBrokerData(ctx context.Context,
 			return fmt.Errorf("can not unmarshal a command object: %w", err)
 		}
 
-		*botCommands = append(*botCommands, botNewComm)
-		bot.RegisterCommands(ctx, *botCommands)
-
-		err = storage.Save(ctx, botNewComm)
-		if err != nil {
-			return fmt.Errorf("can not save a command: %w", err)
-		}
+		return registerBotCommand(ctx, bot, botNewComm, botCommands, storage)
 	}
 
 	toBotData, err := castFromBrokerData(fromBrokerData)
