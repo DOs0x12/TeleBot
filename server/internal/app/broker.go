@@ -32,12 +32,12 @@ func processFromBrokerData(ctx context.Context,
 		}
 	}
 
-	botOutData, err := castFromBrokerData(fromBrokerData)
+	toBotData, err := castFromBrokerData(fromBrokerData)
 	if err != nil {
-		return fmt.Errorf("an error of casting broker in data occurs: %w", err)
+		return fmt.Errorf("an error of casting data from broker occurs: %w", err)
 	}
 
-	err = bot.SendMessage(ctx, botOutData.Value, botOutData.ChatID)
+	err = bot.SendMessage(ctx, toBotData.Value, toBotData.ChatID)
 	if err != nil {
 		return fmt.Errorf("an error of sending a message to the bot occurs: %w", err)
 	}
