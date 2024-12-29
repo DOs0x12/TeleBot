@@ -27,7 +27,7 @@ func NewKafkaProducer(address string) KafkaProducer {
 	return KafkaProducer{w: w}
 }
 
-func (kt KafkaProducer) TransmitData(ctx context.Context, data broker.OutData) error {
+func (kt KafkaProducer) TransmitData(ctx context.Context, data broker.DataTo) error {
 	act := func(ctx context.Context) error {
 		return kt.sendMessage(ctx, data)
 	}
@@ -35,7 +35,7 @@ func (kt KafkaProducer) TransmitData(ctx context.Context, data broker.OutData) e
 	return retry.ExecuteWithRetries(ctx, act)
 }
 
-func (kt KafkaProducer) sendMessage(ctx context.Context, data broker.OutData) error {
+func (kt KafkaProducer) sendMessage(ctx context.Context, data broker.DataTo) error {
 	if lastCommand == "" && data.CommName == "" {
 		logrus.Warn("Get an empty message")
 
