@@ -47,6 +47,7 @@ func Process(ctx context.Context,
 		case <-ctx.Done():
 			bot.Stop()
 			transmitter.Close()
+			storage.Close()
 			logrus.Info("The bot is stopped")
 
 			return nil
