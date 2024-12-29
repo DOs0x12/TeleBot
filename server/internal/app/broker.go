@@ -12,7 +12,7 @@ import (
 )
 
 func processBrokerInData(ctx context.Context,
-	brokerInData brokerEnt.InData,
+	brokerInData brokerEnt.DataFrom,
 	bot botInterf.Worker,
 	botCommands *[]botEnt.Command,
 	storage storage.CommandStorage) error {
@@ -45,7 +45,7 @@ func processBrokerInData(ctx context.Context,
 	return nil
 }
 
-func castBrokerInData(data brokerEnt.InData) (botEnt.Data, error) {
+func castBrokerInData(data brokerEnt.DataFrom) (botEnt.Data, error) {
 
 	var botData BotDataDto
 	err := json.Unmarshal([]byte(data.Value), &botData)
