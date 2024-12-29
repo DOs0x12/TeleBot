@@ -8,6 +8,6 @@ import (
 )
 
 type DataReceiver interface {
-	StartReceivingData(ctx context.Context) (<-chan broker.InData, error)
+	StartReceivingData(ctx context.Context) (<-chan broker.DataFrom, error)
 	Commit(ctx context.Context, msgUuid uuid.UUID) error
 }

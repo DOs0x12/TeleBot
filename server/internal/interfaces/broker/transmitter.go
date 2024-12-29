@@ -7,6 +7,6 @@ import (
 )
 
 type DataTransmitter interface {
-	TransmitData(ctx context.Context, data broker.OutData) error
+	TransmitData(ctx context.Context, data broker.DataTo) error
 	Close()
 }
