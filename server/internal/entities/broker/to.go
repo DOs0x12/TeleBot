@@ -1,6 +1,6 @@
 package broker
 
-type OutData struct {
+type DataTo struct {
 	CommName string
 	ChatID   int64
 	Value    string

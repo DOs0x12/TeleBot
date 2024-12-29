@@ -2,7 +2,7 @@ package broker
 
 import "github.com/google/uuid"
 
-type InData struct {
+type DataFrom struct {
 	IsCommand bool
 	Value     string
 	MsgUuid   uuid.UUID
