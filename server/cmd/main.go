@@ -18,29 +18,9 @@ import (
 
 func main() {
 	configPath := flag.String("conf", "../etc/config.yml", "Config path.")
-	storageAddress := flag.String("stAddr", "localhost", "The address of the storage.")
-	storageDB := flag.String("stDB", "telebot", "The name of the storage database.")
-	storageUser := flag.String("stUser", "user", "The user of the storage database.")
-	storagePass := flag.String("stPass", "", "The password of the storage user.")
 	flag.Parse()
 
-	logrus.Info("Load the application data")
-
-	if *storagePass == "" {
-		logrus.Error("The password for the storage user is not passed")
-		flag.PrintDefaults()
-
-		return
-	}
-
 	appCtx, _ := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-
-	pgStorage, err := storage.NewPgCommStorage(appCtx, *storageAddress, *storageDB, *storageUser, *storagePass)
-	if err != nil {
-		logrus.Error("Can not create a storage: ", err)
-
-		return
-	}
 
 	logrus.Info("Load the application configuration")
 
@@ -48,6 +28,19 @@ func main() {
 	config, err := configer.LoadConfig()
 	if err != nil {
 		logrus.Error("Can not get the config data:", err)
+
+		return
+	}
+
+	storageConf := storage.StorageConf{Address: config.StorageAddress,
+		Database: config.StorageDB,
+		User:     config.StorageUser,
+		Pass:     config.StoragePass,
+	}
+
+	pgStorage, err := storage.NewPgCommStorage(appCtx, storageConf)
+	if err != nil {
+		logrus.Error("Can not create a storage: ", err)
 
 		return
 	}
