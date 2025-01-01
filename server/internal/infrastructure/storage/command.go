@@ -18,12 +18,19 @@ CREATE TABLE IF NOT EXISTS commands (
 	description varchar(1000) NOT NULL
 )`
 
-func NewPgCommStorage(ctx context.Context, address, database, user, pass string) (PgCommStorage, error) {
+type StorageConf struct {
+	Address,
+	Database,
+	User,
+	Pass string
+}
+
+func NewPgCommStorage(ctx context.Context, conf StorageConf) (PgCommStorage, error) {
 	maxLifeTime := "8760h"
 	sslMode := "disable"
 	connStr := fmt.Sprintf(
 		"host=%v dbname=%v user=%v password=%v pool_max_conn_lifetime=%v sslmode=%v",
-		address, database, user, pass, maxLifeTime, sslMode)
+		conf.Address, conf.Database, conf.User, conf.Pass, maxLifeTime, sslMode)
 	connConf, err := pgxpool.ParseConfig(connStr)
 	if err != nil {
 		return PgCommStorage{}, fmt.Errorf("the config for the databes is not parsed: %v", err)
