@@ -27,7 +27,7 @@ func main() {
 	configer := config.NewConfiger(*configPath)
 	config, err := configer.LoadConfig()
 	if err != nil {
-		logrus.Error("Can not get the config data:", err)
+		logrus.Error("Failed to get the config data: ", err)
 
 		return
 	}
@@ -40,7 +40,7 @@ func main() {
 
 	pgStorage, err := storage.NewPgCommStorage(appCtx, storageConf)
 	if err != nil {
-		logrus.Error("Can not create a storage: ", err)
+		logrus.Error("Failed to create a storage: ", err)
 
 		return
 	}
@@ -48,7 +48,7 @@ func main() {
 	commands := []botEnt.Command{}
 	bot, err := botInfra.NewTelebot(appCtx, config.BotKey, commands)
 	if err != nil {
-		logrus.Error("A bot loading error occurs:", err)
+		logrus.Error("Failed to start up a bot: ", err)
 
 		return
 	}
@@ -57,7 +57,7 @@ func main() {
 
 	cons, err := brokerInfra.NewKafkaConsumer(config.KafkaAddress)
 	if err != nil {
-		logrus.Error("A receiver creating error occurs:", err)
+		logrus.Error("Failed to create a receiver: ", err)
 	}
 
 	prod := brokerInfra.NewKafkaProducer(config.KafkaAddress)
@@ -68,7 +68,7 @@ func main() {
 
 	err = botApp.Process(appCtx, botConf, brokerConf)
 	if err != nil {
-		logrus.Error("An error of the application work occurs:", err)
+		logrus.Error("An application error occured: ", err)
 
 		return
 	}
