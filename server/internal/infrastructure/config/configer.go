@@ -10,8 +10,12 @@ import (
 )
 
 type ConfigDto struct {
-	BotKey       string `yaml:"botKey"`
-	KafkaAddress string `yaml:"kafkaAddress"`
+	BotKey         string `yaml:"botKey"`
+	KafkaAddress   string `yaml:"kafkaAddress"`
+	StorageAddress string `yaml:"storageAddress"`
+	StorageDB      string `yaml:"storageDB"`
+	StorageUser    string `yaml:"storageUser"`
+	StoragePass    string `yaml:"storagePass"`
 }
 
 type Configer struct {
