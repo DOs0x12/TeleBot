@@ -28,7 +28,7 @@ func (r Receiver) Commit(ctx context.Context, msgUuid uuid.UUID) error {
 	if !ok || lastOffsetWithTimeStamp.value < uncomMsg.msg.Offset {
 		err := r.reader.CommitMessages(ctx, uncomMsg.msg)
 		if err != nil {
-			return fmt.Errorf("can not commit a message in the broker: %w", err)
+			return fmt.Errorf("failed to commit a message in the broker: %w", err)
 
 		}
 	}
