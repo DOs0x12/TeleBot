@@ -1,6 +1,6 @@
 services:
   telebot:
-    image: telebot:${TAG}
+    image: telebot:v0.1.0
     build:
       context: ../server
       args:
@@ -13,7 +13,7 @@ services:
       - "kafka-network"
       - "storage-network"
   greeter:
-    image: greeter:${TAG}
+    image: greeter:0.0.0
     build: ../greeter
     restart: unless-stopped
     networks:
