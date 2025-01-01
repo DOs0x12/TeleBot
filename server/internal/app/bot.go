@@ -16,7 +16,7 @@ func loadBotCommands(
 	storage storage.CommandStorage) error {
 	commands, err := storage.Load(ctx)
 	if err != nil {
-		return fmt.Errorf("can not load ")
+		return fmt.Errorf("failed to load the bot commands from the storage: %w", err)
 	}
 
 	*botCommands = append(*botCommands, commands...)
@@ -32,7 +32,7 @@ func registerBotCommand(ctx context.Context,
 
 	err := botConf.Storage.Save(ctx, botNewComm)
 	if err != nil {
-		return fmt.Errorf("can not save a command: %w", err)
+		return fmt.Errorf("failed to save a command: %w", err)
 	}
 
 	return nil
@@ -54,7 +54,7 @@ func processFromBotData(
 		dataDto := BotDataDto{ChatID: chatID}
 		dataValue, err := json.Marshal(dataDto)
 		if err != nil {
-			return brokerEnt.DataTo{}, fmt.Errorf("can not marshal a BotDataDto with a command: %w", err)
+			return brokerEnt.DataTo{}, fmt.Errorf("failed to marshal a BotDataDto with a command: %w", err)
 		}
 
 		return brokerEnt.DataTo{CommName: command.Name, Value: string(dataValue)}, nil
@@ -69,7 +69,7 @@ func processFromBotCommand(data botEnt.Data) (brokerEnt.DataTo, error) {
 	dataDto := BotDataDto{ChatID: chatID, Value: message}
 	dataValue, err := json.Marshal(dataDto)
 	if err != nil {
-		return brokerEnt.DataTo{}, fmt.Errorf("can not marshal a BotDataDto with data: %w", err)
+		return brokerEnt.DataTo{}, fmt.Errorf("failed to marshal a BotDataDto with data: %w", err)
 	}
 
 	return brokerEnt.DataTo{Value: string(dataValue)}, nil
