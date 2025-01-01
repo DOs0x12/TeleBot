@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/DOs0x12/TeleBot/client/token"
 	"github.com/segmentio/kafka-go"
 )
 
@@ -14,9 +15,21 @@ type CommandData struct {
 	Description string
 }
 
+type commandDto struct {
+	Name        string
+	Description string
+	Token       string
+}
+
 // Register a command in the bot app.
 func (s Sender) RegisterCommand(ctx context.Context, commData CommandData) error {
-	data, err := json.Marshal(commData)
+	comToken, err := token.GetOrCreateCommandToken(commData.Name)
+	if err != nil {
+		return fmt.Errorf("failed to get or create a command token: %w", err)
+	}
+
+	dto := commandDto{Name: commData.Name, Description: commData.Description, Token: comToken}
+	data, err := json.Marshal(dto)
 	if err != nil {
 		return fmt.Errorf("failed to marshal a command data to json: %w", err)
 	}
