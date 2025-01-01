@@ -17,13 +17,13 @@ type Telebot struct {
 func NewTelebot(ctx context.Context, botKey string, commands []botEnt.Command) (Telebot, error) {
 	botApi, err := tgbot.NewBotAPI(botKey)
 	if err != nil {
-		return Telebot{}, fmt.Errorf("an error of connecting to the bot occurs: %w", err)
+		return Telebot{}, fmt.Errorf("failed to connect to the bot: %w", err)
 	}
 
 	bot := Telebot{bot: botApi, commands: &commands}
 	err = bot.RegisterCommands(ctx, commands)
 	if err != nil {
-		return Telebot{}, fmt.Errorf("can not register commands in the bot: %w", err)
+		return Telebot{}, fmt.Errorf("failed to register commands in the bot: %w", err)
 	}
 
 	return bot, nil

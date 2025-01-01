@@ -25,7 +25,7 @@ type Configer struct {
 func (c Configer) LoadConfig() (config.Config, error) {
 	confFile, err := os.ReadFile(c.path)
 	if err != nil {
-		return config.Config{}, fmt.Errorf("an error of reading the config file: %w", err)
+		return config.Config{}, fmt.Errorf("failed to read the config file: %w", err)
 	}
 
 	return unmarshalConf(confFile)
@@ -39,7 +39,7 @@ func unmarshalConf(data []byte) (config.Config, error) {
 	dto := ConfigDto{}
 	err := yaml.Unmarshal(data, &dto)
 	if err != nil {
-		return config.Config{}, fmt.Errorf("an error of unmarshalling config data: %w", err)
+		return config.Config{}, fmt.Errorf("failed to unmarshal the config data: %w", err)
 	}
 
 	return cast(dto), nil

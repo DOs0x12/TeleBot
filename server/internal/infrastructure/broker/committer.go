@@ -27,7 +27,7 @@ func (kr KafkaConsumer) Commit(ctx context.Context, msgUuid uuid.UUID) error {
 
 	err := kr.commitMesWithRetries(ctx, uncomMsg.msg)
 	if err != nil {
-		return fmt.Errorf("can not commit a message in the broker: %w", err)
+		return fmt.Errorf("failed to commit a message in the broker: %w", err)
 
 	}
 

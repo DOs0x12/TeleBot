@@ -33,17 +33,17 @@ func NewPgCommStorage(ctx context.Context, conf StorageConf) (PgCommStorage, err
 		conf.Address, conf.Database, conf.User, conf.Pass, maxLifeTime, sslMode)
 	connConf, err := pgxpool.ParseConfig(connStr)
 	if err != nil {
-		return PgCommStorage{}, fmt.Errorf("the config for the databes is not parsed: %v", err)
+		return PgCommStorage{}, fmt.Errorf("the config for the databes was not parsed: %v", err)
 	}
 
 	conn, err := pgxpool.NewWithConfig(ctx, connConf)
 	if err != nil {
-		return PgCommStorage{}, fmt.Errorf("can not connect to the storage server: %w", err)
+		return PgCommStorage{}, fmt.Errorf("failed to connect to the storage server: %w", err)
 	}
 
 	_, err = conn.Exec(ctx, tableComm)
 	if err != nil {
-		return PgCommStorage{}, fmt.Errorf("can not create a table in the storage: %w", err)
+		return PgCommStorage{}, fmt.Errorf("failed to create a table in the storage: %w", err)
 	}
 
 	return PgCommStorage{connection: conn}, nil
@@ -58,13 +58,13 @@ func (st PgCommStorage) Save(ctx context.Context, comm bot.Command) error {
 	var isCommExists bool
 	err := row.Scan(&isCommExists)
 	if err != nil {
-		return fmt.Errorf("can not check if the command row exists in the storage: %w", err)
+		return fmt.Errorf("failed to check if the command row exists in the storage: %w", err)
 	}
 
 	if isCommExists {
 		_, err = st.connection.Exec(ctx, updateComm, comm.Name, comm.Description)
 		if err != nil {
-			return fmt.Errorf("can not update command data in the storage: %w", err)
+			return fmt.Errorf("failed to update command data in the storage: %w", err)
 		}
 
 		return nil
@@ -72,7 +72,7 @@ func (st PgCommStorage) Save(ctx context.Context, comm bot.Command) error {
 
 	_, err = st.connection.Exec(ctx, saveNewComm, comm.Name, comm.Description)
 	if err != nil {
-		return fmt.Errorf("can not write new command data into the storage: %w", err)
+		return fmt.Errorf("failed to write new command data into the storage: %w", err)
 	}
 
 	return nil
@@ -83,7 +83,7 @@ const loadCom = `SELECT name, description FROM commands`
 func (st PgCommStorage) Load(ctx context.Context) ([]bot.Command, error) {
 	rows, err := st.connection.Query(ctx, loadCom)
 	if err != nil {
-		return nil, fmt.Errorf("can not load commands from the storage: %w", err)
+		return nil, fmt.Errorf("failed to send a query to the storage: %w", err)
 	}
 
 	var commands []bot.Command
@@ -93,7 +93,7 @@ func (st PgCommStorage) Load(ctx context.Context) ([]bot.Command, error) {
 	for rows.Next() {
 		err = rows.Scan(&name, &descr)
 		if err != nil {
-			return nil, fmt.Errorf("can not read the storage rows: %w", err)
+			return nil, fmt.Errorf("failed to read the storage rows: %w", err)
 		}
 
 		commands = append(commands, bot.Command{Name: name, Description: descr})

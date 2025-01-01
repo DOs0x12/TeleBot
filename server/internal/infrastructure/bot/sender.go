@@ -12,7 +12,7 @@ func (t Telebot) SendMessage(ctx context.Context, msg string, chatID int64) erro
 	tgMsg := tgbot.NewMessage(chatID, msg)
 	err := t.sendWithRetries(ctx, tgMsg)
 	if err != nil {
-		return fmt.Errorf("can not send a message to the telegram bot: %w", err)
+		return fmt.Errorf("failed to send a message to the telegram bot: %w", err)
 	}
 
 	return nil

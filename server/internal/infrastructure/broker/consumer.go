@@ -34,7 +34,7 @@ type offsetWithTimeStamp struct {
 func NewKafkaConsumer(address string) (*KafkaConsumer, error) {
 	dataTopicName := "botdata"
 	if err := createDataTopic(dataTopicName, address); err != nil {
-		return nil, fmt.Errorf("an error occurs of creating the data topic: %w", err)
+		return nil, fmt.Errorf("failed to create the data topic: %w", err)
 	}
 
 	reader := kafka.NewReader(kafka.ReaderConfig{
@@ -71,7 +71,7 @@ func (kr *KafkaConsumer) consumeMessages(ctx context.Context, dataChan chan brok
 
 		msg, err := kr.fetchMesWithRetries(ctx)
 		if err != nil {
-			logrus.Error("Can not get a message from the broker: ", err)
+			logrus.Error("Failed to get a message from the broker: ", err)
 
 			continue
 		}
