@@ -1,0 +1,6 @@
+botKey: TelegramKey
+kafkaAddress: kafka:port
+storageAddress: postgres
+storageDB: database
+storageUser: postgres
+storagePass: PassWord
