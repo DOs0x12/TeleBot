@@ -31,7 +31,7 @@ func getOrCreateSystemID() (string, error) {
 	}
 
 	if !folderExists {
-		err := os.Mkdir(dataFolderPath, os.FileMode(os.ModePerm))
+		err := os.MkdirAll(dataFolderPath, os.FileMode(os.ModePerm))
 		if err != nil {
 			return "", err
 		}
