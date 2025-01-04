@@ -31,14 +31,14 @@ func getOrCreateSystemID() (string, error) {
 	}
 
 	if !folderExists {
-		err := os.Mkdir(dataFolderPath, os.FileMode(os.O_RDWR))
+		err := os.Mkdir(dataFolderPath, os.FileMode(os.ModePerm))
 		if err != nil {
 			return "", err
 		}
 	}
 
 	dataFilePath := path.Join(dataFolderPath, dataFileName)
-	file, err := os.OpenFile(dataFilePath, os.O_CREATE, os.FileMode(os.O_RDWR))
+	file, err := os.OpenFile(dataFilePath, os.O_CREATE, os.FileMode(os.ModePerm))
 	if err != nil {
 		return "", err
 	}
