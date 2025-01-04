@@ -34,7 +34,7 @@ func (s Sender) RegisterCommand(ctx context.Context, commData CommandData) error
 		return fmt.Errorf("failed to marshal a command data to json: %w", err)
 	}
 
-	err = s.createTopicIfNotExist()
+	err = s.createTopicIfNotExist(ctx, comToken)
 	if err != nil {
 		return fmt.Errorf("failed to process topic data: %w", err)
 	}
