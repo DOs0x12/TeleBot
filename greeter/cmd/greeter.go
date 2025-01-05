@@ -17,10 +17,16 @@ func main() {
 	flag.Parse()
 
 	commData := broker.CommandData{Name: "hello", Description: "Say hello to the bot"}
-	r := broker.NewReceiver(*kafkaAddr, commData.Name)
+	r, err := broker.NewReceiver(*kafkaAddr, commData.Name)
+	if err != nil {
+		logrus.Error(err)
+
+		return
+	}
+
 	s := broker.NewSender(*kafkaAddr)
 
-	err := s.RegisterCommand(ctx, commData)
+	err = s.RegisterCommand(ctx, commData)
 	if err != nil {
 		logrus.Error("Failed to register a command: ", err)
 
