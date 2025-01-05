@@ -15,7 +15,8 @@ type PgCommStorage struct {
 const tableComm = `
 CREATE TABLE IF NOT EXISTS commands (
 	name varchar(50) UNIQUE,
-	description varchar(1000) NOT NULL
+	description varchar(1000) NOT NULL,
+	token varchar(100) NOT NULL
 )`
 
 type StorageConf struct {
@@ -50,8 +51,8 @@ func NewPgCommStorage(ctx context.Context, conf StorageConf) (PgCommStorage, err
 }
 
 const selComm = `SELECT EXISTS(SELECT 1 FROM commands WHERE name=$1)`
-const saveNewComm = `INSERT INTO commands (name, description) VALUES ($1, $2)`
-const updateComm = `UPDATE commands SET description=$2 WHERE name=$1`
+const saveNewComm = `INSERT INTO commands (name, description, token) VALUES ($1, $2, $3)`
+const updateComm = `UPDATE commands SET description=$2, token=$3 WHERE name=$1`
 
 func (st PgCommStorage) Save(ctx context.Context, comm bot.Command) error {
 	row := st.connection.QueryRow(ctx, selComm, comm.Name)
@@ -62,7 +63,7 @@ func (st PgCommStorage) Save(ctx context.Context, comm bot.Command) error {
 	}
 
 	if isCommExists {
-		_, err = st.connection.Exec(ctx, updateComm, comm.Name, comm.Description)
+		_, err = st.connection.Exec(ctx, updateComm, comm.Name, comm.Description, comm.Token)
 		if err != nil {
 			return fmt.Errorf("failed to update command data in the storage: %w", err)
 		}
@@ -70,7 +71,7 @@ func (st PgCommStorage) Save(ctx context.Context, comm bot.Command) error {
 		return nil
 	}
 
-	_, err = st.connection.Exec(ctx, saveNewComm, comm.Name, comm.Description)
+	_, err = st.connection.Exec(ctx, saveNewComm, comm.Name, comm.Description, comm.Token)
 	if err != nil {
 		return fmt.Errorf("failed to write new command data into the storage: %w", err)
 	}
@@ -78,7 +79,7 @@ func (st PgCommStorage) Save(ctx context.Context, comm bot.Command) error {
 	return nil
 }
 
-const loadCom = `SELECT name, description FROM commands`
+const loadCom = `SELECT name, description, token FROM commands`
 
 func (st PgCommStorage) Load(ctx context.Context) ([]bot.Command, error) {
 	rows, err := st.connection.Query(ctx, loadCom)
@@ -89,14 +90,15 @@ func (st PgCommStorage) Load(ctx context.Context) ([]bot.Command, error) {
 	var commands []bot.Command
 	var name string
 	var descr string
+	var token string
 
 	for rows.Next() {
-		err = rows.Scan(&name, &descr)
+		err = rows.Scan(&name, &descr, &token)
 		if err != nil {
 			return nil, fmt.Errorf("failed to read the storage rows: %w", err)
 		}
 
-		commands = append(commands, bot.Command{Name: name, Description: descr})
+		commands = append(commands, bot.Command{Name: name, Description: descr, Token: token})
 	}
 
 	return commands, nil
