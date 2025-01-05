@@ -19,7 +19,7 @@ func GetOrCreateCommandToken(commandName string) (string, error) {
 		return "", fmt.Errorf("failed to load an ID from the system: %w", err)
 	}
 
-	comToken := commandName + " " + sysID
+	comToken := commandName + "-" + sysID
 
 	return comToken, nil
 }
