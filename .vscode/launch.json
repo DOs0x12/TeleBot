@@ -18,7 +18,9 @@
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/greeter/cmd/",
-            "args": ["--conn", "localhost:9093"]
+            "args": ["--conn", "localhost:9093"],
+            "asRoot": true,
+            "console": "integratedTerminal"
         }
     ]
 }
