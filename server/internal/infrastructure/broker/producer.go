@@ -51,22 +51,14 @@ func (kt KafkaProducer) sendMessage(ctx context.Context, data broker.DataTo) err
 	msg := kafka.Message{Topic: topicName, Value: []byte(data.Value)}
 	err := kt.w.WriteMessages(ctx, msg)
 	if err != nil {
-		if err == kafka.UnknownTopicOrPartition {
-			logrus.WithField("topiName", topicName).Warn("An unknown topic, create the one")
-			createDataTopic(topicName, kt.w.Addr.String())
-			err = kt.w.WriteMessages(ctx, msg)
-		}
+		return fmt.Errorf("failed to write messages: %w", err)
 	}
 
-	if err == nil {
-		if data.CommName != "" {
-			lastCommand = data.CommName
-		}
-
-		return nil
+	if data.CommName != "" {
+		lastCommand = data.CommName
 	}
 
-	return fmt.Errorf("failed to write messages: %w", err)
+	return nil
 }
 
 func castCommandToTopicName(commandName string) string {
