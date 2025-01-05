@@ -46,5 +46,12 @@ func unmarshalConf(data []byte) (config.Config, error) {
 }
 
 func cast(confDto ConfigDto) config.Config {
-	return config.Config{BotKey: confDto.BotKey, KafkaAddress: confDto.KafkaAddress}
+	return config.Config{
+		BotKey:         confDto.BotKey,
+		KafkaAddress:   confDto.KafkaAddress,
+		StorageAddress: confDto.StorageAddress,
+		StorageDB:      confDto.StorageDB,
+		StorageUser:    confDto.StorageUser,
+		StoragePass:    confDto.StoragePass,
+	}
 }
