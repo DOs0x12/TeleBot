@@ -3,7 +3,6 @@ package broker
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/DOs0x12/TeleBot/server/internal/common/retry"
 	"github.com/DOs0x12/TeleBot/server/internal/entities/broker"
@@ -46,23 +45,17 @@ func (kt KafkaProducer) sendMessage(ctx context.Context, data broker.DataTo) err
 		data.CommName = lastCommand
 	}
 
-	topicName := castCommandToTopicName(data.CommName)
-
-	msg := kafka.Message{Topic: topicName, Value: []byte(data.Value)}
+	msg := kafka.Message{Topic: data.Token, Value: []byte(data.Value)}
 	err := kt.w.WriteMessages(ctx, msg)
 	if err != nil {
 		return fmt.Errorf("failed to write messages: %w", err)
 	}
 
 	if data.CommName != "" {
-		lastCommand = data.CommName
+		lastCommand = data.Token
 	}
 
 	return nil
-}
-
-func castCommandToTopicName(commandName string) string {
-	return strings.Trim(commandName, "/")
 }
 
 func (kt KafkaProducer) Close() {
