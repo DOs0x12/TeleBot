@@ -16,7 +16,7 @@ func main() {
 	kafkaAddr := flag.String("conn", "kafka:9092", "The kafka connection string.")
 	flag.Parse()
 
-	commData := broker.CommandData{Name: "/hello", Description: "Say hello to the bot"}
+	commData := broker.CommandData{Name: "hello", Description: "Say hello to the bot"}
 	r := broker.NewReceiver(*kafkaAddr, commData.Name)
 	s := broker.NewSender(*kafkaAddr)
 
