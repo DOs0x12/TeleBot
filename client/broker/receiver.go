@@ -3,10 +3,11 @@ package broker
 import (
 	"context"
 	"encoding/json"
-	"strings"
+	"fmt"
 	"sync"
 	"time"
 
+	"github.com/DOs0x12/TeleBot/client/token"
 	"github.com/google/uuid"
 	"github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"
@@ -32,11 +33,16 @@ type Receiver struct {
 }
 
 // Create a receiver to read data from a Kafka instance.
-func NewReceiver(address string, command string) *Receiver {
+func NewReceiver(address string, command string) (*Receiver, error) {
+	topicName, err := token.GetOrCreateCommandToken(command)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create a receiver: %w", err)
+	}
+
 	r := kafka.NewReader(kafka.ReaderConfig{
 		GroupID:     "TeleBotClient",
 		Brokers:     []string{address},
-		Topic:       strings.Trim(command, "/"),
+		Topic:       topicName,
 		MaxBytes:    10e6,
 		StartOffset: kafka.LastOffset,
 	})
@@ -48,7 +54,7 @@ func NewReceiver(address string, command string) *Receiver {
 		reader:              r,
 	}
 
-	return &rec
+	return &rec, nil
 }
 
 // Start receiving data from a Kafka instance. The received data is written to
