@@ -10,7 +10,7 @@ import (
 	"github.com/thanhpk/randstr"
 )
 
-const dataFolderPath = "/usr/local/telebot"
+const dataFolderPath = "/var/lib/telebot"
 const dataFileName = "system_id"
 
 func GetOrCreateCommandToken(commandName string) (string, error) {
