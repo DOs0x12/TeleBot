@@ -38,7 +38,7 @@ func getOrCreateSystemID() (string, error) {
 	}
 
 	dataFilePath := path.Join(dataFolderPath, dataFileName)
-	file, err := os.OpenFile(dataFilePath, os.O_CREATE, os.FileMode(os.O_RDWR))
+	file, err := os.OpenFile(dataFilePath, os.O_CREATE|os.O_RDWR, os.FileMode(os.O_RDWR))
 	if err != nil {
 		return "", err
 	}
