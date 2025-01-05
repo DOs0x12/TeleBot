@@ -58,6 +58,8 @@ func main() {
 	cons, err := brokerInfra.NewKafkaConsumer(config.KafkaAddress)
 	if err != nil {
 		logrus.Error("Failed to create a receiver: ", err)
+
+		return
 	}
 
 	prod := brokerInfra.NewKafkaProducer(config.KafkaAddress)
