@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/DOs0x12/TeleBot/client/token"
 	"github.com/segmentio/kafka-go"
@@ -28,7 +29,9 @@ func (s Sender) RegisterCommand(ctx context.Context, commData CommandData) error
 		return fmt.Errorf("failed to get or create a command token: %w", err)
 	}
 
-	dto := commandDto{Name: commData.Name, Description: commData.Description, Token: comToken}
+	commName := castToTelegramCommandName(commData.Name)
+
+	dto := commandDto{Name: commName, Description: commData.Description, Token: comToken}
 	data, err := json.Marshal(dto)
 	if err != nil {
 		return fmt.Errorf("failed to marshal a command data to json: %w", err)
@@ -51,4 +54,10 @@ func (s Sender) RegisterCommand(ctx context.Context, commData CommandData) error
 	}
 
 	return nil
+}
+
+func castToTelegramCommandName(commName string) string {
+	tCommName := strings.ToLower(commName)
+
+	return "/" + tCommName
 }
