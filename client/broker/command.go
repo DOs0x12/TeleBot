@@ -39,12 +39,17 @@ func (s Sender) RegisterCommand(ctx context.Context, commData CommandData) error
 
 	err = s.createTopicIfNotExist(ctx, comToken)
 	if err != nil {
-		return fmt.Errorf("failed to process topic data: %w", err)
+		return fmt.Errorf("failed to create topic %v: %w", comToken, err)
 	}
 
 	dataTopicName, err := system.GetOrCreateTopicToken("botdata")
 	if err != nil {
 		return fmt.Errorf("failed to get a topic token: %w", err)
+	}
+
+	err = s.createTopicIfNotExist(ctx, dataTopicName)
+	if err != nil {
+		return fmt.Errorf("failed to create topic %v: %w", comToken, err)
 	}
 
 	msg := kafka.Message{
