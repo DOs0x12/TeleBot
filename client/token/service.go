@@ -13,15 +13,15 @@ import (
 const dataFolderPath = "/var/lib/telebot"
 const dataFileName = "system_id"
 
-func GetOrCreateCommandToken(commandName string) (string, error) {
+func GetOrCreateTopicToken(topicName string) (string, error) {
 	sysID, err := getOrCreateSystemID()
 	if err != nil {
 		return "", fmt.Errorf("failed to load an ID from the system: %w", err)
 	}
 
-	comToken := commandName + "-" + sysID
+	token := topicName + "-" + sysID
 
-	return comToken, nil
+	return token, nil
 }
 
 func getOrCreateSystemID() (string, error) {

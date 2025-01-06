@@ -24,7 +24,7 @@ type commandDto struct {
 
 // Register a command in the bot app.
 func (s Sender) RegisterCommand(ctx context.Context, commData CommandData) error {
-	comToken, err := token.GetOrCreateCommandToken(commData.Name)
+	comToken, err := token.GetOrCreateTopicToken(commData.Name)
 	if err != nil {
 		return fmt.Errorf("failed to get or create a command token: %w", err)
 	}

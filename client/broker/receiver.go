@@ -34,7 +34,7 @@ type Receiver struct {
 
 // Create a receiver to read data from a Kafka instance.
 func NewReceiver(address string, command string) (*Receiver, error) {
-	topicName, err := token.GetOrCreateCommandToken(command)
+	topicName, err := token.GetOrCreateTopicToken(command)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create a receiver: %w", err)
 	}
