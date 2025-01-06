@@ -8,6 +8,7 @@ import (
 
 	"github.com/DOs0x12/TeleBot/server/internal/common/retry"
 	"github.com/DOs0x12/TeleBot/server/internal/entities/broker"
+	"github.com/DOs0x12/TeleBot/server/system"
 	"github.com/google/uuid"
 
 	kafka "github.com/segmentio/kafka-go"
@@ -32,8 +33,13 @@ type offsetWithTimeStamp struct {
 }
 
 func NewKafkaConsumer(address string) (*KafkaConsumer, error) {
-	dataTopicName := "botdata"
-	if err := createDataTopic(dataTopicName, address); err != nil {
+	dataTopicName, err := system.GetOrCreateTopicToken("botdata")
+	if err != nil {
+		return nil, fmt.Errorf("failed to get a topic token: %w", err)
+	}
+
+	err = createDataTopic(dataTopicName, address)
+	if err != nil {
 		return nil, fmt.Errorf("failed to create the data topic: %w", err)
 	}
 
