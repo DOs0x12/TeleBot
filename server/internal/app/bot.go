@@ -57,7 +57,7 @@ func processFromBotData(
 			return brokerEnt.DataTo{}, fmt.Errorf("failed to marshal a BotDataDto with a command: %w", err)
 		}
 
-		return brokerEnt.DataTo{CommName: command.Name, Value: string(dataValue)}, nil
+		return brokerEnt.DataTo{CommName: command.Name, Value: string(dataValue), Token: command.Token}, nil
 	}
 
 	return brokerEnt.DataTo{}, fmt.Errorf("no commands with the name %v", data.Value)
