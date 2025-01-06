@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/DOs0x12/TeleBot/client/token"
+	"github.com/DOs0x12/TeleBot/server/system"
 	"github.com/google/uuid"
 	"github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"
@@ -34,7 +34,7 @@ type Receiver struct {
 
 // Create a receiver to read data from a Kafka instance.
 func NewReceiver(address string, command string) (*Receiver, error) {
-	topicName, err := token.GetOrCreateTopicToken(command)
+	topicName, err := system.GetOrCreateTopicToken(command)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create a receiver: %w", err)
 	}

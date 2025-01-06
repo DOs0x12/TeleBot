@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/DOs0x12/TeleBot/server/system"
 	"github.com/segmentio/kafka-go"
 )
 
@@ -30,9 +31,14 @@ func (s Sender) SendData(ctx context.Context, botData BotData) error {
 		return err
 	}
 
+	dataTopicName, err := system.GetOrCreateTopicToken("botdata")
+	if err != nil {
+		return fmt.Errorf("failed to get a topic token: %w", err)
+	}
+
 	err = s.w.WriteMessages(ctx,
 		kafka.Message{
-			Topic: "botdata",
+			Topic: dataTopicName,
 			Key:   []byte("data"),
 			Value: data,
 		},

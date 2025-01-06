@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/DOs0x12/TeleBot/client/token"
+	"github.com/DOs0x12/TeleBot/server/system"
 	"github.com/segmentio/kafka-go"
 )
 
@@ -24,7 +24,7 @@ type commandDto struct {
 
 // Register a command in the bot app.
 func (s Sender) RegisterCommand(ctx context.Context, commData CommandData) error {
-	comToken, err := token.GetOrCreateTopicToken(commData.Name)
+	comToken, err := system.GetOrCreateTopicToken(commData.Name)
 	if err != nil {
 		return fmt.Errorf("failed to get or create a command token: %w", err)
 	}
@@ -42,8 +42,13 @@ func (s Sender) RegisterCommand(ctx context.Context, commData CommandData) error
 		return fmt.Errorf("failed to process topic data: %w", err)
 	}
 
+	dataTopicName, err := system.GetOrCreateTopicToken("botdata")
+	if err != nil {
+		return fmt.Errorf("failed to get a topic token: %w", err)
+	}
+
 	msg := kafka.Message{
-		Topic: "botdata",
+		Topic: dataTopicName,
 		Key:   []byte("command"),
 		Value: data,
 	}
