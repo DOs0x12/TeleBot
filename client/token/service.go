@@ -3,6 +3,7 @@ package token
 import (
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"os"
 	"path"
@@ -45,8 +46,7 @@ func getOrCreateSystemID() (string, error) {
 
 	defer file.Close()
 
-	var fileData []byte
-	_, err = file.Read(fileData)
+	fileData, err := io.ReadAll(file)
 	if err != nil {
 		return "", err
 	}
