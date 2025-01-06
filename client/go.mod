@@ -3,15 +3,15 @@ module github.com/DOs0x12/TeleBot/client
 go 1.23.3
 
 require (
+	github.com/DOs0x12/TeleBot/server v0.0.2-0.20250106122021-2203070b6136
 	github.com/google/uuid v1.6.0
 	github.com/segmentio/kafka-go v0.4.47
 	github.com/sirupsen/logrus v1.9.3
-	github.com/thanhpk/randstr v1.0.6
 )
 
 require (
-	github.com/DOs0x12/TeleBot/server v0.0.2-0.20250106122021-2203070b6136 // indirect
 	github.com/klauspost/compress v1.15.9 // indirect
 	github.com/pierrec/lz4/v4 v4.1.15 // indirect
+	github.com/thanhpk/randstr v1.0.6 // indirect
 	golang.org/x/sys v0.28.0 // indirect
 )
