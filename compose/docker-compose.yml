@@ -3,14 +3,13 @@ services:
     image: telebot:v0.1.0
     build:
       context: ../server
-      args:
-        CONFIG: ${config_path}
     restart: unless-stopped
     networks:
       - "kafka-network"
       - "storage-network"
     volumes:
       - ${data_folder}:/var/lib/telebot
+      - ${config_path}:/config.yml
   greeter:
     image: greeter:0.0.0
     build: ../greeter
