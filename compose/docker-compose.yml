@@ -3,11 +3,6 @@ services:
     image: telebot:v0.1.0
     build:
       context: ../server
-      args:
-        STORAGE_HOST: ${STORAGE_HOST}
-        STORAGE_DB: ${STORAGE_DB}
-        STORAGE_USER: ${STORAGE_USER}
-        STORAGE_PASSWORD: ${STORAGE_PASSWORD}
     restart: unless-stopped
     networks:
       - "kafka-network"
