@@ -8,6 +8,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o /telebot
 FROM alpine AS release-stage
 WORKDIR /
 COPY --from=build-stage /telebot /telebot
-COPY --from=build-stage /app/etc/config.yml /config.yml
+ARG CONFIG
+COPY ${CONFIG} /config.yml
 
 ENTRYPOINT ./telebot --conf ./config.yml
