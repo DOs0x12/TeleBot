@@ -2,7 +2,6 @@ package system
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"io/fs"
 	"os"
@@ -14,56 +13,54 @@ import (
 const dataFolderPath = "/var/lib/telebot"
 const dataFileName = "system_id"
 
-// The method gets or creates a token containing the topic name and a unique string for each system.
+var systemID string
+
+// The method gets a token containing the topic name and a unique string for each system.
 // The unique topic name is used to restrict the data to only one system in which the application works.
-// The system ID will be saved to a file which is stored in the system.
-func GetOrCreateTopicToken(topicName string) (string, error) {
-	sysID, err := getOrCreateSystemID()
-	if err != nil {
-		return "", fmt.Errorf("failed to load an ID from the system: %w", err)
-	}
+func GetTopicToken(topicName string) string {
+	token := topicName + "-" + systemID
 
-	token := topicName + "-" + sysID
-
-	return token, nil
+	return token
 }
 
-func getOrCreateSystemID() (string, error) {
+// The method generates a system ID which is unique for each system.
+// The system ID will be saved to a file which is stored in the system.
+func GenerateSystemID() error {
 	folderExists, err := dataFolderExists()
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	if !folderExists {
 		err := os.MkdirAll(dataFolderPath, os.FileMode(os.O_RDWR))
 		if err != nil {
-			return "", err
+			return err
 		}
 	}
 
 	dataFilePath := path.Join(dataFolderPath, dataFileName)
 	file, err := os.OpenFile(dataFilePath, os.O_CREATE|os.O_RDWR, os.FileMode(os.O_RDWR))
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	defer file.Close()
 
 	fileData, err := io.ReadAll(file)
 	if err != nil {
-		return "", err
+		return err
 	}
 
-	systemID := string(fileData)
+	systemID = string(fileData)
 	if systemID == "" {
 		systemID = generateNewID()
 		_, err = file.WriteString(systemID)
 		if err != nil {
-			return "", err
+			return err
 		}
 	}
 
-	return systemID, nil
+	return nil
 }
 
 func generateNewID() string {
