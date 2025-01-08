@@ -12,6 +12,7 @@ import (
 	brokerInfra "github.com/DOs0x12/TeleBot/server/internal/infrastructure/broker"
 	"github.com/DOs0x12/TeleBot/server/internal/infrastructure/config"
 	"github.com/DOs0x12/TeleBot/server/internal/infrastructure/storage"
+	"github.com/DOs0x12/TeleBot/server/system"
 
 	"github.com/sirupsen/logrus"
 )
@@ -54,6 +55,13 @@ func main() {
 	}
 
 	botConf := botApp.BotConf{BotWorker: bot, BotCommands: &commands, Storage: pgStorage}
+
+	err = system.GenerateSystemID()
+	if err != nil {
+		logrus.Error("Failed to generate the system ID: ", err)
+
+		return
+	}
 
 	cons, err := brokerInfra.NewKafkaConsumer(config.KafkaAddress)
 	if err != nil {

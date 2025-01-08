@@ -33,12 +33,8 @@ type offsetWithTimeStamp struct {
 }
 
 func NewKafkaConsumer(address string) (*KafkaConsumer, error) {
-	dataTopicName, err := system.GetOrCreateTopicToken("botdata")
-	if err != nil {
-		return nil, fmt.Errorf("failed to get a topic token: %w", err)
-	}
-
-	err = createDataTopic(dataTopicName, address)
+	dataTopicName := system.GetTopicToken("botdata")
+	err := createDataTopic(dataTopicName, address)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create the data topic: %w", err)
 	}
