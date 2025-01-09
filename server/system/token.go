@@ -22,7 +22,7 @@ func GetDataToken() (string, error) {
 
 	err := generateSystemIDIfNotExist()
 	if err != nil {
-		return "", fmt.Errorf("failed to get the data topic name: %w", err)
+		return "", fmt.Errorf("failed to generate a system ID for the data token: %w", err)
 	}
 
 	return getToken(dataPrefix), nil
@@ -32,7 +32,7 @@ func GetDataToken() (string, error) {
 func GetServiceToken(serviceName string) (string, error) {
 	err := generateSystemIDIfNotExist()
 	if err != nil {
-		return "", fmt.Errorf("failed to get the data topic name: %w", err)
+		return "", fmt.Errorf("failed to generate a system ID for the service token: %w", err)
 	}
 
 	return getToken(serviceName), nil
