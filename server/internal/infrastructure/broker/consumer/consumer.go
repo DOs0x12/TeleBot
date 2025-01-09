@@ -1,4 +1,4 @@
-package broker
+package consumer
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 
 	"github.com/DOs0x12/TeleBot/server/internal/common/retry"
 	"github.com/DOs0x12/TeleBot/server/internal/entities/broker"
+	"github.com/DOs0x12/TeleBot/server/internal/infrastructure/broker/topic"
 	"github.com/DOs0x12/TeleBot/server/system"
 	"github.com/google/uuid"
 
@@ -38,7 +39,7 @@ func NewKafkaConsumer(address string) (*KafkaConsumer, error) {
 		return nil, fmt.Errorf("failed to get the data token: %w", err)
 	}
 
-	err = createDataTopic(dataTopicName, address)
+	err = topic.CreateDataTopic(dataTopicName, address)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create the data topic: %w", err)
 	}
