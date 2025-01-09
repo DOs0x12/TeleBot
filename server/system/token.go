@@ -2,6 +2,7 @@ package system
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"io/fs"
 	"os"
@@ -15,17 +16,39 @@ const dataFileName = "system_id"
 
 var systemID string
 
-// The method gets a token containing the topic name and a unique string for each system.
-// The unique topic name is used to restrict the data to only one system in which the application works.
-func GetTopicToken(topicName string) string {
-	token := topicName + "-" + systemID
+// The method gets the topic name with a unique string for each system. The topic contains messages for a server.
+func GetDataToken() (string, error) {
+	dataPrefix := "telebot-data"
+
+	err := generateSystemIDIfNotExist()
+	if err != nil {
+		return "", fmt.Errorf("failed to get the data topic name: %w", err)
+	}
+
+	return getToken(dataPrefix), nil
+}
+
+// The method gets the topic name with a unique string for each system. The topic contains messages for a service.
+func GetServiceToken(serviceName string) (string, error) {
+	err := generateSystemIDIfNotExist()
+	if err != nil {
+		return "", fmt.Errorf("failed to get the data topic name: %w", err)
+	}
+
+	return getToken(serviceName), nil
+}
+
+func getToken(prefix string) string {
+	token := prefix + "-" + systemID
 
 	return token
 }
 
-// The method generates a system ID which is unique for each system.
-// The system ID will be saved to a file which is stored in the system.
-func GenerateSystemID() error {
+func generateSystemIDIfNotExist() error {
+	if systemID == "" {
+		return nil
+	}
+
 	folderExists, err := dataFolderExists()
 	if err != nil {
 		return err
