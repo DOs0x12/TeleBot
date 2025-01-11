@@ -28,16 +28,11 @@ type BotConf struct {
 	Storage     storInterf.CommandStorage
 }
 
-type BrokerConf struct {
-	Receiver    brokerInterf.DataReceiver
-	Transmitter brokerInterf.DataTransmitter
-}
-
 func Process(ctx context.Context,
 	botConf BotConf,
-	brokerConf BrokerConf,
+	msgBroker brokerInterf.MessageBroker,
 ) error {
-	fromBrokerDataChan, err := brokerConf.Receiver.StartReceivingData(ctx)
+	fromBrokerDataChan, err := msgBroker.StartReceivingData(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to start receiving data: %w", err)
 	}
@@ -56,7 +51,7 @@ func Process(ctx context.Context,
 		case <-ctx.Done():
 			botConf.BotWorker.Stop()
 			logrus.Info("The bot has been stopped")
-			brokerConf.Transmitter.Close()
+			msgBroker.Close()
 			logrus.Info("The transmitter connection has been closed")
 			botConf.Storage.Close()
 			logrus.Info("The storage connection has been closed")
@@ -69,7 +64,7 @@ func Process(ctx context.Context,
 					logrus.Error("Failed to process data from the broker: ", err)
 				}
 
-				err = brokerConf.Receiver.Commit(ctx, fromBrokerData.MsgUuid)
+				err = msgBroker.Commit(ctx, fromBrokerData.MsgUuid)
 				if err != nil {
 					logrus.WithField("messageUuid", err).Error("Failed to commit the message with UUID: ", err)
 				}
@@ -83,7 +78,7 @@ func Process(ctx context.Context,
 			}
 
 			go func() {
-				err = brokerConf.Transmitter.TransmitData(ctx, toBrokerData)
+				err = msgBroker.TransmitData(ctx, toBrokerData)
 				if err != nil {
 					logrus.Error("Failed to transmit data to the broker: ", err)
 				}
