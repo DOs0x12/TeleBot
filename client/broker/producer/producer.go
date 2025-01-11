@@ -5,7 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/DOs0x12/TeleBot/server/system"
+	"github.com/DOs0x12/TeleBot/client/broker/topic"
+	"github.com/DOs0x12/TeleBot/server/v2/system"
 	"github.com/google/uuid"
 	"github.com/segmentio/kafka-go"
 )
@@ -22,13 +23,23 @@ type KafkaProducer struct {
 }
 
 // The method creates a producer to send data to a Kafka instance.
-func NewKafkaProducer(address string) KafkaProducer {
+func NewKafkaProducer(ctx context.Context, address string) (KafkaProducer, error) {
+	topicName, err := system.GetDataToken()
+	if err != nil {
+		return KafkaProducer{}, fmt.Errorf("failed to get a data token: %w", err)
+	}
+
+	err = topic.CreateTopicIfNotExist(ctx, topicName, kafka.TCP(address))
+	if err != nil {
+		return KafkaProducer{}, fmt.Errorf("failed to create topic %v: %w", topicName, err)
+	}
+
 	w := &kafka.Writer{
 		Addr:     kafka.TCP(address),
 		Balancer: &kafka.LeastBytes{},
 	}
 
-	return KafkaProducer{w: w}
+	return KafkaProducer{w: w}, nil
 }
 
 // Send data to the bot app via a Kafka instance.
@@ -38,7 +49,7 @@ func (s KafkaProducer) SendData(ctx context.Context, botData KafkaProducerData) 
 		return err
 	}
 
-	dataTopicName, err := system.GetOrCreateTopicToken("botdata")
+	dataTopicName, err := system.GetDataToken()
 	if err != nil {
 		return fmt.Errorf("failed to get a topic token: %w", err)
 	}

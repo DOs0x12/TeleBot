@@ -22,13 +22,16 @@ type KafkaBroker struct {
 }
 
 // Create a Kafka broker to work with application data.
-func NewKafkaBroker(address string) (*KafkaBroker, error) {
-	cons, err := consumer.NewKafkaConsumer(address)
+func NewKafkaBroker(ctx context.Context, address, serviceName string) (*KafkaBroker, error) {
+	cons, err := consumer.NewKafkaConsumer(address, serviceName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create a kafka consumer: %w", err)
 	}
 
-	prod := producer.NewKafkaProducer(address)
+	prod, err := producer.NewKafkaProducer(ctx, address)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create a Kafka producer: %w", err)
+	}
 
 	return &KafkaBroker{cons: cons, prod: prod}, nil
 }

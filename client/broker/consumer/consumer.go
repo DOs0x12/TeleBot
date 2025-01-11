@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/DOs0x12/TeleBot/server/system"
+	"github.com/DOs0x12/TeleBot/server/v2/system"
 	"github.com/google/uuid"
 	"github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"
@@ -39,8 +39,8 @@ type KafkaConsumer struct {
 }
 
 // Create a consumer to read data from a Kafka instance.
-func NewKafkaConsumer(address string, command string) (*KafkaConsumer, error) {
-	topicName, err := system.GetOrCreateTopicToken(command)
+func NewKafkaConsumer(address string, serviceName string) (*KafkaConsumer, error) {
+	topicName, err := system.GetServiceToken(serviceName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create a receiver: %w", err)
 	}
