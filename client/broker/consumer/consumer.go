@@ -1,4 +1,4 @@
-package broker
+package consumer
 
 import (
 	"context"
@@ -23,17 +23,23 @@ type offsetWithTimeStamp struct {
 	timeStamp time.Time
 }
 
-// Receiver gets data from the bot app. It implements a way to store
+type KafkaConsumerData struct {
+	ChatID      int64
+	Value       string
+	MessageUuid uuid.UUID
+}
+
+// Consumer gets data from the bot app. It implements a way to store
 // the uncommitted messages and offsets to commit them later.
-type Receiver struct {
+type KafkaConsumer struct {
 	mu                  *sync.Mutex
 	reader              *kafka.Reader
 	uncommittedMessages map[uuid.UUID]uncommittedMessage
 	offsets             map[int]offsetWithTimeStamp
 }
 
-// Create a receiver to read data from a Kafka instance.
-func NewReceiver(address string, command string) (*Receiver, error) {
+// Create a consumer to read data from a Kafka instance.
+func NewKafkaConsumer(address string, command string) (*KafkaConsumer, error) {
 	topicName, err := system.GetOrCreateTopicToken(command)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create a receiver: %w", err)
@@ -47,7 +53,7 @@ func NewReceiver(address string, command string) (*Receiver, error) {
 		StartOffset: kafka.LastOffset,
 	})
 
-	rec := Receiver{
+	rec := KafkaConsumer{
 		uncommittedMessages: make(map[uuid.UUID]uncommittedMessage),
 		offsets:             make(map[int]offsetWithTimeStamp),
 		mu:                  &sync.Mutex{},
@@ -59,15 +65,15 @@ func NewReceiver(address string, command string) (*Receiver, error) {
 
 // Start receiving data from a Kafka instance. The received data is written to
 // the return channel. The received messages are stored in a map.
-func (r Receiver) StartGetData(ctx context.Context) <-chan BotData {
-	dataChan := make(chan BotData)
+func (r KafkaConsumer) StartGetData(ctx context.Context) <-chan KafkaConsumerData {
+	dataChan := make(chan KafkaConsumerData)
 
 	go r.consumeMessages(ctx, dataChan)
 
 	return dataChan
 }
 
-func (r Receiver) consumeMessages(ctx context.Context, dataChan chan<- BotData) {
+func (r KafkaConsumer) consumeMessages(ctx context.Context, dataChan chan<- KafkaConsumerData) {
 	for {
 		if ctx.Err() != nil {
 			break
@@ -83,7 +89,7 @@ func (r Receiver) consumeMessages(ctx context.Context, dataChan chan<- BotData) 
 		r.uncommittedMessages[msgUuid] = uncommittedMessage{msg: msg, timeStamp: time.Now()}
 		r.mu.Unlock()
 
-		var botData BotData
+		var botData KafkaConsumerData
 		if err = json.Unmarshal(msg.Value, &botData); err != nil {
 			logrus.Error("failed to unmarshal an incoming data object", err)
 

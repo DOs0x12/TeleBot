@@ -1,4 +1,4 @@
-package broker
+package producer
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/DOs0x12/TeleBot/client/broker/topic"
 	"github.com/DOs0x12/TeleBot/server/system"
 	"github.com/segmentio/kafka-go"
 )
@@ -23,7 +24,7 @@ type commandDto struct {
 }
 
 // Register a command in the bot app.
-func (s Sender) RegisterCommand(ctx context.Context, commData CommandData) error {
+func (s KafkaProducer) RegisterCommand(ctx context.Context, commData CommandData) error {
 	comToken, err := system.GetOrCreateTopicToken(commData.Name)
 	if err != nil {
 		return fmt.Errorf("failed to get or create a command token: %w", err)
@@ -37,7 +38,7 @@ func (s Sender) RegisterCommand(ctx context.Context, commData CommandData) error
 		return fmt.Errorf("failed to marshal a command data to json: %w", err)
 	}
 
-	err = s.createTopicIfNotExist(ctx, comToken)
+	err = topic.CreateTopicIfNotExist(ctx, comToken, s.w.Addr)
 	if err != nil {
 		return fmt.Errorf("failed to create topic %v: %w", comToken, err)
 	}
@@ -47,7 +48,7 @@ func (s Sender) RegisterCommand(ctx context.Context, commData CommandData) error
 		return fmt.Errorf("failed to get a topic token: %w", err)
 	}
 
-	err = s.createTopicIfNotExist(ctx, dataTopicName)
+	err = topic.CreateTopicIfNotExist(ctx, dataTopicName, s.w.Addr)
 	if err != nil {
 		return fmt.Errorf("failed to create topic %v: %w", comToken, err)
 	}
