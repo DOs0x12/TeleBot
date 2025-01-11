@@ -16,6 +16,12 @@ type BrokerData struct {
 	MessageUuid uuid.UUID
 }
 
+// BrokerCommandData is the data that represents a command to the bot app.
+type BrokerCommandData struct {
+	Name        string
+	Description string
+}
+
 type KafkaBroker struct {
 	cons *consumer.KafkaConsumer
 	prod producer.KafkaProducer
@@ -77,6 +83,14 @@ func (b *KafkaBroker) SendData(ctx context.Context, data BrokerData) error {
 		MessageUuid: data.MessageUuid,
 	}
 	return b.prod.SendData(ctx, prData)
+}
+
+func (s *KafkaBroker) RegisterCommand(ctx context.Context,
+	commData BrokerCommandData,
+	serviceName string) error {
+	prodCommData := producer.CommandData{Name: commData.Description, Description: commData.Description}
+
+	return s.prod.RegisterCommand(ctx, prodCommData, serviceName)
 }
 
 // Stop the Kafka broker.
