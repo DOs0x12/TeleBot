@@ -55,20 +55,16 @@ func main() {
 
 	botConf := botApp.BotConf{BotWorker: bot, BotCommands: &commands, Storage: pgStorage}
 
-	cons, err := brokerInfra.NewKafkaConsumer(config.KafkaAddress)
+	kafkaBroker, err := brokerInfra.NewKafkaBroker(config.KafkaAddress)
 	if err != nil {
-		logrus.Error("Failed to create a receiver: ", err)
+		logrus.Error("Failed to create a Kafka broker: ", err)
 
 		return
 	}
 
-	prod := brokerInfra.NewKafkaProducer(config.KafkaAddress)
-
-	brokerConf := botApp.BrokerConf{Receiver: cons, Transmitter: prod}
-
 	logrus.Info("Start the application")
 
-	err = botApp.Process(appCtx, botConf, brokerConf)
+	err = botApp.Process(appCtx, botConf, kafkaBroker)
 	if err != nil {
 		logrus.Error("An application error occured: ", err)
 
