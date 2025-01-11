@@ -15,15 +15,15 @@ type KafkaBroker struct {
 	prod producer.KafkaProducer
 }
 
-func NewKafkaBroker(address string) (KafkaBroker, error) {
+func NewKafkaBroker(address string) (*KafkaBroker, error) {
 	cons, err := consumer.NewKafkaConsumer(address)
 	if err != nil {
-		return KafkaBroker{}, fmt.Errorf("failed to create a kafka consumer: %w", err)
+		return nil, fmt.Errorf("failed to create a kafka consumer: %w", err)
 	}
 
 	prod := producer.NewKafkaProducer(address)
 
-	return KafkaBroker{cons: cons, prod: prod}, nil
+	return &KafkaBroker{cons: cons, prod: prod}, nil
 }
 
 func (b *KafkaBroker) StartReceivingData(ctx context.Context) (<-chan broker.DataFrom, error) {
