@@ -21,6 +21,7 @@ type KafkaBroker struct {
 	prod producer.KafkaProducer
 }
 
+// Create a Kafka broker to work with application data.
 func NewKafkaBroker(address string) (*KafkaBroker, error) {
 	cons, err := consumer.NewKafkaConsumer(address)
 	if err != nil {
@@ -32,6 +33,7 @@ func NewKafkaBroker(address string) (*KafkaBroker, error) {
 	return &KafkaBroker{cons: cons, prod: prod}, nil
 }
 
+// Start get application data from a Kafka broker.
 func (b *KafkaBroker) StartGetData(ctx context.Context) <-chan BrokerData {
 	consMsgs := b.cons.StartGetData(ctx)
 	brMsgs := make(chan BrokerData)
@@ -59,10 +61,12 @@ func pipelineConsData(ctx context.Context,
 	}
 }
 
+// Commit a processed message in the Kafka broker.
 func (b *KafkaBroker) Commit(ctx context.Context, msgUuid uuid.UUID) error {
 	return b.cons.Commit(ctx, msgUuid)
 }
 
+// Send application data to the kafka broker.
 func (b *KafkaBroker) SendData(ctx context.Context, data BrokerData) error {
 	prData := producer.KafkaProducerData{
 		ChatID:      data.ChatID,
@@ -72,6 +76,7 @@ func (b *KafkaBroker) SendData(ctx context.Context, data BrokerData) error {
 	return b.prod.SendData(ctx, prData)
 }
 
+// Stop the Kafka broker.
 func (b *KafkaBroker) Stop() {
 	b.prod.Stop()
 }
