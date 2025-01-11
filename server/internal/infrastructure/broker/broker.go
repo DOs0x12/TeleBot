@@ -37,3 +37,7 @@ func (b *KafkaBroker) Commit(ctx context.Context, msgUuid uuid.UUID) error {
 func (b *KafkaBroker) TransmitData(ctx context.Context, data broker.DataTo) error {
 	return b.prod.TransmitData(ctx, data)
 }
+
+func (b *KafkaBroker) Close() {
+	b.prod.Close()
+}
