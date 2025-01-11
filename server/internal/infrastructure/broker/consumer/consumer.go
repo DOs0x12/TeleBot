@@ -6,10 +6,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/DOs0x12/TeleBot/server/internal/common/retry"
-	"github.com/DOs0x12/TeleBot/server/internal/entities/broker"
-	"github.com/DOs0x12/TeleBot/server/internal/infrastructure/broker/topic"
-	"github.com/DOs0x12/TeleBot/server/system"
+	"github.com/DOs0x12/TeleBot/server/v2/internal/common/retry"
+	"github.com/DOs0x12/TeleBot/server/v2/internal/entities/broker"
+	"github.com/DOs0x12/TeleBot/server/v2/internal/infrastructure/broker/topic"
+	"github.com/DOs0x12/TeleBot/server/v2/system"
 	"github.com/google/uuid"
 
 	kafka "github.com/segmentio/kafka-go"

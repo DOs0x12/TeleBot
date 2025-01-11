@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	botEnt "github.com/DOs0x12/TeleBot/server/internal/entities/bot"
-	botInterf "github.com/DOs0x12/TeleBot/server/internal/interfaces/bot"
-	brokerInterf "github.com/DOs0x12/TeleBot/server/internal/interfaces/broker"
-	storInterf "github.com/DOs0x12/TeleBot/server/internal/interfaces/storage"
+	botEnt "github.com/DOs0x12/TeleBot/server/v2/internal/entities/bot"
+	botInterf "github.com/DOs0x12/TeleBot/server/v2/internal/interfaces/bot"
+	brokerInterf "github.com/DOs0x12/TeleBot/server/v2/internal/interfaces/broker"
+	storInterf "github.com/DOs0x12/TeleBot/server/v2/internal/interfaces/storage"
 
 	"github.com/sirupsen/logrus"
 )

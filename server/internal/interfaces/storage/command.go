@@ -3,7 +3,7 @@ package storage
 import (
 	"context"
 
-	"github.com/DOs0x12/TeleBot/server/internal/entities/bot"
+	"github.com/DOs0x12/TeleBot/server/v2/internal/entities/bot"
 )
 
 type CommandStorage interface {

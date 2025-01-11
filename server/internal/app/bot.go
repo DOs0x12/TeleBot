@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	botEnt "github.com/DOs0x12/TeleBot/server/internal/entities/bot"
-	brokerEnt "github.com/DOs0x12/TeleBot/server/internal/entities/broker"
-	"github.com/DOs0x12/TeleBot/server/internal/interfaces/storage"
+	botEnt "github.com/DOs0x12/TeleBot/server/v2/internal/entities/bot"
+	brokerEnt "github.com/DOs0x12/TeleBot/server/v2/internal/entities/broker"
+	"github.com/DOs0x12/TeleBot/server/v2/internal/interfaces/storage"
 )
 
 func loadBotCommands(

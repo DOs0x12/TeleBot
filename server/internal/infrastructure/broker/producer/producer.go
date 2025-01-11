@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/DOs0x12/TeleBot/server/internal/common/retry"
-	"github.com/DOs0x12/TeleBot/server/internal/entities/broker"
+	"github.com/DOs0x12/TeleBot/server/v2/internal/common/retry"
+	"github.com/DOs0x12/TeleBot/server/v2/internal/entities/broker"
 
 	kafka "github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"
