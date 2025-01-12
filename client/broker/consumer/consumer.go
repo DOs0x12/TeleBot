@@ -23,7 +23,14 @@ type offsetWithTimeStamp struct {
 	timeStamp time.Time
 }
 
+type KafkaConsumerDataDto struct {
+	CommName string
+	ChatID   int64
+	Value    string
+}
+
 type KafkaConsumerData struct {
+	CommName    string
 	ChatID      int64
 	Value       string
 	MessageUuid uuid.UUID
@@ -89,14 +96,19 @@ func (r KafkaConsumer) consumeMessages(ctx context.Context, dataChan chan<- Kafk
 		r.uncommittedMessages[msgUuid] = uncommittedMessage{msg: msg, timeStamp: time.Now()}
 		r.mu.Unlock()
 
-		var botData KafkaConsumerData
-		if err = json.Unmarshal(msg.Value, &botData); err != nil {
+		var botDataDto KafkaConsumerDataDto
+		if err = json.Unmarshal(msg.Value, &botDataDto); err != nil {
 			logrus.Error("failed to unmarshal an incoming data object", err)
 
 			continue
 		}
 
-		botData.MessageUuid = msgUuid
+		botData := KafkaConsumerData{
+			CommName:    botDataDto.CommName,
+			ChatID:      botDataDto.ChatID,
+			Value:       botDataDto.Value,
+			MessageUuid: msgUuid,
+		}
 
 		dataChan <- botData
 	}
