@@ -2,6 +2,7 @@ package producer
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/DOs0x12/TeleBot/server/v2/internal/common/retry"
@@ -45,8 +46,13 @@ func (kt KafkaProducer) sendMessage(ctx context.Context, data broker.DataTo) err
 		data.CommName = lastCommand
 	}
 
-	msg := kafka.Message{Topic: data.Token, Value: []byte(data.Value)}
-	err := kt.w.WriteMessages(ctx, msg)
+	rawData, err := json.Marshal(data)
+	if err != nil {
+		return fmt.Errorf("failed to marshal data to send: %w", err)
+	}
+
+	msg := kafka.Message{Topic: data.Token, Value: rawData}
+	err = kt.w.WriteMessages(ctx, msg)
 	if err != nil {
 		return fmt.Errorf("failed to write messages: %w", err)
 	}
