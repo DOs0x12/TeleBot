@@ -1,6 +1,6 @@
 services:
   telebot:
-    image: telebot:v1.0.0
+    image: telebot:v2.0.3
     build:
       context: ../server
     restart: unless-stopped
@@ -11,7 +11,7 @@ services:
       - ${data_folder}:/var/lib/telebot
       - ${config_path}:/config.yml
   greeter:
-    image: greeter:v1.0.0
+    image: greeter:v2.0.3
     build: ../greeter
     restart: unless-stopped
     networks:
