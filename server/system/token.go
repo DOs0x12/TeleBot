@@ -45,7 +45,7 @@ func getToken(prefix string) string {
 }
 
 func generateSystemIDIfNotExist() error {
-	if systemID == "" {
+	if systemID != "" {
 		return nil
 	}
 
