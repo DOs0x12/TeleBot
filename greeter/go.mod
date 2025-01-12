@@ -3,7 +3,7 @@ module github.com/DOs0x12/TeleBot/greeter
 go 1.23.3
 
 require (
-	github.com/DOs0x12/TeleBot/client/v2 v2.0.2
+	github.com/DOs0x12/TeleBot/client/v2 v2.0.3
 	github.com/sirupsen/logrus v1.9.3
 )
 
