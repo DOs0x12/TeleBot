@@ -88,7 +88,7 @@ func (b *KafkaBroker) SendData(ctx context.Context, data BrokerData) error {
 func (s *KafkaBroker) RegisterCommand(ctx context.Context,
 	commData BrokerCommandData,
 	serviceName string) error {
-	prodCommData := producer.CommandData{Name: commData.Description, Description: commData.Description}
+	prodCommData := producer.CommandData{Name: commData.Name, Description: commData.Description}
 
 	return s.prod.RegisterCommand(ctx, prodCommData, serviceName)
 }
