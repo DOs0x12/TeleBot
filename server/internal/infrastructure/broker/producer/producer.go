@@ -58,7 +58,7 @@ func (kt KafkaProducer) sendMessage(ctx context.Context, data broker.DataTo) err
 	}
 
 	if data.CommName != "" {
-		lastCommand = data.Token
+		lastCommand = data.CommName
 	}
 
 	return nil
