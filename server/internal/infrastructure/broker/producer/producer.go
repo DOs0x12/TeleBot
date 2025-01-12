@@ -16,6 +16,12 @@ type KafkaProducer struct {
 	w *kafka.Writer
 }
 
+type ProducerDataDto struct {
+	CommName string
+	ChatID   int64
+	Value    string
+}
+
 var lastCommand string
 
 func NewKafkaProducer(address string) KafkaProducer {
@@ -46,7 +52,9 @@ func (kt KafkaProducer) sendMessage(ctx context.Context, data broker.DataTo) err
 		data.CommName = lastCommand
 	}
 
-	rawData, err := json.Marshal(data)
+	dataDto := ProducerDataDto{CommName: data.CommName, ChatID: data.ChatID, Value: data.Value}
+
+	rawData, err := json.Marshal(dataDto)
 	if err != nil {
 		return fmt.Errorf("failed to marshal data to send: %w", err)
 	}
