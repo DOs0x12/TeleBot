@@ -16,7 +16,7 @@ const tableComm = `
 CREATE TABLE IF NOT EXISTS commands (
 	name varchar(50) UNIQUE,
 	description varchar(1000) NOT NULL,
-	token varchar(100) UNIQUE NOT NULL
+	token varchar(100) NOT NULL
 )`
 
 type StorageConf struct {
