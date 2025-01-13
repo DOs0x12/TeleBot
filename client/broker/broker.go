@@ -11,6 +11,7 @@ import (
 
 // Stores the data that is needed by the bot app.
 type BrokerData struct {
+	CommName    string
 	ChatID      int64
 	Value       string
 	MessageUuid uuid.UUID
@@ -62,6 +63,7 @@ func pipelineConsData(ctx context.Context,
 			return
 		case consData := <-consMsgs:
 			brMsgs <- BrokerData{
+				CommName:    consData.CommName,
 				ChatID:      consData.ChatID,
 				Value:       consData.Value,
 				MessageUuid: consData.MessageUuid,
