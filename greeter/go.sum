@@ -1,5 +1,5 @@
-github.com/DOs0x12/TeleBot/client/v2 v2.0.3 h1:JJiYlYUhdI0L68a2lAQSXJjc5wCAeRI9XN8QcRNmw9Y=
-github.com/DOs0x12/TeleBot/client/v2 v2.0.3/go.mod h1:UrXj84akuJeO+q/X9uFfL353pW3UYv6sZhhUYQWIvo4=
+github.com/DOs0x12/TeleBot/client/v2 v2.0.5 h1:MrakRWNDkcdU9Eu8W3f4n3hjM75PqVWhLAe5OhVWSQQ=
+github.com/DOs0x12/TeleBot/client/v2 v2.0.5/go.mod h1:UrXj84akuJeO+q/X9uFfL353pW3UYv6sZhhUYQWIvo4=
 github.com/DOs0x12/TeleBot/server/v2 v2.0.3 h1:jAsDvnsCE3ISmjI09tHdHp5i98yx7zZYnViJ04qWGAA=
 github.com/DOs0x12/TeleBot/server/v2 v2.0.3/go.mod h1:JtcCM3VDsqsUnW9TYZl/bMH7lRjjQp0viamcTV19Yjw=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
