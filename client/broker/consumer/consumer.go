@@ -104,7 +104,7 @@ func (r KafkaConsumer) consumeMessages(ctx context.Context, dataChan chan<- Kafk
 		}
 
 		botData := KafkaConsumerData{
-			CommName:    botDataDto.CommName,
+			CommName:    castFromTgCommand(botDataDto.CommName),
 			ChatID:      botDataDto.ChatID,
 			Value:       botDataDto.Value,
 			MessageUuid: msgUuid,
@@ -116,4 +116,20 @@ func (r KafkaConsumer) consumeMessages(ctx context.Context, dataChan chan<- Kafk
 	if err := r.reader.Close(); err != nil {
 		logrus.Fatal("failed to close the reader:", err)
 	}
+}
+
+func castFromTgCommand(tgCommand string) string {
+	if tgCommand == "" {
+		return tgCommand
+	}
+
+	tgCommChar := byte('/')
+
+	firtsCommChar := tgCommand[0]
+
+	if firtsCommChar != tgCommChar {
+		return tgCommand
+	}
+
+	return tgCommand[1:]
 }
