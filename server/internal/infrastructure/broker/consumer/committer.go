@@ -1,11 +1,11 @@
-package broker
+package consumer
 
 import (
 	"context"
 	"fmt"
 	"time"
 
-	"github.com/DOs0x12/TeleBot/server/internal/common/retry"
+	"github.com/DOs0x12/TeleBot/server/v2/internal/common/retry"
 	"github.com/google/uuid"
 	kafka "github.com/segmentio/kafka-go"
 )

@@ -6,12 +6,12 @@ import (
 	"os/signal"
 	"syscall"
 
-	botApp "github.com/DOs0x12/TeleBot/server/internal/app"
-	botEnt "github.com/DOs0x12/TeleBot/server/internal/entities/bot"
-	botInfra "github.com/DOs0x12/TeleBot/server/internal/infrastructure/bot"
-	brokerInfra "github.com/DOs0x12/TeleBot/server/internal/infrastructure/broker"
-	"github.com/DOs0x12/TeleBot/server/internal/infrastructure/config"
-	"github.com/DOs0x12/TeleBot/server/internal/infrastructure/storage"
+	botApp "github.com/DOs0x12/TeleBot/server/v2/internal/app"
+	botEnt "github.com/DOs0x12/TeleBot/server/v2/internal/entities/bot"
+	botInfra "github.com/DOs0x12/TeleBot/server/v2/internal/infrastructure/bot"
+	brokerInfra "github.com/DOs0x12/TeleBot/server/v2/internal/infrastructure/broker"
+	"github.com/DOs0x12/TeleBot/server/v2/internal/infrastructure/config"
+	"github.com/DOs0x12/TeleBot/server/v2/internal/infrastructure/storage"
 
 	"github.com/sirupsen/logrus"
 )
@@ -55,20 +55,16 @@ func main() {
 
 	botConf := botApp.BotConf{BotWorker: bot, BotCommands: &commands, Storage: pgStorage}
 
-	cons, err := brokerInfra.NewKafkaConsumer(config.KafkaAddress)
+	kafkaBroker, err := brokerInfra.NewKafkaBroker(config.KafkaAddress)
 	if err != nil {
-		logrus.Error("Failed to create a receiver: ", err)
+		logrus.Error("Failed to create a Kafka broker: ", err)
 
 		return
 	}
 
-	prod := brokerInfra.NewKafkaProducer(config.KafkaAddress)
-
-	brokerConf := botApp.BrokerConf{Receiver: cons, Transmitter: prod}
-
 	logrus.Info("Start the application")
 
-	err = botApp.Process(appCtx, botConf, brokerConf)
+	err = botApp.Process(appCtx, botConf, kafkaBroker)
 	if err != nil {
 		logrus.Error("An application error occured: ", err)
 

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/DOs0x12/TeleBot/server/internal/entities/bot"
+	"github.com/DOs0x12/TeleBot/server/v2/internal/entities/bot"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -16,7 +16,7 @@ const tableComm = `
 CREATE TABLE IF NOT EXISTS commands (
 	name varchar(50) UNIQUE,
 	description varchar(1000) NOT NULL,
-	token varchar(100) UNIQUE NOT NULL
+	token varchar(100) NOT NULL
 )`
 
 type StorageConf struct {

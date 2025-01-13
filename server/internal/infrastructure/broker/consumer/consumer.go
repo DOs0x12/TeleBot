@@ -1,4 +1,4 @@
-package broker
+package consumer
 
 import (
 	"context"
@@ -6,9 +6,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/DOs0x12/TeleBot/server/internal/common/retry"
-	"github.com/DOs0x12/TeleBot/server/internal/entities/broker"
-	"github.com/DOs0x12/TeleBot/server/system"
+	"github.com/DOs0x12/TeleBot/server/v2/internal/common/retry"
+	"github.com/DOs0x12/TeleBot/server/v2/internal/entities/broker"
+	"github.com/DOs0x12/TeleBot/server/v2/internal/infrastructure/broker/topic"
+	"github.com/DOs0x12/TeleBot/server/v2/system"
 	"github.com/google/uuid"
 
 	kafka "github.com/segmentio/kafka-go"
@@ -33,12 +34,12 @@ type offsetWithTimeStamp struct {
 }
 
 func NewKafkaConsumer(address string) (*KafkaConsumer, error) {
-	dataTopicName, err := system.GetOrCreateTopicToken("botdata")
+	dataTopicName, err := system.GetDataToken()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get a topic token: %w", err)
+		return nil, fmt.Errorf("failed to get the data token: %w", err)
 	}
 
-	err = createDataTopic(dataTopicName, address)
+	err = topic.CreateDataTopic(dataTopicName, address)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create the data topic: %w", err)
 	}

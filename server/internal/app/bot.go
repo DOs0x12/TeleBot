@@ -2,12 +2,11 @@ package telebot
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
-	botEnt "github.com/DOs0x12/TeleBot/server/internal/entities/bot"
-	brokerEnt "github.com/DOs0x12/TeleBot/server/internal/entities/broker"
-	"github.com/DOs0x12/TeleBot/server/internal/interfaces/storage"
+	botEnt "github.com/DOs0x12/TeleBot/server/v2/internal/entities/bot"
+	brokerEnt "github.com/DOs0x12/TeleBot/server/v2/internal/entities/broker"
+	"github.com/DOs0x12/TeleBot/server/v2/internal/interfaces/storage"
 )
 
 func loadBotCommands(
@@ -42,7 +41,7 @@ func processFromBotData(
 	data botEnt.Data,
 	commands []botEnt.Command) (brokerEnt.DataTo, error) {
 	if !data.IsCommand {
-		return processFromBotCommand(data)
+		return processFromBotMessage(data), nil
 	}
 
 	for _, command := range commands {
@@ -50,27 +49,17 @@ func processFromBotData(
 			continue
 		}
 
-		chatID := data.ChatID
-		dataDto := BotDataDto{ChatID: chatID}
-		dataValue, err := json.Marshal(dataDto)
-		if err != nil {
-			return brokerEnt.DataTo{}, fmt.Errorf("failed to marshal a BotDataDto with a command: %w", err)
-		}
-
-		return brokerEnt.DataTo{CommName: command.Name, Value: string(dataValue), Token: command.Token}, nil
+		return brokerEnt.DataTo{
+			CommName: command.Name,
+			ChatID:   data.ChatID,
+			Value:    data.Value,
+			Token:    command.Token,
+		}, nil
 	}
 
 	return brokerEnt.DataTo{}, fmt.Errorf("no commands with the name %v", data.Value)
 }
 
-func processFromBotCommand(data botEnt.Data) (brokerEnt.DataTo, error) {
-	chatID := data.ChatID
-	message := data.Value
-	dataDto := BotDataDto{ChatID: chatID, Value: message}
-	dataValue, err := json.Marshal(dataDto)
-	if err != nil {
-		return brokerEnt.DataTo{}, fmt.Errorf("failed to marshal a BotDataDto with data: %w", err)
-	}
-
-	return brokerEnt.DataTo{Value: string(dataValue)}, nil
+func processFromBotMessage(data botEnt.Data) brokerEnt.DataTo {
+	return brokerEnt.DataTo{ChatID: data.ChatID, Value: data.Value}
 }

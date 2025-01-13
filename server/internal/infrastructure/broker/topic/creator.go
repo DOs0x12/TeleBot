@@ -1,4 +1,4 @@
-package broker
+package topic
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func createDataTopic(topicName, address string) error {
+func CreateDataTopic(topicName, address string) error {
 	conn, err := kafka.Dial("tcp", address)
 	if err != nil {
 		return fmt.Errorf("failed to connect to the broker with the address %v: %w", address, err)

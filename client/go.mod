@@ -1,9 +1,9 @@
-module github.com/DOs0x12/TeleBot/client
+module github.com/DOs0x12/TeleBot/client/v2
 
 go 1.23.3
 
 require (
-	github.com/DOs0x12/TeleBot/server v1.0.0
+	github.com/DOs0x12/TeleBot/server/v2 v2.0.3
 	github.com/google/uuid v1.6.0
 	github.com/segmentio/kafka-go v0.4.47
 	github.com/sirupsen/logrus v1.9.3

@@ -1,11 +1,12 @@
-package broker
+package producer
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
-	"github.com/DOs0x12/TeleBot/server/internal/common/retry"
-	"github.com/DOs0x12/TeleBot/server/internal/entities/broker"
+	"github.com/DOs0x12/TeleBot/server/v2/internal/common/retry"
+	"github.com/DOs0x12/TeleBot/server/v2/internal/entities/broker"
 
 	kafka "github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"
@@ -13,6 +14,12 @@ import (
 
 type KafkaProducer struct {
 	w *kafka.Writer
+}
+
+type ProducerDataDto struct {
+	CommName string
+	ChatID   int64
+	Value    string
 }
 
 var lastCommand string
@@ -45,14 +52,21 @@ func (kt KafkaProducer) sendMessage(ctx context.Context, data broker.DataTo) err
 		data.CommName = lastCommand
 	}
 
-	msg := kafka.Message{Topic: data.Token, Value: []byte(data.Value)}
-	err := kt.w.WriteMessages(ctx, msg)
+	dataDto := ProducerDataDto{CommName: data.CommName, ChatID: data.ChatID, Value: data.Value}
+
+	rawData, err := json.Marshal(dataDto)
+	if err != nil {
+		return fmt.Errorf("failed to marshal data to send: %w", err)
+	}
+
+	msg := kafka.Message{Topic: data.Token, Value: rawData}
+	err = kt.w.WriteMessages(ctx, msg)
 	if err != nil {
 		return fmt.Errorf("failed to write messages: %w", err)
 	}
 
 	if data.CommName != "" {
-		lastCommand = data.Token
+		lastCommand = data.CommName
 	}
 
 	return nil

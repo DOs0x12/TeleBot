@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/DOs0x12/TeleBot/server/internal/common/retry"
+	"github.com/DOs0x12/TeleBot/server/v2/internal/common/retry"
 	tgbot "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 

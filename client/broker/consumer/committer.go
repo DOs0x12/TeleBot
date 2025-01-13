@@ -1,4 +1,4 @@
-package broker
+package consumer
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 )
 
 // Commit the processed messages. The method also removes old messages and offsets.
-func (r Receiver) Commit(ctx context.Context, msgUuid uuid.UUID) error {
+func (r KafkaConsumer) Commit(ctx context.Context, msgUuid uuid.UUID) error {
 	r.mu.Lock()
 
 	threshold := 48 * time.Hour

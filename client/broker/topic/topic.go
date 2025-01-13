@@ -1,15 +1,16 @@
-package broker
+package topic
 
 import (
 	"context"
+	"net"
 	"regexp"
 
 	"github.com/segmentio/kafka-go"
 	"github.com/segmentio/kafka-go/topics"
 )
 
-func (s Sender) createTopicIfNotExist(ctx context.Context, topicName string) error {
-	cl := &kafka.Client{Addr: s.w.Addr}
+func CreateTopicIfNotExist(ctx context.Context, topicName string, addr net.Addr) error {
+	cl := &kafka.Client{Addr: addr}
 	exists, err := topicExists(ctx, topicName, cl)
 	if err != nil {
 		return err
