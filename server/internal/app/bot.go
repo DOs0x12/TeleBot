@@ -42,7 +42,7 @@ func processFromBotData(
 	data botEnt.Data,
 	commands []botEnt.Command) (brokerEnt.DataTo, error) {
 	if !data.IsCommand {
-		return processFromBotMessage(data), nil
+		return brokerEnt.DataTo{ChatID: data.ChatID, Value: data.Value}, nil
 	}
 
 	for _, command := range commands {
@@ -59,10 +59,6 @@ func processFromBotData(
 	}
 
 	return brokerEnt.DataTo{}, fmt.Errorf("no commands with the name %v", data.Value)
-}
-
-func processFromBotMessage(data botEnt.Data) brokerEnt.DataTo {
-	return brokerEnt.DataTo{ChatID: data.ChatID, Value: data.Value}
 }
 
 func command(jsonComm string) (botEnt.Command, error) {
