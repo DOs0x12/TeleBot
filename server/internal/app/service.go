@@ -93,21 +93,9 @@ func processFromBrokerData(ctx context.Context,
 		return
 	}
 
-	toBotData, err := unmarshalBotData(fromBrokerData.Value)
+	err := processBotData(ctx, fromBrokerData, botConf, msgBroker)
 	if err != nil {
-		logrus.Error("Failed to unmarshal bot data: ", err)
-	}
-
-	err = botConf.BotWorker.SendMessage(ctx, toBotData.Value, toBotData.ChatID)
-	if err != nil {
-		logrus.Error("Dailed to send a message to the bot: ", err)
-
-		return
-	}
-
-	err = msgBroker.Commit(ctx, fromBrokerData.MsgUuid)
-	if err != nil {
-		logrus.WithField("messageUuid", err).Error("Failed to commit the message with UUID: ", err)
+		logrus.Error("Failed to process bot data: ", err)
 	}
 }
 
@@ -122,6 +110,28 @@ func processBotCommand(ctx context.Context,
 	err = registerBotCommand(ctx, comm, botConf)
 	if err != nil {
 		return fmt.Errorf("failed to register a command in the bot: %w", err)
+	}
+
+	return nil
+}
+
+func processBotData(ctx context.Context,
+	fromBrokerData broker.DataFrom,
+	botConf BotConf,
+	msgBroker brokerInterf.MessageBroker) error {
+	toBotData, err := unmarshalBotData(fromBrokerData.Value)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal bot data: %w", err)
+	}
+
+	err = botConf.BotWorker.SendMessage(ctx, toBotData.Value, toBotData.ChatID)
+	if err != nil {
+		return fmt.Errorf("failed to send a message to the bot: %w", err)
+	}
+
+	err = msgBroker.Commit(ctx, fromBrokerData.MsgUuid)
+	if err != nil {
+		return fmt.Errorf("failed to commit the message with UUID %v: %w", fromBrokerData.MsgUuid, err)
 	}
 
 	return nil
