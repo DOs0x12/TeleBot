@@ -58,3 +58,13 @@ func unmarshalBotCommand(jsonComm string) (botEnt.Command, error) {
 
 	return comm, nil
 }
+
+func unmarshalBotData(jsonBotData string) (botEnt.Data, error) {
+	var botData BotDataDto
+	err := json.Unmarshal([]byte(jsonBotData), &botData)
+	if err != nil {
+		return botEnt.Data{}, err
+	}
+
+	return botEnt.Data{ChatID: botData.ChatID, Value: botData.Value}, nil
+}

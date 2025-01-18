@@ -102,9 +102,9 @@ func processFromBrokerData(ctx context.Context,
 		return
 	}
 
-	toBotData, err := castFromBrokerData(fromBrokerData)
+	toBotData, err := unmarshalBotData(fromBrokerData.Value)
 	if err != nil {
-		logrus.Error("Failed to cast data for sending it to the bot: ", err)
+		logrus.Error("Failed to unmarshal bot data: ", err)
 	}
 
 	err = botConf.BotWorker.SendMessage(ctx, toBotData.Value, toBotData.ChatID)
