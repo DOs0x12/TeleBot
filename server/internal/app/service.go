@@ -59,9 +59,34 @@ func Process(ctx context.Context,
 			return nil
 		case fromBrokerData := <-fromBrokerDataChan:
 			go func() {
-				err := processFromBrokerData(ctx, fromBrokerData, botConf)
+				if fromBrokerData.IsCommand {
+					comm, err := command(fromBrokerData.Value)
+					if err != nil {
+						logrus.Error("Failed to get a command form a broker message: ", err)
+
+						return
+					}
+
+					err = registerBotCommand(ctx, comm, botConf)
+					if err != nil {
+						logrus.Error("Failed to register a command in the bot: ", err)
+
+						return
+					}
+
+					return
+				}
+
+				toBotData, err := castFromBrokerData(fromBrokerData)
 				if err != nil {
-					logrus.Error("Failed to process data from the broker: ", err)
+					logrus.Error("Failed to cast data for sending it to the bot: ", err)
+				}
+
+				err = botConf.BotWorker.SendMessage(ctx, toBotData.Value, toBotData.ChatID)
+				if err != nil {
+					logrus.Error("Dailed to send a message to the bot: ", err)
+
+					return
 				}
 
 				err = msgBroker.Commit(ctx, fromBrokerData.MsgUuid)

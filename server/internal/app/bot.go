@@ -2,6 +2,7 @@ package telebot
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	botEnt "github.com/DOs0x12/TeleBot/server/v2/internal/entities/bot"
@@ -62,4 +63,14 @@ func processFromBotData(
 
 func processFromBotMessage(data botEnt.Data) brokerEnt.DataTo {
 	return brokerEnt.DataTo{ChatID: data.ChatID, Value: data.Value}
+}
+
+func command(jsonComm string) (botEnt.Command, error) {
+	var comm botEnt.Command
+	err := json.Unmarshal([]byte(jsonComm), &comm)
+	if err != nil {
+		return botEnt.Command{}, fmt.Errorf("failed to unmarshal a command object: %w", err)
+	}
+
+	return comm, nil
 }
