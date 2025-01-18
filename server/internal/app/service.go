@@ -61,24 +61,13 @@ func Process(ctx context.Context,
 		case fromBrokerData := <-fromBrokerDataChan:
 			go processFromBrokerData(ctx, fromBrokerData, botConf, msgBroker)
 		case fromBotData := <-fromBotDataChan:
-			var toBrokerData broker.DataTo
-			if !fromBotData.IsCommand {
-				toBrokerData = broker.DataTo{ChatID: fromBotData.ChatID, Value: fromBotData.Value}
-			} else {
-				botCommand, err := searchBotCommandByName(fromBotData.Value, *botConf.BotCommands)
-				if err != nil {
-					logrus.Error("Failed to get a bot command: ", err)
+			toBrokerData, err := toBrokerData(fromBotData, botConf)
+			if err != nil {
+				logrus.Error("Failed to get a bot command: ", err)
 
-					continue
-				}
-
-				toBrokerData = broker.DataTo{
-					CommName: botCommand.Name,
-					ChatID:   fromBotData.ChatID,
-					Value:    fromBotData.Value,
-					Token:    botCommand.Token,
-				}
+				continue
 			}
+
 			go func() {
 				err = msgBroker.TransmitData(ctx, toBrokerData)
 				if err != nil {
@@ -127,4 +116,23 @@ func processFromBrokerData(ctx context.Context,
 	if err != nil {
 		logrus.WithField("messageUuid", err).Error("Failed to commit the message with UUID: ", err)
 	}
+}
+
+func toBrokerData(fromBotData botEnt.Data, botConf BotConf) (broker.DataTo, error) {
+	if !fromBotData.IsCommand {
+		return broker.DataTo{ChatID: fromBotData.ChatID, Value: fromBotData.Value}, nil
+	}
+
+	botCommand, err := searchBotCommandByName(fromBotData.Value, *botConf.BotCommands)
+	if err != nil {
+		return broker.DataTo{}, err
+	}
+
+	return broker.DataTo{
+			CommName: botCommand.Name,
+			ChatID:   fromBotData.ChatID,
+			Value:    fromBotData.Value,
+			Token:    botCommand.Token,
+		},
+		nil
 }
