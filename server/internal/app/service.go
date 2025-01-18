@@ -61,13 +61,24 @@ func Process(ctx context.Context,
 		case fromBrokerData := <-fromBrokerDataChan:
 			go processFromBrokerData(ctx, fromBrokerData, botConf, msgBroker)
 		case fromBotData := <-fromBotDataChan:
-			toBrokerData, err := processFromBotData(fromBotData, *botConf.BotCommands)
-			if err != nil {
-				logrus.Error("Failed to process data from the bot: ", err)
+			var toBrokerData broker.DataTo
+			if !fromBotData.IsCommand {
+				toBrokerData = broker.DataTo{ChatID: fromBotData.ChatID, Value: fromBotData.Value}
+			} else {
+				botCommand, err := searchBotCommandByName(fromBotData.Value, *botConf.BotCommands)
+				if err != nil {
+					logrus.Error("Failed to get a bot command: ", err)
 
-				continue
+					continue
+				}
+
+				toBrokerData = broker.DataTo{
+					CommName: botCommand.Name,
+					ChatID:   fromBotData.ChatID,
+					Value:    fromBotData.Value,
+					Token:    botCommand.Token,
+				}
 			}
-
 			go func() {
 				err = msgBroker.TransmitData(ctx, toBrokerData)
 				if err != nil {

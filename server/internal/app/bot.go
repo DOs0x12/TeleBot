@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	botEnt "github.com/DOs0x12/TeleBot/server/v2/internal/entities/bot"
-	brokerEnt "github.com/DOs0x12/TeleBot/server/v2/internal/entities/broker"
 	"github.com/DOs0x12/TeleBot/server/v2/internal/interfaces/storage"
 )
 
@@ -38,27 +37,16 @@ func registerBotCommand(ctx context.Context,
 	return nil
 }
 
-func processFromBotData(
-	data botEnt.Data,
-	commands []botEnt.Command) (brokerEnt.DataTo, error) {
-	if !data.IsCommand {
-		return brokerEnt.DataTo{ChatID: data.ChatID, Value: data.Value}, nil
-	}
-
+func searchBotCommandByName(
+	commName string,
+	commands []botEnt.Command) (botEnt.Command, error) {
 	for _, command := range commands {
-		if data.Value != command.Name {
-			continue
+		if commName == command.Name {
+			return command, nil
 		}
-
-		return brokerEnt.DataTo{
-			CommName: command.Name,
-			ChatID:   data.ChatID,
-			Value:    data.Value,
-			Token:    command.Token,
-		}, nil
 	}
 
-	return brokerEnt.DataTo{}, fmt.Errorf("no commands with the name %v", data.Value)
+	return botEnt.Command{}, fmt.Errorf("no commands with the name %v", commName)
 }
 
 func command(jsonComm string) (botEnt.Command, error) {
