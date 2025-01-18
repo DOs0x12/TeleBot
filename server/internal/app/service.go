@@ -61,19 +61,7 @@ func Process(ctx context.Context,
 		case fromBrokerData := <-fromBrokerDataChan:
 			go processFromBrokerData(ctx, fromBrokerData, botConf, msgBroker)
 		case fromBotData := <-fromBotDataChan:
-			toBrokerData, err := toBrokerData(fromBotData, botConf)
-			if err != nil {
-				logrus.Error("Failed to get a bot command: ", err)
-
-				continue
-			}
-
-			go func() {
-				err = msgBroker.TransmitData(ctx, toBrokerData)
-				if err != nil {
-					logrus.Error("Failed to transmit data to the broker: ", err)
-				}
-			}()
+			go processFromBotData(ctx, fromBotData, botConf, msgBroker)
 		}
 	}
 }
@@ -135,4 +123,21 @@ func toBrokerData(fromBotData botEnt.Data, botConf BotConf) (broker.DataTo, erro
 			Token:    botCommand.Token,
 		},
 		nil
+}
+
+func processFromBotData(ctx context.Context,
+	fromBotData botEnt.Data,
+	botConf BotConf,
+	msgBroker brokerInterf.MessageBroker) {
+	toBrokerData, err := toBrokerData(fromBotData, botConf)
+	if err != nil {
+		logrus.Error("Failed to get a bot command: ", err)
+
+		return
+	}
+
+	err = msgBroker.TransmitData(ctx, toBrokerData)
+	if err != nil {
+		logrus.Error("Failed to transmit data to the broker: ", err)
+	}
 }
