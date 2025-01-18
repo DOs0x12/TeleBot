@@ -49,7 +49,7 @@ func searchBotCommandByName(
 	return botEnt.Command{}, fmt.Errorf("no commands with the name %v", commName)
 }
 
-func command(jsonComm string) (botEnt.Command, error) {
+func unmarshalBotCommand(jsonComm string) (botEnt.Command, error) {
 	var comm botEnt.Command
 	err := json.Unmarshal([]byte(jsonComm), &comm)
 	if err != nil {

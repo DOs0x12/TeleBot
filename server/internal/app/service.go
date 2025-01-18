@@ -85,7 +85,7 @@ func processFromBrokerData(ctx context.Context,
 	botConf BotConf,
 	msgBroker brokerInterf.MessageBroker) {
 	if fromBrokerData.IsCommand {
-		comm, err := command(fromBrokerData.Value)
+		comm, err := unmarshalBotCommand(fromBrokerData.Value)
 		if err != nil {
 			logrus.Error("Failed to get a command form a broker message: ", err)
 
