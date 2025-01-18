@@ -50,12 +50,7 @@ func Process(ctx context.Context,
 	for {
 		select {
 		case <-ctx.Done():
-			botConf.BotWorker.Stop()
-			logrus.Info("The bot has been stopped")
-			msgBroker.Close()
-			logrus.Info("The transmitter connection has been closed")
-			botConf.Storage.Close()
-			logrus.Info("The storage connection has been closed")
+			stopServices(botConf, msgBroker)
 
 			return nil
 		case fromBrokerData := <-fromBrokerDataChan:
@@ -64,6 +59,15 @@ func Process(ctx context.Context,
 			go processFromBotData(ctx, fromBotData, botConf, msgBroker)
 		}
 	}
+}
+
+func stopServices(botConf BotConf, msgBroker brokerInterf.MessageBroker) {
+	botConf.BotWorker.Stop()
+	logrus.Info("The bot has been stopped")
+	msgBroker.Close()
+	logrus.Info("The transmitter connection has been closed")
+	botConf.Storage.Close()
+	logrus.Info("The storage connection has been closed")
 }
 
 func processFromBrokerData(ctx context.Context,
