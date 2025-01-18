@@ -47,12 +47,22 @@ func Process(ctx context.Context,
 		return fmt.Errorf("failed to register the loaded commands: %w", err)
 	}
 
+	handleServices(ctx, botConf, msgBroker, fromBrokerDataChan, fromBotDataChan)
+
+	return nil
+}
+
+func handleServices(ctx context.Context,
+	botConf BotConf,
+	msgBroker brokerInterf.MessageBroker,
+	fromBrokerDataChan <-chan broker.DataFrom,
+	fromBotDataChan <-chan botEnt.Data) {
 	for {
 		select {
 		case <-ctx.Done():
 			stopServices(botConf, msgBroker)
 
-			return nil
+			return
 		case fromBrokerData := <-fromBrokerDataChan:
 			go processFromBrokerData(ctx, fromBrokerData, botConf, msgBroker)
 		case fromBotData := <-fromBotDataChan:
