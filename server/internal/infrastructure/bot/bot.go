@@ -29,7 +29,7 @@ func NewTelebot(ctx context.Context, botKey string, commands []botEnt.Command) (
 	return bot, nil
 }
 
-func (t Telebot) Start(ctx context.Context) chan botEnt.Data {
+func (t Telebot) Start(ctx context.Context) <-chan botEnt.Data {
 	updConfig := tgbot.NewUpdate(0)
 	botInDataChan := make(chan botEnt.Data)
 	updChan := t.bot.GetUpdatesChan(updConfig)
