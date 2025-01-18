@@ -85,18 +85,9 @@ func processFromBrokerData(ctx context.Context,
 	botConf BotConf,
 	msgBroker brokerInterf.MessageBroker) {
 	if fromBrokerData.IsCommand {
-		comm, err := unmarshalBotCommand(fromBrokerData.Value)
+		err := processBotCommand(ctx, fromBrokerData, botConf)
 		if err != nil {
-			logrus.Error("Failed to unmarshal a bot command: ", err)
-
-			return
-		}
-
-		err = registerBotCommand(ctx, comm, botConf)
-		if err != nil {
-			logrus.Error("Failed to register a command in the bot: ", err)
-
-			return
+			logrus.Error("Failed to process a bot command: ", err)
 		}
 
 		return
@@ -118,6 +109,22 @@ func processFromBrokerData(ctx context.Context,
 	if err != nil {
 		logrus.WithField("messageUuid", err).Error("Failed to commit the message with UUID: ", err)
 	}
+}
+
+func processBotCommand(ctx context.Context,
+	fromBrokerData broker.DataFrom,
+	botConf BotConf) error {
+	comm, err := unmarshalBotCommand(fromBrokerData.Value)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal a bot command: %w", err)
+	}
+
+	err = registerBotCommand(ctx, comm, botConf)
+	if err != nil {
+		return fmt.Errorf("failed to register a command in the bot: %w", err)
+	}
+
+	return nil
 }
 
 func toBrokerData(fromBotData botEnt.Data, botConf BotConf) (broker.DataTo, error) {
