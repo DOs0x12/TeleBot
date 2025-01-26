@@ -26,7 +26,9 @@ func NewKafkaBroker(address string) (*KafkaBroker, error) {
 	return &KafkaBroker{cons: cons, prod: prod}, nil
 }
 
-func (b *KafkaBroker) StartReceivingData(ctx context.Context) (<-chan broker.DataFrom, error) {
+func (b *KafkaBroker) StartReceivingData(ctx context.Context) (<-chan broker.DataFrom,
+	<-chan broker.CommandFrom,
+	error) {
 	return b.cons.StartReceivingData(ctx)
 }
 

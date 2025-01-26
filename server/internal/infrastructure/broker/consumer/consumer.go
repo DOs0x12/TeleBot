@@ -62,15 +62,21 @@ func NewKafkaConsumer(address string) (*KafkaConsumer, error) {
 	return &cons, nil
 }
 
-func (kr *KafkaConsumer) StartReceivingData(ctx context.Context) (<-chan broker.DataFrom, error) {
+func (kr *KafkaConsumer) StartReceivingData(ctx context.Context) (
+	<-chan broker.DataFrom,
+	<-chan broker.CommandFrom,
+	error) {
 	dataChan := make(chan broker.DataFrom)
+	commChan := make(chan broker.CommandFrom)
 
-	go kr.consumeMessages(ctx, dataChan)
+	go kr.consumeMessages(ctx, dataChan, commChan)
 
-	return dataChan, nil
+	return dataChan, commChan, nil
 }
 
-func (kr *KafkaConsumer) consumeMessages(ctx context.Context, dataChan chan broker.DataFrom) {
+func (kr *KafkaConsumer) consumeMessages(ctx context.Context,
+	dataChan chan<- broker.DataFrom,
+	commChan chan<- broker.CommandFrom) {
 	for {
 		if ctx.Err() != nil {
 			break
@@ -90,7 +96,11 @@ func (kr *KafkaConsumer) consumeMessages(ctx context.Context, dataChan chan brok
 
 		commandKey := "command"
 		isCommand := string(msg.Key) == commandKey
-		dataChan <- broker.DataFrom{IsCommand: isCommand, Value: string(msg.Value), MsgUuid: msgUuid}
+		if isCommand {
+			commChan <- broker.CommandFrom{Name: string(msg.Value), MsgUuid: msgUuid}
+		} else {
+			dataChan <- broker.DataFrom{Value: string(msg.Value), MsgUuid: msgUuid}
+		}
 	}
 
 	if err := kr.reader.Close(); err != nil {
