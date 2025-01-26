@@ -13,11 +13,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type BotCommandDto struct {
-	Name        string
-	Description string
-}
-
 type BotConf struct {
 	BotWorker   botInterf.Worker
 	BotCommands *[]botEnt.Command
