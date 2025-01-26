@@ -107,6 +107,7 @@ func (kr *KafkaConsumer) consumeMessages(ctx context.Context,
 				continue
 			}
 
+			comm.MsgUuid = msgUuid
 			commChan <- comm
 		} else {
 			dataChan <- broker.DataFrom{Value: string(msg.Value), MsgUuid: msgUuid}
@@ -137,6 +138,21 @@ func unmarshalBotCommand(rawComm []byte) (broker.CommandFrom, error) {
 			Token:       commDto.Token,
 		},
 		nil
+}
+
+type BotDataDto struct {
+	ChatID int64
+	Value  string
+}
+
+func unmarshalBotData(jsonBotData string) (broker.DataFrom, error) {
+	var botData BotDataDto
+	err := json.Unmarshal([]byte(jsonBotData), &botData)
+	if err != nil {
+		return broker.DataFrom{}, err
+	}
+
+	return botEnt.Data{ChatID: botData.ChatID, Value: botData.Value}, nil
 }
 
 func (kr *KafkaConsumer) fetchMesWithRetries(ctx context.Context) (kafka.Message, error) {

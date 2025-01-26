@@ -11,4 +11,5 @@ type CommandFrom struct {
 	Name,
 	Description,
 	Token string
+	MsgUuid uuid.UUID
 }
