@@ -3,7 +3,11 @@ package broker
 import "github.com/google/uuid"
 
 type DataFrom struct {
-	IsCommand bool
-	Value     string
-	MsgUuid   uuid.UUID
+	Value   string
+	MsgUuid uuid.UUID
+}
+
+type CommandFrom struct {
+	Name    string
+	MsgUuid uuid.UUID
 }
