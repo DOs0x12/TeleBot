@@ -19,6 +19,7 @@ func (s service) loadBotCommands() error {
 }
 
 func (s service) registerBotCommand(botNewComm botEnt.Command) error {
+	searchBotCommandByName(botNewComm.Name, *s.botConf.BotCommands)
 	*s.botConf.BotCommands = append(*s.botConf.BotCommands, botNewComm)
 	s.botConf.BotWorker.RegisterCommands(s.ctx, *s.botConf.BotCommands)
 
@@ -32,14 +33,14 @@ func (s service) registerBotCommand(botNewComm botEnt.Command) error {
 
 func searchBotCommandByName(
 	commName string,
-	commands []botEnt.Command) (*botEnt.Command, error) {
+	commands []botEnt.Command) *botEnt.Command {
 	for _, command := range commands {
 		if commName == command.Name {
-			return &command, nil
+			return &command
 		}
 	}
 
-	return nil, fmt.Errorf("no commands with the name %v", commName)
+	return nil
 }
 
 func (s service) processBotCommand(fromBrokerComm broker.CommandFrom) error {
