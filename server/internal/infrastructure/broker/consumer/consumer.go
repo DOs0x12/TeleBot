@@ -2,6 +2,7 @@ package consumer
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"sync"
 	"time"
@@ -65,18 +66,20 @@ func NewKafkaConsumer(address string) (*KafkaConsumer, error) {
 func (kr *KafkaConsumer) StartReceivingData(ctx context.Context) (
 	<-chan broker.DataFrom,
 	<-chan broker.CommandFrom,
-	error) {
+	<-chan error) {
 	dataChan := make(chan broker.DataFrom)
 	commChan := make(chan broker.CommandFrom)
+	errChan := make(chan error)
 
-	go kr.consumeMessages(ctx, dataChan, commChan)
+	go kr.consumeMessages(ctx, dataChan, commChan, errChan)
 
 	return dataChan, commChan, nil
 }
 
 func (kr *KafkaConsumer) consumeMessages(ctx context.Context,
 	dataChan chan<- broker.DataFrom,
-	commChan chan<- broker.CommandFrom) {
+	commChan chan<- broker.CommandFrom,
+	errChan chan<- error) {
 	for {
 		if ctx.Err() != nil {
 			break
@@ -97,7 +100,14 @@ func (kr *KafkaConsumer) consumeMessages(ctx context.Context,
 		commandKey := "command"
 		isCommand := string(msg.Key) == commandKey
 		if isCommand {
-			commChan <- broker.CommandFrom{Name: string(msg.Value), MsgUuid: msgUuid}
+			comm, err := unmarshalBotCommand(msg.Value)
+			if err != nil {
+				errChan <- err
+
+				continue
+			}
+
+			commChan <- comm
 		} else {
 			dataChan <- broker.DataFrom{Value: string(msg.Value), MsgUuid: msgUuid}
 		}
@@ -106,6 +116,27 @@ func (kr *KafkaConsumer) consumeMessages(ctx context.Context,
 	if err := kr.reader.Close(); err != nil {
 		logrus.Error("Failed to close the reader: ", err)
 	}
+}
+
+type CommandDto struct {
+	Name,
+	Description,
+	Token string
+}
+
+func unmarshalBotCommand(rawComm []byte) (broker.CommandFrom, error) {
+	var commDto CommandDto
+	err := json.Unmarshal(rawComm, &commDto)
+	if err != nil {
+		return broker.CommandFrom{}, fmt.Errorf("failed to unmarshal a command object: %w", err)
+	}
+
+	return broker.CommandFrom{
+			Name:        commDto.Name,
+			Description: commDto.Description,
+			Token:       commDto.Token,
+		},
+		nil
 }
 
 func (kr *KafkaConsumer) fetchMesWithRetries(ctx context.Context) (kafka.Message, error) {
