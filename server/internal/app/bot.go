@@ -59,6 +59,11 @@ func unmarshalBotCommand(jsonComm string) (botEnt.Command, error) {
 	return comm, nil
 }
 
+type BotDataDto struct {
+	ChatID int64
+	Value  string
+}
+
 func unmarshalBotData(jsonBotData string) (botEnt.Data, error) {
 	var botData BotDataDto
 	err := json.Unmarshal([]byte(jsonBotData), &botData)

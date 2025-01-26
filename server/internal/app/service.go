@@ -13,11 +13,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type BotDataDto struct {
-	ChatID int64
-	Value  string
-}
-
 type BotCommandDto struct {
 	Name        string
 	Description string
