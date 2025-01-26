@@ -8,6 +8,7 @@ type DataFrom struct {
 }
 
 type CommandFrom struct {
-	Name    string
-	MsgUuid uuid.UUID
+	Name,
+	Description,
+	Token string
 }
