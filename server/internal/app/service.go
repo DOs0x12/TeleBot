@@ -83,13 +83,17 @@ func (s service) processFromBrokerData(fromBrokerData broker.DataFrom) {
 		if err != nil {
 			logrus.Error("Failed to process a bot command: ", err)
 		}
-
-		return
+	} else {
+		err := s.processBotData(fromBrokerData)
+		if err != nil {
+			logrus.Error("Failed to process bot data: ", err)
+		}
 	}
 
-	err := s.processBotData(fromBrokerData)
+	err := s.msgBroker.Commit(s.ctx, fromBrokerData.MsgUuid)
 	if err != nil {
-		logrus.Error("Failed to process bot data: ", err)
+		logrus.WithField("UUID", fromBrokerData.MsgUuid).
+			Error("failed to commit a message: ", err)
 	}
 }
 
@@ -116,11 +120,6 @@ func (s service) processBotData(fromBrokerData broker.DataFrom) error {
 	err = s.botConf.BotWorker.SendMessage(s.ctx, toBotData.Value, toBotData.ChatID)
 	if err != nil {
 		return fmt.Errorf("failed to send a message to the bot: %w", err)
-	}
-
-	err = s.msgBroker.Commit(s.ctx, fromBrokerData.MsgUuid)
-	if err != nil {
-		return fmt.Errorf("failed to commit the message with UUID %v: %w", fromBrokerData.MsgUuid, err)
 	}
 
 	return nil
