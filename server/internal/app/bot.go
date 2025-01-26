@@ -1,10 +1,10 @@
 package telebot
 
 import (
-	"encoding/json"
 	"fmt"
 
 	botEnt "github.com/DOs0x12/TeleBot/server/v2/internal/entities/bot"
+	"github.com/DOs0x12/TeleBot/server/v2/internal/entities/broker"
 )
 
 func (s service) loadBotCommands() error {
@@ -42,27 +42,25 @@ func searchBotCommandByName(
 	return botEnt.Command{}, fmt.Errorf("no commands with the name %v", commName)
 }
 
-func unmarshalBotCommand(jsonComm string) (botEnt.Command, error) {
-	var comm botEnt.Command
-	err := json.Unmarshal([]byte(jsonComm), &comm)
+func (s service) processBotCommand(fromBrokerComm broker.CommandFrom) error {
+	comm := botEnt.Command{
+		Name:        fromBrokerComm.Name,
+		Description: fromBrokerComm.Description,
+		Token:       fromBrokerComm.Token,
+	}
+	err := s.registerBotCommand(comm)
 	if err != nil {
-		return botEnt.Command{}, fmt.Errorf("failed to unmarshal a command object: %w", err)
+		return fmt.Errorf("failed to register a command in the bot: %w", err)
 	}
 
-	return comm, nil
+	return nil
 }
 
-type BotDataDto struct {
-	ChatID int64
-	Value  string
-}
-
-func unmarshalBotData(jsonBotData string) (botEnt.Data, error) {
-	var botData BotDataDto
-	err := json.Unmarshal([]byte(jsonBotData), &botData)
+func (s service) processBotData(fromBrokerData broker.DataFrom) error {
+	err := s.botConf.BotWorker.SendMessage(s.ctx, fromBrokerData.Value, fromBrokerData.ChatID)
 	if err != nil {
-		return botEnt.Data{}, err
+		return fmt.Errorf("failed to send a message to the bot: %w", err)
 	}
 
-	return botEnt.Data{ChatID: botData.ChatID, Value: botData.Value}, nil
+	return nil
 }
