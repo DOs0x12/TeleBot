@@ -32,14 +32,14 @@ func (s service) registerBotCommand(botNewComm botEnt.Command) error {
 
 func searchBotCommandByName(
 	commName string,
-	commands []botEnt.Command) (botEnt.Command, error) {
+	commands []botEnt.Command) (*botEnt.Command, error) {
 	for _, command := range commands {
 		if commName == command.Name {
-			return command, nil
+			return &command, nil
 		}
 	}
 
-	return botEnt.Command{}, fmt.Errorf("no commands with the name %v", commName)
+	return nil, fmt.Errorf("no commands with the name %v", commName)
 }
 
 func (s service) processBotCommand(fromBrokerComm broker.CommandFrom) error {
