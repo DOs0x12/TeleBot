@@ -19,8 +19,15 @@ func (s service) loadBotCommands() error {
 }
 
 func (s service) registerBotCommand(botNewComm botEnt.Command) error {
-	searchBotCommandByName(botNewComm.Name, *s.botConf.BotCommands)
-	*s.botConf.BotCommands = append(*s.botConf.BotCommands, botNewComm)
+	comm := searchBotCommandByName(botNewComm.Name, *s.botConf.BotCommands)
+	if comm == nil {
+		*s.botConf.BotCommands = append(*s.botConf.BotCommands, botNewComm)
+	} else {
+		comm.Name = botNewComm.Name
+		comm.Description = botNewComm.Description
+		comm.Token = botNewComm.Token
+	}
+
 	s.botConf.BotWorker.RegisterCommands(s.ctx, *s.botConf.BotCommands)
 
 	err := s.botConf.Storage.Save(s.ctx, botNewComm)
