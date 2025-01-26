@@ -64,7 +64,8 @@ func main() {
 
 	logrus.Info("Start the application")
 
-	err = botApp.Process(appCtx, botConf, kafkaBroker)
+	appServ := botApp.NewService(appCtx, botConf, kafkaBroker)
+	err = appServ.Process()
 	if err != nil {
 		logrus.Error("An application error occured: ", err)
 

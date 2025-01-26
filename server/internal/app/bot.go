@@ -1,35 +1,28 @@
 package telebot
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 
 	botEnt "github.com/DOs0x12/TeleBot/server/v2/internal/entities/bot"
-	"github.com/DOs0x12/TeleBot/server/v2/internal/interfaces/storage"
 )
 
-func loadBotCommands(
-	ctx context.Context,
-	botCommands *[]botEnt.Command,
-	storage storage.CommandStorage) error {
-	commands, err := storage.Load(ctx)
+func (s service) loadBotCommands() error {
+	commands, err := s.botConf.Storage.Load(s.ctx)
 	if err != nil {
 		return fmt.Errorf("failed to load the bot commands from the storage: %w", err)
 	}
 
-	*botCommands = append(*botCommands, commands...)
+	*s.botConf.BotCommands = append(*s.botConf.BotCommands, commands...)
 
 	return nil
 }
 
-func registerBotCommand(ctx context.Context,
-	botNewComm botEnt.Command,
-	botConf BotConf) error {
-	*botConf.BotCommands = append(*botConf.BotCommands, botNewComm)
-	botConf.BotWorker.RegisterCommands(ctx, *botConf.BotCommands)
+func (s service) registerBotCommand(botNewComm botEnt.Command) error {
+	*s.botConf.BotCommands = append(*s.botConf.BotCommands, botNewComm)
+	s.botConf.BotWorker.RegisterCommands(s.ctx, *s.botConf.BotCommands)
 
-	err := botConf.Storage.Save(ctx, botNewComm)
+	err := s.botConf.Storage.Save(s.ctx, botNewComm)
 	if err != nil {
 		return fmt.Errorf("failed to save a command: %w", err)
 	}

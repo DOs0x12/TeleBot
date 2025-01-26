@@ -19,63 +19,67 @@ type BotConf struct {
 	Storage     storInterf.CommandStorage
 }
 
-func Process(ctx context.Context,
+type service struct {
+	ctx       context.Context
+	botConf   BotConf
+	msgBroker brokerInterf.MessageBroker
+}
+
+func NewService(ctx context.Context,
 	botConf BotConf,
-	msgBroker brokerInterf.MessageBroker,
-) error {
-	fromBrokerDataChan, err := msgBroker.StartReceivingData(ctx)
+	msgBroker brokerInterf.MessageBroker) service {
+
+	return service{ctx: ctx, botConf: botConf, msgBroker: msgBroker}
+}
+
+func (s service) Process() error {
+	fromBrokerDataChan, err := s.msgBroker.StartReceivingData(s.ctx)
 	if err != nil {
 		return fmt.Errorf("failed to start receiving data: %w", err)
 	}
 
-	fromBotDataChan := botConf.BotWorker.Start(ctx)
-	if err = loadBotCommands(ctx, botConf.BotCommands, botConf.Storage); err != nil {
+	fromBotDataChan := s.botConf.BotWorker.Start(s.ctx)
+	if err = s.loadBotCommands(); err != nil {
 		return err
 	}
 
-	if err = botConf.BotWorker.RegisterCommands(ctx, *botConf.BotCommands); err != nil {
+	if err = s.botConf.BotWorker.RegisterCommands(s.ctx, *s.botConf.BotCommands); err != nil {
 		return fmt.Errorf("failed to register the loaded commands: %w", err)
 	}
 
-	handleServices(ctx, botConf, msgBroker, fromBrokerDataChan, fromBotDataChan)
+	s.handleServices(fromBrokerDataChan, fromBotDataChan)
 
 	return nil
 }
 
-func handleServices(ctx context.Context,
-	botConf BotConf,
-	msgBroker brokerInterf.MessageBroker,
-	fromBrokerDataChan <-chan broker.DataFrom,
+func (s service) handleServices(fromBrokerDataChan <-chan broker.DataFrom,
 	fromBotDataChan <-chan botEnt.Data) {
 	for {
 		select {
-		case <-ctx.Done():
-			stopServices(botConf, msgBroker)
+		case <-s.ctx.Done():
+			s.stopServices()
 
 			return
 		case fromBrokerData := <-fromBrokerDataChan:
-			go processFromBrokerData(ctx, fromBrokerData, botConf, msgBroker)
+			go s.processFromBrokerData(fromBrokerData)
 		case fromBotData := <-fromBotDataChan:
-			go processFromBotData(ctx, fromBotData, botConf, msgBroker)
+			go s.processFromBotData(fromBotData)
 		}
 	}
 }
 
-func stopServices(botConf BotConf, msgBroker brokerInterf.MessageBroker) {
-	botConf.BotWorker.Stop()
+func (s service) stopServices() {
+	s.botConf.BotWorker.Stop()
 	logrus.Info("The bot has been stopped")
-	msgBroker.Close()
+	s.msgBroker.Close()
 	logrus.Info("The transmitter connection has been closed")
-	botConf.Storage.Close()
+	s.botConf.Storage.Close()
 	logrus.Info("The storage connection has been closed")
 }
 
-func processFromBrokerData(ctx context.Context,
-	fromBrokerData broker.DataFrom,
-	botConf BotConf,
-	msgBroker brokerInterf.MessageBroker) {
+func (s service) processFromBrokerData(fromBrokerData broker.DataFrom) {
 	if fromBrokerData.IsCommand {
-		err := processBotCommand(ctx, fromBrokerData, botConf)
+		err := s.processBotCommand(fromBrokerData)
 		if err != nil {
 			logrus.Error("Failed to process a bot command: ", err)
 		}
@@ -83,21 +87,19 @@ func processFromBrokerData(ctx context.Context,
 		return
 	}
 
-	err := processBotData(ctx, fromBrokerData, botConf, msgBroker)
+	err := s.processBotData(fromBrokerData)
 	if err != nil {
 		logrus.Error("Failed to process bot data: ", err)
 	}
 }
 
-func processBotCommand(ctx context.Context,
-	fromBrokerData broker.DataFrom,
-	botConf BotConf) error {
+func (s service) processBotCommand(fromBrokerData broker.DataFrom) error {
 	comm, err := unmarshalBotCommand(fromBrokerData.Value)
 	if err != nil {
 		return fmt.Errorf("failed to unmarshal a bot command: %w", err)
 	}
 
-	err = registerBotCommand(ctx, comm, botConf)
+	err = s.registerBotCommand(comm)
 	if err != nil {
 		return fmt.Errorf("failed to register a command in the bot: %w", err)
 	}
@@ -105,21 +107,18 @@ func processBotCommand(ctx context.Context,
 	return nil
 }
 
-func processBotData(ctx context.Context,
-	fromBrokerData broker.DataFrom,
-	botConf BotConf,
-	msgBroker brokerInterf.MessageBroker) error {
+func (s service) processBotData(fromBrokerData broker.DataFrom) error {
 	toBotData, err := unmarshalBotData(fromBrokerData.Value)
 	if err != nil {
 		return fmt.Errorf("failed to unmarshal bot data: %w", err)
 	}
 
-	err = botConf.BotWorker.SendMessage(ctx, toBotData.Value, toBotData.ChatID)
+	err = s.botConf.BotWorker.SendMessage(s.ctx, toBotData.Value, toBotData.ChatID)
 	if err != nil {
 		return fmt.Errorf("failed to send a message to the bot: %w", err)
 	}
 
-	err = msgBroker.Commit(ctx, fromBrokerData.MsgUuid)
+	err = s.msgBroker.Commit(s.ctx, fromBrokerData.MsgUuid)
 	if err != nil {
 		return fmt.Errorf("failed to commit the message with UUID %v: %w", fromBrokerData.MsgUuid, err)
 	}
@@ -127,12 +126,12 @@ func processBotData(ctx context.Context,
 	return nil
 }
 
-func toBrokerData(fromBotData botEnt.Data, botConf BotConf) (broker.DataTo, error) {
+func (s service) toBrokerData(fromBotData botEnt.Data) (broker.DataTo, error) {
 	if !fromBotData.IsCommand {
 		return broker.DataTo{ChatID: fromBotData.ChatID, Value: fromBotData.Value}, nil
 	}
 
-	botCommand, err := searchBotCommandByName(fromBotData.Value, *botConf.BotCommands)
+	botCommand, err := searchBotCommandByName(fromBotData.Value, *s.botConf.BotCommands)
 	if err != nil {
 		return broker.DataTo{}, err
 	}
@@ -146,18 +145,15 @@ func toBrokerData(fromBotData botEnt.Data, botConf BotConf) (broker.DataTo, erro
 		nil
 }
 
-func processFromBotData(ctx context.Context,
-	fromBotData botEnt.Data,
-	botConf BotConf,
-	msgBroker brokerInterf.MessageBroker) {
-	toBrokerData, err := toBrokerData(fromBotData, botConf)
+func (s service) processFromBotData(fromBotData botEnt.Data) {
+	toBrokerData, err := s.toBrokerData(fromBotData)
 	if err != nil {
 		logrus.Error("Failed to get a bot command: ", err)
 
 		return
 	}
 
-	err = msgBroker.TransmitData(ctx, toBrokerData)
+	err = s.msgBroker.TransmitData(s.ctx, toBrokerData)
 	if err != nil {
 		logrus.Error("Failed to transmit data to the broker: ", err)
 	}
