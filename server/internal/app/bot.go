@@ -19,7 +19,7 @@ func (s service) loadBotCommands() error {
 }
 
 func (s service) registerBotCommand(botNewComm botEnt.Command) error {
-	comm := searchBotCommandByName(botNewComm.Name, *s.botConf.BotCommands)
+	comm := searchBotCommandByName(botNewComm.Name, s.botConf.BotCommands)
 	if comm == nil {
 		*s.botConf.BotCommands = append(*s.botConf.BotCommands, botNewComm)
 	} else {
@@ -40,8 +40,8 @@ func (s service) registerBotCommand(botNewComm botEnt.Command) error {
 
 func searchBotCommandByName(
 	commName string,
-	commands []botEnt.Command) *botEnt.Command {
-	for _, command := range commands {
+	commands *[]botEnt.Command) *botEnt.Command {
+	for _, command := range *commands {
 		if commName == command.Name {
 			return &command
 		}
