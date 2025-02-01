@@ -92,11 +92,7 @@ func (kr *KafkaConsumer) consumeMessages(ctx context.Context,
 			continue
 		}
 
-		msgUuid := uuid.New()
-		kr.mu.Lock()
-		kr.uncommittedMessages[msgUuid] = uncommittedMessage{msg: msg, timeStamp: time.Now()}
-		kr.mu.Unlock()
-
+		msgUuid := kr.addMsgToUncommited(msg)
 		commandKey := "command"
 		isCommand := string(msg.Key) == commandKey
 		if isCommand {
@@ -125,6 +121,15 @@ func (kr *KafkaConsumer) consumeMessages(ctx context.Context,
 	if err := kr.reader.Close(); err != nil {
 		logrus.Error("Failed to close the reader: ", err)
 	}
+}
+
+func (kr *KafkaConsumer) addMsgToUncommited(msg kafka.Message) uuid.UUID {
+	msgUuid := uuid.New()
+	kr.mu.Lock()
+	kr.uncommittedMessages[msgUuid] = uncommittedMessage{msg: msg, timeStamp: time.Now()}
+	kr.mu.Unlock()
+
+	return msgUuid
 }
 
 type CommandDto struct {
