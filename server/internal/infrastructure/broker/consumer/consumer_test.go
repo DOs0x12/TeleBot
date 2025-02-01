@@ -1,6 +1,7 @@
 package consumer
 
 import (
+	"sync"
 	"testing"
 	"time"
 
@@ -9,6 +10,10 @@ import (
 )
 
 func TestRemoveOldMessages(t *testing.T) {
+	cons := KafkaConsumer{
+		uncommittedMessages: make(map[uuid.UUID]uncommittedMessage),
+		uncomMsgMU:          &sync.Mutex{},
+	}
 	threshold := 1 * time.Hour
 	tests := []struct {
 		name  string
@@ -26,7 +31,7 @@ func TestRemoveOldMessages(t *testing.T) {
 			testUuid := uuid.New()
 			testMessages[testUuid] = uncommittedMessage{msg: kafka.Message{}, timeStamp: time.Now()}
 
-			removeOldMessages(testMessages, tt.input)
+			cons.removeOldMessages(testMessages, tt.input)
 			_, ok := testMessages[testUuid]
 			if tt.want != ok {
 				t.Errorf("have the message: %v, want: %v", ok, tt.want)
@@ -36,6 +41,10 @@ func TestRemoveOldMessages(t *testing.T) {
 }
 
 func TestRemoveOldOffsets(t *testing.T) {
+	cons := KafkaConsumer{
+		offsets:  make(map[int]offsetWithTimeStamp),
+		offsetMU: &sync.Mutex{},
+	}
 	threshold := 1 * time.Hour
 	tests := []struct {
 		name  string
@@ -53,7 +62,7 @@ func TestRemoveOldOffsets(t *testing.T) {
 			offsetVal := 1
 			testOffsets[offsetVal] = offsetWithTimeStamp{value: 1, timeStamp: time.Now()}
 
-			removeOldOffsets(testOffsets, tt.input)
+			cons.removeOldOffsets(testOffsets, tt.input)
 			_, ok := testOffsets[offsetVal]
 			if tt.want != ok {
 				t.Errorf("have the offset: %v, want: %v", ok, tt.want)

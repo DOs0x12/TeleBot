@@ -19,3 +19,14 @@ func (kr *KafkaConsumer) getOffset(partition int) (offsetWithTimeStamp, bool) {
 	kr.offsetMU.Unlock()
 	return offset, ok
 }
+
+func (kr *KafkaConsumer) removeOldOffsets(offsets map[int]offsetWithTimeStamp, threashold time.Duration) {
+	now := time.Now()
+	kr.offsetMU.Lock()
+	defer kr.offsetMU.Unlock()
+	for part, offset := range offsets {
+		if offset.timeStamp.Add(threashold).Before(now) {
+			delete(offsets, part)
+		}
+	}
+}

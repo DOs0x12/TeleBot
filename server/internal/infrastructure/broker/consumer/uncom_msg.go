@@ -33,3 +33,14 @@ func (kr *KafkaConsumer) getMsgFromUncommited(msgUuid uuid.UUID) (uncommittedMes
 	kr.uncomMsgMU.Unlock()
 	return msg, ok
 }
+
+func (kr *KafkaConsumer) removeOldMessages(uncommittedMessages map[uuid.UUID]uncommittedMessage, threshold time.Duration) {
+	now := time.Now()
+	kr.uncomMsgMU.Lock()
+	defer kr.uncomMsgMU.Unlock()
+	for msgUuid, procMsg := range uncommittedMessages {
+		if procMsg.timeStamp.Add(threshold).Before(now) {
+			delete(uncommittedMessages, msgUuid)
+		}
+	}
+}
