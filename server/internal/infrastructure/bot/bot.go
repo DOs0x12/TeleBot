@@ -9,27 +9,27 @@ import (
 	tgbot "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-type Telebot struct {
+type telebot struct {
 	bot      *tgbot.BotAPI
 	commands *[]botEnt.Command
 }
 
-func NewTelebot(ctx context.Context, botKey string, commands []botEnt.Command) (Telebot, error) {
+func NewTelebot(ctx context.Context, botKey string, commands []botEnt.Command) (telebot, error) {
 	botApi, err := tgbot.NewBotAPI(botKey)
 	if err != nil {
-		return Telebot{}, fmt.Errorf("failed to connect to the bot: %w", err)
+		return telebot{}, fmt.Errorf("failed to connect to the bot: %w", err)
 	}
 
-	bot := Telebot{bot: botApi, commands: &commands}
+	bot := telebot{bot: botApi, commands: &commands}
 	err = bot.RegisterCommands(ctx, commands)
 	if err != nil {
-		return Telebot{}, fmt.Errorf("failed to register commands in the bot: %w", err)
+		return telebot{}, fmt.Errorf("failed to register commands in the bot: %w", err)
 	}
 
 	return bot, nil
 }
 
-func (t Telebot) Start(ctx context.Context) <-chan botEnt.Data {
+func (t telebot) Start(ctx context.Context) <-chan botEnt.Data {
 	updConfig := tgbot.NewUpdate(0)
 	botInDataChan := make(chan botEnt.Data)
 	updChan := t.bot.GetUpdatesChan(updConfig)
@@ -39,6 +39,6 @@ func (t Telebot) Start(ctx context.Context) <-chan botEnt.Data {
 	return botInDataChan
 }
 
-func (t Telebot) Stop() {
+func (t telebot) Stop() {
 	t.bot.StopReceivingUpdates()
 }

@@ -8,7 +8,7 @@ import (
 	tgbot "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-func (t Telebot) SendMessage(ctx context.Context, msg string, chatID int64) error {
+func (t telebot) SendMessage(ctx context.Context, msg string, chatID int64) error {
 	tgMsg := tgbot.NewMessage(chatID, msg)
 	err := t.sendWithRetries(ctx, tgMsg)
 	if err != nil {
@@ -18,7 +18,7 @@ func (t Telebot) SendMessage(ctx context.Context, msg string, chatID int64) erro
 	return nil
 }
 
-func (t Telebot) sendWithRetries(ctx context.Context, msg tgbot.MessageConfig) error {
+func (t telebot) sendWithRetries(ctx context.Context, msg tgbot.MessageConfig) error {
 	act := func(ctx context.Context) error {
 		_, err := t.bot.Send(msg)
 
@@ -28,7 +28,7 @@ func (t Telebot) sendWithRetries(ctx context.Context, msg tgbot.MessageConfig) e
 	return retry.ExecuteWithRetries(ctx, act)
 }
 
-func (t Telebot) requestWithRetries(ctx context.Context, conf tgbot.SetMyCommandsConfig) (*tgbot.APIResponse, error) {
+func (t telebot) requestWithRetries(ctx context.Context, conf tgbot.SetMyCommandsConfig) (*tgbot.APIResponse, error) {
 	var resp *tgbot.APIResponse
 	act := func(ctx context.Context) error {
 		var err error

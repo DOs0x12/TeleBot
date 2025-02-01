@@ -8,7 +8,7 @@ import (
 	tgbot "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-func (t Telebot) RegisterCommands(ctx context.Context, commands []botEnt.Command) error {
+func (t telebot) RegisterCommands(ctx context.Context, commands []botEnt.Command) error {
 	conf := configureCommands(commands)
 
 	resp, err := t.requestWithRetries(ctx, conf)
