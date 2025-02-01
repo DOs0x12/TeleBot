@@ -65,9 +65,7 @@ func (kt KafkaProducer) sendMessage(ctx context.Context, data broker.DataTo) err
 		return fmt.Errorf("failed to write messages: %w", err)
 	}
 
-	if data.CommName != "" {
-		lastCommand = data.CommName
-	}
+	lastCommand = data.CommName
 
 	return nil
 }
