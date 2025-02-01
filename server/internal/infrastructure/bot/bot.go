@@ -21,10 +21,6 @@ func NewTelebot(ctx context.Context, botKey string, commands []botEnt.Command) (
 	}
 
 	bot := telebot{bot: botApi, commands: &commands}
-	err = bot.RegisterCommands(ctx, commands)
-	if err != nil {
-		return telebot{}, fmt.Errorf("failed to register commands in the bot: %w", err)
-	}
 
 	return bot, nil
 }
