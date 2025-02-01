@@ -40,6 +40,6 @@ func (b *KafkaBroker) TransmitData(ctx context.Context, data broker.DataTo) erro
 	return b.prod.TransmitData(ctx, data)
 }
 
-func (b *KafkaBroker) Close() {
-	b.prod.Close()
+func (b *KafkaBroker) Close() error {
+	return b.prod.Close()
 }

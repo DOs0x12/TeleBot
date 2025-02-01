@@ -70,8 +70,10 @@ func (kt KafkaProducer) sendMessage(ctx context.Context, data broker.DataTo) err
 	return nil
 }
 
-func (kt KafkaProducer) Close() {
+func (kt KafkaProducer) Close() error {
 	if err := kt.w.Close(); err != nil {
-		logrus.Error("Failed to close writer:", err)
+		return fmt.Errorf("failed to close writer: %w", err)
 	}
+
+	return nil
 }

@@ -75,8 +75,12 @@ func (s service) handleServices(fromBrokerDataChan <-chan broker.DataFrom,
 func (s service) stopServices() {
 	s.botConf.BotWorker.Stop()
 	logrus.Info("The bot has been stopped")
-	s.msgBroker.Close()
-	logrus.Info("The transmitter connection has been closed")
+	err := s.msgBroker.Close()
+	if err != nil {
+		logrus.Errorf("Failed to close the broker: %v", err)
+	} else {
+		logrus.Info("The transmitter connection has been closed")
+	}
 	s.botConf.Storage.Close()
 	logrus.Info("The storage connection has been closed")
 }
