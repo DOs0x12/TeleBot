@@ -11,19 +11,13 @@ import (
 )
 
 func (kr KafkaConsumer) Commit(ctx context.Context, msgUuid uuid.UUID) error {
-	kr.mu.Lock()
-
 	threshold := 48 * time.Hour
 	removeOldMessages(kr.uncommittedMessages, threshold)
 	removeOldOffsets(kr.offsets, threshold)
-	uncomMsg, ok := kr.uncommittedMessages[msgUuid]
+	uncomMsg, ok := kr.getMsgFromUncommited(msgUuid)
 	if !ok {
-		kr.mu.Unlock()
-
 		return fmt.Errorf("no key %v between the processing messages", msgUuid)
 	}
-
-	kr.mu.Unlock()
 
 	err := kr.commitMesWithRetries(ctx, uncomMsg.msg)
 	if err != nil {
@@ -31,17 +25,15 @@ func (kr KafkaConsumer) Commit(ctx context.Context, msgUuid uuid.UUID) error {
 
 	}
 
-	kr.mu.Lock()
-	kr.offsets[uncomMsg.msg.Partition] = offsetWithTimeStamp{value: uncomMsg.msg.Offset, timeStamp: time.Now()}
-	delete(kr.uncommittedMessages, msgUuid)
-	kr.mu.Unlock()
+	kr.addOrUpdateOffset(uncomMsg.msg.Partition, uncomMsg.msg.Offset)
+	kr.delMsgFromUncommitted(msgUuid)
 
 	return nil
 }
 
 func (kr *KafkaConsumer) commitMesWithRetries(ctx context.Context, msg kafka.Message) error {
 	act := func(ctx context.Context) error {
-		lastOffsetWithTimeStamp, ok := kr.offsets[msg.Partition]
+		lastOffsetWithTimeStamp, ok := kr.getOffset(msg.Partition)
 		if ok && lastOffsetWithTimeStamp.value > msg.Offset {
 			return nil
 		}

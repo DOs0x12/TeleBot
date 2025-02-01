@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"sync"
-	"time"
 
 	"github.com/DOs0x12/TeleBot/server/v2/internal/common/retry"
 	"github.com/DOs0x12/TeleBot/server/v2/internal/entities/broker"
@@ -18,20 +17,11 @@ import (
 )
 
 type KafkaConsumer struct {
-	mu                  *sync.Mutex
+	uncomMsgMU          *sync.Mutex
+	offsetMU            *sync.Mutex
 	reader              *kafka.Reader
 	uncommittedMessages map[uuid.UUID]uncommittedMessage
 	offsets             map[int]offsetWithTimeStamp
-}
-
-type uncommittedMessage struct {
-	msg       kafka.Message
-	timeStamp time.Time
-}
-
-type offsetWithTimeStamp struct {
-	value     int64
-	timeStamp time.Time
 }
 
 func NewKafkaConsumer(address string) (*KafkaConsumer, error) {
@@ -56,7 +46,8 @@ func NewKafkaConsumer(address string) (*KafkaConsumer, error) {
 	cons := KafkaConsumer{
 		uncommittedMessages: make(map[uuid.UUID]uncommittedMessage),
 		offsets:             make(map[int]offsetWithTimeStamp),
-		mu:                  &sync.Mutex{},
+		uncomMsgMU:          &sync.Mutex{},
+		offsetMU:            &sync.Mutex{},
 		reader:              reader,
 	}
 
@@ -92,7 +83,7 @@ func (kr *KafkaConsumer) consumeMessages(ctx context.Context,
 			continue
 		}
 
-		msgUuid := kr.addMsgToUncommited(msg)
+		msgUuid := kr.addMsgToUncommitted(msg)
 		commandKey := "command"
 		isCommand := string(msg.Key) == commandKey
 		if isCommand {
@@ -121,15 +112,6 @@ func (kr *KafkaConsumer) consumeMessages(ctx context.Context,
 	if err := kr.reader.Close(); err != nil {
 		logrus.Error("Failed to close the reader: ", err)
 	}
-}
-
-func (kr *KafkaConsumer) addMsgToUncommited(msg kafka.Message) uuid.UUID {
-	msgUuid := uuid.New()
-	kr.mu.Lock()
-	kr.uncommittedMessages[msgUuid] = uncommittedMessage{msg: msg, timeStamp: time.Now()}
-	kr.mu.Unlock()
-
-	return msgUuid
 }
 
 type CommandDto struct {
