@@ -27,7 +27,7 @@ func (kr KafkaConsumer) Commit(ctx context.Context, msgUuid uuid.UUID) error {
 	return nil
 }
 
-func (kr *KafkaConsumer) commitMesWithRetries(ctx context.Context, msg kafka.Message) error {
+func (kr KafkaConsumer) commitMesWithRetries(ctx context.Context, msg kafka.Message) error {
 	act := func(ctx context.Context) error {
 		lastOffsetWithTimeStamp, ok := kr.getOffset(msg.Partition)
 		if ok && lastOffsetWithTimeStamp.value > msg.Offset {

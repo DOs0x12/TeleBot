@@ -55,7 +55,7 @@ func NewKafkaConsumer(address string) (*KafkaConsumer, error) {
 	return &cons, nil
 }
 
-func (kr *KafkaConsumer) StartReceivingData(ctx context.Context) (
+func (kr KafkaConsumer) StartReceivingData(ctx context.Context) (
 	<-chan broker.DataFrom,
 	<-chan broker.CommandFrom,
 	<-chan error) {
@@ -69,7 +69,7 @@ func (kr *KafkaConsumer) StartReceivingData(ctx context.Context) (
 	return dataChan, commChan, nil
 }
 
-func (kr *KafkaConsumer) delOldMessagesAndOffcetsWithPeriod(ctx context.Context) {
+func (kr KafkaConsumer) delOldMessagesAndOffcetsWithPeriod(ctx context.Context) {
 	t := time.NewTicker(1 * time.Hour)
 	for {
 		select {
@@ -83,13 +83,13 @@ func (kr *KafkaConsumer) delOldMessagesAndOffcetsWithPeriod(ctx context.Context)
 	}
 }
 
-func (kr *KafkaConsumer) delOldMessagesAndOffcets() {
+func (kr KafkaConsumer) delOldMessagesAndOffcets() {
 	threshold := 48 * time.Hour
 	kr.removeOldMessages(kr.uncommittedMessages, threshold)
 	kr.removeOldOffsets(kr.offsets, threshold)
 }
 
-func (kr *KafkaConsumer) consumeMessages(ctx context.Context,
+func (kr KafkaConsumer) consumeMessages(ctx context.Context,
 	dataChan chan<- broker.DataFrom,
 	commChan chan<- broker.CommandFrom,
 	errChan chan<- error) {
@@ -172,7 +172,7 @@ func unmarshalBotData(rawBotData []byte) (broker.DataFrom, error) {
 	return broker.DataFrom{ChatID: botData.ChatID, Value: botData.Value}, nil
 }
 
-func (kr *KafkaConsumer) fetchMesWithRetries(ctx context.Context) (kafka.Message, error) {
+func (kr KafkaConsumer) fetchMesWithRetries(ctx context.Context) (kafka.Message, error) {
 	var msg kafka.Message
 
 	act := func(ctx context.Context) error {

@@ -12,7 +12,7 @@ type uncommittedMessage struct {
 	timeStamp time.Time
 }
 
-func (kr *KafkaConsumer) addMsgToUncommitted(msg kafka.Message) uuid.UUID {
+func (kr KafkaConsumer) addMsgToUncommitted(msg kafka.Message) uuid.UUID {
 	msgUuid := uuid.New()
 	kr.uncomMsgMU.Lock()
 	kr.uncommittedMessages[msgUuid] = uncommittedMessage{msg: msg, timeStamp: time.Now()}
@@ -21,20 +21,20 @@ func (kr *KafkaConsumer) addMsgToUncommitted(msg kafka.Message) uuid.UUID {
 	return msgUuid
 }
 
-func (kr *KafkaConsumer) delMsgFromUncommitted(msgUuid uuid.UUID) {
+func (kr KafkaConsumer) delMsgFromUncommitted(msgUuid uuid.UUID) {
 	kr.uncomMsgMU.Lock()
 	delete(kr.uncommittedMessages, msgUuid)
 	kr.uncomMsgMU.Unlock()
 }
 
-func (kr *KafkaConsumer) getMsgFromUncommited(msgUuid uuid.UUID) (uncommittedMessage, bool) {
+func (kr KafkaConsumer) getMsgFromUncommited(msgUuid uuid.UUID) (uncommittedMessage, bool) {
 	kr.uncomMsgMU.Lock()
 	msg, ok := kr.uncommittedMessages[msgUuid]
 	kr.uncomMsgMU.Unlock()
 	return msg, ok
 }
 
-func (kr *KafkaConsumer) removeOldMessages(uncommittedMessages map[uuid.UUID]uncommittedMessage, threshold time.Duration) {
+func (kr KafkaConsumer) removeOldMessages(uncommittedMessages map[uuid.UUID]uncommittedMessage, threshold time.Duration) {
 	now := time.Now()
 	kr.uncomMsgMU.Lock()
 	defer kr.uncomMsgMU.Unlock()
