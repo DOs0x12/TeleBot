@@ -9,7 +9,7 @@ import (
 
 func receiveInData(ctx context.Context,
 	updChan tgbot.UpdatesChannel,
-	botInDataChan chan botEnt.Data) {
+	botInDataChan chan<- botEnt.Data) {
 	for {
 		select {
 		case <-ctx.Done():
