@@ -29,6 +29,7 @@ type KafkaConsumerDataDto struct {
 	Value    string
 }
 
+// KafkaConsumerData is the data to work with a consumer.
 type KafkaConsumerData struct {
 	CommName    string
 	ChatID      int64
@@ -36,7 +37,7 @@ type KafkaConsumerData struct {
 	MessageUuid uuid.UUID
 }
 
-// Consumer gets data from the bot app. It implements a way to store
+// KafkaConsumer gets data from the bot app. It implements a way to store
 // the uncommitted messages and offsets to commit them later.
 type KafkaConsumer struct {
 	mu                  *sync.Mutex
@@ -45,7 +46,7 @@ type KafkaConsumer struct {
 	offsets             map[int]offsetWithTimeStamp
 }
 
-// Create a consumer to read data from a Kafka instance.
+// NewKafkaConsumer creates a consumer to read data from a Kafka instance.
 func NewKafkaConsumer(address string, serviceName string) (*KafkaConsumer, error) {
 	topicName, err := system.GetServiceToken(serviceName)
 	if err != nil {
@@ -70,7 +71,7 @@ func NewKafkaConsumer(address string, serviceName string) (*KafkaConsumer, error
 	return &rec, nil
 }
 
-// Start receiving data from a Kafka instance. The received data is written to
+// StartGetData starts receiving data from a Kafka instance. The received data is written to
 // the return channel. The received messages are stored in a map.
 func (r KafkaConsumer) StartGetData(ctx context.Context) <-chan KafkaConsumerData {
 	dataChan := make(chan KafkaConsumerData)
