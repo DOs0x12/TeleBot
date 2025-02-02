@@ -22,6 +22,10 @@ type Configer struct {
 	path string
 }
 
+func NewConfiger(path string) Configer {
+	return Configer{path: path}
+}
+
 func (c Configer) LoadConfig() (config.Config, error) {
 	confFile, err := os.ReadFile(c.path)
 	if err != nil {
@@ -29,10 +33,6 @@ func (c Configer) LoadConfig() (config.Config, error) {
 	}
 
 	return unmarshalConf(confFile)
-}
-
-func NewConfiger(path string) Configer {
-	return Configer{path: path}
 }
 
 func unmarshalConf(data []byte) (config.Config, error) {
