@@ -4,25 +4,21 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"sync"
-	"time"
 
+	"github.com/DOs0x12/TeleBot/server/v2/broker_data"
 	"github.com/DOs0x12/TeleBot/server/v2/internal/common/retry"
 	"github.com/DOs0x12/TeleBot/server/v2/internal/entities/broker"
 	"github.com/DOs0x12/TeleBot/server/v2/internal/infrastructure/broker/topic"
 	"github.com/DOs0x12/TeleBot/server/v2/system"
-	"github.com/google/uuid"
 
 	kafka "github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"
 )
 
 type KafkaConsumer struct {
-	uncomMsgMU          *sync.Mutex
-	offsetMU            *sync.Mutex
-	reader              *kafka.Reader
-	uncommittedMessages map[uuid.UUID]uncommittedMessage
-	offsets             map[int]offsetWithTimeStamp
+	offsetService             broker_data.OffsetService
+	uncommittedMessageService broker_data.UncommitedMessageService
+	reader                    *kafka.Reader
 }
 
 func NewKafkaConsumer(address string) (*KafkaConsumer, error) {
@@ -45,11 +41,9 @@ func NewKafkaConsumer(address string) (*KafkaConsumer, error) {
 	})
 
 	cons := KafkaConsumer{
-		uncommittedMessages: make(map[uuid.UUID]uncommittedMessage),
-		offsets:             make(map[int]offsetWithTimeStamp),
-		uncomMsgMU:          &sync.Mutex{},
-		offsetMU:            &sync.Mutex{},
-		reader:              reader,
+		offsetService:             broker_data.NewOffsetService(),
+		uncommittedMessageService: broker_data.NewUncommitedMessageService(),
+		reader:                    reader,
 	}
 
 	return &cons, nil
@@ -64,29 +58,10 @@ func (kr KafkaConsumer) StartReceivingData(ctx context.Context) (
 	errChan := make(chan error)
 
 	go kr.consumeMessages(ctx, dataChan, commChan, errChan)
-	go kr.delOldMessagesAndOffcetsWithPeriod(ctx)
+	kr.uncommittedMessageService.StartCleanupUncommittedMessages(ctx)
+	kr.offsetService.StartCleanupOffsets(ctx)
 
 	return dataChan, commChan, nil
-}
-
-func (kr KafkaConsumer) delOldMessagesAndOffcetsWithPeriod(ctx context.Context) {
-	t := time.NewTicker(1 * time.Hour)
-	for {
-		select {
-		case <-ctx.Done():
-			t.Stop()
-
-			return
-		case <-t.C:
-			kr.delOldMessagesAndOffcets()
-		}
-	}
-}
-
-func (kr KafkaConsumer) delOldMessagesAndOffcets() {
-	threshold := 48 * time.Hour
-	kr.removeOldMessages(kr.uncommittedMessages, threshold)
-	kr.removeOldOffsets(kr.offsets, threshold)
 }
 
 func (kr KafkaConsumer) consumeMessages(ctx context.Context,
@@ -105,7 +80,7 @@ func (kr KafkaConsumer) consumeMessages(ctx context.Context,
 			continue
 		}
 
-		msgUuid := kr.addMsgToUncommitted(msg)
+		msgUuid := kr.uncommittedMessageService.AddMsgToUncommitted(msg)
 		commandKey := "command"
 		isCommand := string(msg.Key) == commandKey
 		if isCommand {
