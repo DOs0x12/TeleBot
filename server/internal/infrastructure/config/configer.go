@@ -18,15 +18,15 @@ type ConfigDto struct {
 	StoragePass    string `yaml:"storagePass"`
 }
 
-type Configer struct {
+type configer struct {
 	path string
 }
 
-func NewConfiger(path string) Configer {
-	return Configer{path: path}
+func NewConfiger(path string) configer {
+	return configer{path: path}
 }
 
-func (c Configer) LoadConfig() (config.Config, error) {
+func (c configer) LoadConfig() (config.Config, error) {
 	confFile, err := os.ReadFile(c.path)
 	if err != nil {
 		return config.Config{}, fmt.Errorf("failed to read the config file: %w", err)
