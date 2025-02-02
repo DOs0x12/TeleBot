@@ -22,7 +22,7 @@ type commandDto struct {
 	Token       string
 }
 
-// Register a command in the bot app.
+// RegisterCommand registers a command in the bot application.
 func (s KafkaProducer) RegisterCommand(ctx context.Context,
 	commData CommandData,
 	serviceName string) error {
