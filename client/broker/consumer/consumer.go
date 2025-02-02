@@ -4,24 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"sync"
-	"time"
 
+	"github.com/DOs0x12/TeleBot/server/v2/broker_data"
 	"github.com/DOs0x12/TeleBot/server/v2/system"
 	"github.com/google/uuid"
 	"github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"
 )
-
-type uncommittedMessage struct {
-	msg       kafka.Message
-	timeStamp time.Time
-}
-
-type offsetWithTimeStamp struct {
-	value     int64
-	timeStamp time.Time
-}
 
 type KafkaConsumerDataDto struct {
 	CommName string
@@ -40,10 +29,9 @@ type KafkaConsumerData struct {
 // KafkaConsumer gets data from the bot app. It implements a way to store
 // the uncommitted messages and offsets to commit them later.
 type KafkaConsumer struct {
-	mu                  *sync.Mutex
-	reader              *kafka.Reader
-	uncommittedMessages map[uuid.UUID]uncommittedMessage
-	offsets             map[int]offsetWithTimeStamp
+	offsetService             broker_data.OffsetService
+	uncommittedMessageService broker_data.UncommitedMessageService
+	reader                    *kafka.Reader
 }
 
 // NewKafkaConsumer creates a consumer to read data from a Kafka instance.
@@ -62,10 +50,9 @@ func NewKafkaConsumer(address string, serviceName string) (*KafkaConsumer, error
 	})
 
 	rec := KafkaConsumer{
-		uncommittedMessages: make(map[uuid.UUID]uncommittedMessage),
-		offsets:             make(map[int]offsetWithTimeStamp),
-		mu:                  &sync.Mutex{},
-		reader:              r,
+		offsetService:             broker_data.NewOffsetService(),
+		uncommittedMessageService: broker_data.NewUncommitedMessageService(),
+		reader:                    r,
 	}
 
 	return &rec, nil
@@ -77,6 +64,8 @@ func (r KafkaConsumer) StartGetData(ctx context.Context) <-chan KafkaConsumerDat
 	dataChan := make(chan KafkaConsumerData)
 
 	go r.consumeMessages(ctx, dataChan)
+	r.uncommittedMessageService.StartCleanupUncommittedMessages(ctx)
+	r.offsetService.StartCleanupOffsets(ctx)
 
 	return dataChan
 }
@@ -92,10 +81,7 @@ func (r KafkaConsumer) consumeMessages(ctx context.Context, dataChan chan<- Kafk
 			continue
 		}
 
-		msgUuid := uuid.New()
-		r.mu.Lock()
-		r.uncommittedMessages[msgUuid] = uncommittedMessage{msg: msg, timeStamp: time.Now()}
-		r.mu.Unlock()
+		msgUuid := r.uncommittedMessageService.AddMsgToUncommitted(msg)
 
 		var botDataDto KafkaConsumerDataDto
 		if err = json.Unmarshal(msg.Value, &botDataDto); err != nil {
