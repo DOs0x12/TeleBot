@@ -2,6 +2,8 @@ github.com/DOs0x12/TeleBot/client/v2 v2.0.5 h1:MrakRWNDkcdU9Eu8W3f4n3hjM75PqVWhL
 github.com/DOs0x12/TeleBot/client/v2 v2.0.5/go.mod h1:UrXj84akuJeO+q/X9uFfL353pW3UYv6sZhhUYQWIvo4=
 github.com/DOs0x12/TeleBot/client/v2 v2.0.6-0.20250202151232-65ab453553d9 h1:NAf+Q7BB8x57rMLOjcdNFN6DwLSMRVaeJ40NFbB5mUo=
 github.com/DOs0x12/TeleBot/client/v2 v2.0.6-0.20250202151232-65ab453553d9/go.mod h1:FJYgyJbbXu+A0yaCCdNNxhIHsEZG891WKjxwtH1j8Ug=
+github.com/DOs0x12/TeleBot/client/v2 v2.0.6 h1:0UXOear7ZI6y0sCly2DgEaZM68BijBzjiZmfomvciW4=
+github.com/DOs0x12/TeleBot/client/v2 v2.0.6/go.mod h1:FJYgyJbbXu+A0yaCCdNNxhIHsEZG891WKjxwtH1j8Ug=
 github.com/DOs0x12/TeleBot/server/v2 v2.0.3 h1:jAsDvnsCE3ISmjI09tHdHp5i98yx7zZYnViJ04qWGAA=
 github.com/DOs0x12/TeleBot/server/v2 v2.0.3/go.mod h1:JtcCM3VDsqsUnW9TYZl/bMH7lRjjQp0viamcTV19Yjw=
 github.com/DOs0x12/TeleBot/server/v2 v2.0.5-0.20250202145706-ee084cf75f66 h1:ceTBlHhPOKxcrm7Sz1AOzdDqgGDZIS6rwl1YNeXNxvk=
