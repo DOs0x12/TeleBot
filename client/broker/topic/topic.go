@@ -9,14 +9,15 @@ import (
 	"github.com/segmentio/kafka-go/topics"
 )
 
+// CreateTopicIfNotExist creates a topic in the broker if it not exists.
 func CreateTopicIfNotExist(ctx context.Context, topicName string, addr net.Addr) error {
 	cl := &kafka.Client{Addr: addr}
-	exists, err := topicExists(ctx, topicName, cl)
+	isExist, err := isTopicExist(ctx, topicName, cl)
 	if err != nil {
 		return err
 	}
 
-	if !exists {
+	if !isExist {
 		req := &kafka.CreateTopicsRequest{
 			Addr: cl.Addr,
 			Topics: []kafka.TopicConfig{
@@ -33,7 +34,7 @@ func CreateTopicIfNotExist(ctx context.Context, topicName string, addr net.Addr)
 	return nil
 }
 
-func topicExists(ctx context.Context, topicName string, client *kafka.Client) (bool, error) {
+func isTopicExist(ctx context.Context, topicName string, client *kafka.Client) (bool, error) {
 	topicReg := regexp.MustCompile(topicName)
 	topics, err := topics.ListRe(ctx, client, topicReg)
 	if err != nil {

@@ -4,11 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/DOs0x12/TeleBot/server/v2/internal/common/retry"
 	botEnt "github.com/DOs0x12/TeleBot/server/v2/internal/entities/bot"
 	tgbot "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-func (t Telebot) RegisterCommands(ctx context.Context, commands []botEnt.Command) error {
+func (t telebot) RegisterCommands(ctx context.Context, commands []botEnt.Command) error {
 	conf := configureCommands(commands)
 
 	resp, err := t.requestWithRetries(ctx, conf)
@@ -27,4 +28,18 @@ func configureCommands(commands []botEnt.Command) tgbot.SetMyCommandsConfig {
 	}
 
 	return tgbot.NewSetMyCommands(commandSet...)
+}
+
+func (t telebot) requestWithRetries(ctx context.Context, conf tgbot.SetMyCommandsConfig) (*tgbot.APIResponse, error) {
+	var resp *tgbot.APIResponse
+	act := func(ctx context.Context) error {
+		var err error
+		resp, err = t.bot.Request(conf)
+
+		return err
+	}
+
+	err := retry.ExecuteWithRetries(ctx, act)
+
+	return resp, err
 }

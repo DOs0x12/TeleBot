@@ -11,13 +11,14 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
+// KafkaProducerData stores the data for the producer.
 type KafkaProducerData struct {
 	ChatID      int64
 	Value       string
 	MessageUuid uuid.UUID
 }
 
-// Producer works with the Kafka to send data to the bot app.
+// Producer works with the Kafka to send data to the bot application.
 type KafkaProducer struct {
 	w *kafka.Writer
 }
@@ -42,7 +43,7 @@ func NewKafkaProducer(ctx context.Context, address string) (KafkaProducer, error
 	return KafkaProducer{w: w}, nil
 }
 
-// Send data to the bot app via a Kafka instance.
+// SendData sends data to the bot application via a Kafka instance.
 func (s KafkaProducer) SendData(ctx context.Context, botData KafkaProducerData) error {
 	data, err := json.Marshal(botData)
 	if err != nil {
@@ -68,7 +69,7 @@ func (s KafkaProducer) SendData(ctx context.Context, botData KafkaProducerData) 
 	return nil
 }
 
-// Stop working with the client.
+// Stop stops working with the client.
 func (s KafkaProducer) Stop() error {
 	if err := s.w.Close(); err != nil {
 		return fmt.Errorf("failed to stop the sender: %w", err)

@@ -54,15 +54,17 @@ func generateSystemIDIfNotExist() error {
 		return err
 	}
 
+	fPermissions := os.FileMode.Perm(0644)
+
 	if !folderExists {
-		err := os.MkdirAll(dataFolderPath, os.FileMode(os.O_RDWR))
+		err := os.MkdirAll(dataFolderPath, fPermissions)
 		if err != nil {
 			return err
 		}
 	}
 
 	dataFilePath := path.Join(dataFolderPath, dataFileName)
-	file, err := os.OpenFile(dataFilePath, os.O_CREATE|os.O_RDWR, os.FileMode(os.O_RDWR))
+	file, err := os.OpenFile(dataFilePath, os.O_CREATE|os.O_RDWR, fPermissions)
 	if err != nil {
 		return err
 	}

@@ -1,35 +1,36 @@
 package telebot
 
 import (
-	"context"
 	"fmt"
 
 	botEnt "github.com/DOs0x12/TeleBot/server/v2/internal/entities/bot"
-	brokerEnt "github.com/DOs0x12/TeleBot/server/v2/internal/entities/broker"
-	"github.com/DOs0x12/TeleBot/server/v2/internal/interfaces/storage"
+	"github.com/DOs0x12/TeleBot/server/v2/internal/entities/broker"
 )
 
-func loadBotCommands(
-	ctx context.Context,
-	botCommands *[]botEnt.Command,
-	storage storage.CommandStorage) error {
-	commands, err := storage.Load(ctx)
+func (s service) loadBotCommands() error {
+	commands, err := s.botConf.Storage.Load(s.ctx)
 	if err != nil {
 		return fmt.Errorf("failed to load the bot commands from the storage: %w", err)
 	}
 
-	*botCommands = append(*botCommands, commands...)
+	*s.botConf.BotCommands = append(*s.botConf.BotCommands, commands...)
 
 	return nil
 }
 
-func registerBotCommand(ctx context.Context,
-	botNewComm botEnt.Command,
-	botConf BotConf) error {
-	*botConf.BotCommands = append(*botConf.BotCommands, botNewComm)
-	botConf.BotWorker.RegisterCommands(ctx, *botConf.BotCommands)
+func (s service) registerBotCommand(botNewComm botEnt.Command) error {
+	comm := searchBotCommandByName(botNewComm.Name, s.botConf.BotCommands)
+	if comm == nil {
+		*s.botConf.BotCommands = append(*s.botConf.BotCommands, botNewComm)
+	} else {
+		comm.Name = botNewComm.Name
+		comm.Description = botNewComm.Description
+		comm.Token = botNewComm.Token
+	}
 
-	err := botConf.Storage.Save(ctx, botNewComm)
+	s.botConf.BotWorker.RegisterCommands(s.ctx, *s.botConf.BotCommands)
+
+	err := s.botConf.Storage.Save(s.ctx, botNewComm)
 	if err != nil {
 		return fmt.Errorf("failed to save a command: %w", err)
 	}
@@ -37,29 +38,38 @@ func registerBotCommand(ctx context.Context,
 	return nil
 }
 
-func processFromBotData(
-	data botEnt.Data,
-	commands []botEnt.Command) (brokerEnt.DataTo, error) {
-	if !data.IsCommand {
-		return processFromBotMessage(data), nil
-	}
-
-	for _, command := range commands {
-		if data.Value != command.Name {
-			continue
+func searchBotCommandByName(
+	commName string,
+	commands *[]botEnt.Command,
+) *botEnt.Command {
+	for _, command := range *commands {
+		if commName == command.Name {
+			return &command
 		}
-
-		return brokerEnt.DataTo{
-			CommName: command.Name,
-			ChatID:   data.ChatID,
-			Value:    data.Value,
-			Token:    command.Token,
-		}, nil
 	}
 
-	return brokerEnt.DataTo{}, fmt.Errorf("no commands with the name %v", data.Value)
+	return nil
 }
 
-func processFromBotMessage(data botEnt.Data) brokerEnt.DataTo {
-	return brokerEnt.DataTo{ChatID: data.ChatID, Value: data.Value}
+func (s service) processBotCommand(fromBrokerComm broker.CommandFrom) error {
+	comm := botEnt.Command{
+		Name:        fromBrokerComm.Name,
+		Description: fromBrokerComm.Description,
+		Token:       fromBrokerComm.Token,
+	}
+	err := s.registerBotCommand(comm)
+	if err != nil {
+		return fmt.Errorf("failed to register a command in the bot: %w", err)
+	}
+
+	return nil
+}
+
+func (s service) processBotData(fromBrokerData broker.DataFrom) error {
+	err := s.botConf.BotWorker.SendMessage(s.ctx, fromBrokerData.Value, fromBrokerData.ChatID)
+	if err != nil {
+		return fmt.Errorf("failed to send a message to the bot: %w", err)
+	}
+
+	return nil
 }

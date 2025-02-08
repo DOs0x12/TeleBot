@@ -22,10 +22,12 @@ type commandDto struct {
 	Token       string
 }
 
-// Register a command in the bot app.
-func (s KafkaProducer) RegisterCommand(ctx context.Context,
+// RegisterCommand registers a command in the bot application.
+func (s KafkaProducer) RegisterCommand(
+	ctx context.Context,
 	commData CommandData,
-	serviceName string) error {
+	serviceName string,
+) error {
 	servToken, err := system.GetServiceToken(serviceName)
 	if err != nil {
 		return fmt.Errorf("failed to get or create a service token: %w", err)

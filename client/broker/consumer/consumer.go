@@ -4,24 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"sync"
-	"time"
 
+	"github.com/DOs0x12/TeleBot/server/v2/broker_data"
 	"github.com/DOs0x12/TeleBot/server/v2/system"
 	"github.com/google/uuid"
 	"github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"
 )
-
-type uncommittedMessage struct {
-	msg       kafka.Message
-	timeStamp time.Time
-}
-
-type offsetWithTimeStamp struct {
-	value     int64
-	timeStamp time.Time
-}
 
 type KafkaConsumerDataDto struct {
 	CommName string
@@ -29,6 +18,7 @@ type KafkaConsumerDataDto struct {
 	Value    string
 }
 
+// KafkaConsumerData is the data to work with a consumer.
 type KafkaConsumerData struct {
 	CommName    string
 	ChatID      int64
@@ -36,16 +26,15 @@ type KafkaConsumerData struct {
 	MessageUuid uuid.UUID
 }
 
-// Consumer gets data from the bot app. It implements a way to store
+// KafkaConsumer gets data from the bot app. It implements a way to store
 // the uncommitted messages and offsets to commit them later.
 type KafkaConsumer struct {
-	mu                  *sync.Mutex
-	reader              *kafka.Reader
-	uncommittedMessages map[uuid.UUID]uncommittedMessage
-	offsets             map[int]offsetWithTimeStamp
+	offsetService             broker_data.OffsetService
+	uncommittedMessageService broker_data.UncommitedMessageService
+	reader                    *kafka.Reader
 }
 
-// Create a consumer to read data from a Kafka instance.
+// NewKafkaConsumer creates a consumer to read data from a Kafka instance.
 func NewKafkaConsumer(address string, serviceName string) (*KafkaConsumer, error) {
 	topicName, err := system.GetServiceToken(serviceName)
 	if err != nil {
@@ -61,21 +50,22 @@ func NewKafkaConsumer(address string, serviceName string) (*KafkaConsumer, error
 	})
 
 	rec := KafkaConsumer{
-		uncommittedMessages: make(map[uuid.UUID]uncommittedMessage),
-		offsets:             make(map[int]offsetWithTimeStamp),
-		mu:                  &sync.Mutex{},
-		reader:              r,
+		offsetService:             broker_data.NewOffsetService(),
+		uncommittedMessageService: broker_data.NewUncommitedMessageService(),
+		reader:                    r,
 	}
 
 	return &rec, nil
 }
 
-// Start receiving data from a Kafka instance. The received data is written to
+// StartGetData starts receiving data from a Kafka instance. The received data is written to
 // the return channel. The received messages are stored in a map.
 func (r KafkaConsumer) StartGetData(ctx context.Context) <-chan KafkaConsumerData {
 	dataChan := make(chan KafkaConsumerData)
 
 	go r.consumeMessages(ctx, dataChan)
+	r.uncommittedMessageService.StartCleanupUncommittedMessages(ctx)
+	r.offsetService.StartCleanupOffsets(ctx)
 
 	return dataChan
 }
@@ -91,10 +81,7 @@ func (r KafkaConsumer) consumeMessages(ctx context.Context, dataChan chan<- Kafk
 			continue
 		}
 
-		msgUuid := uuid.New()
-		r.mu.Lock()
-		r.uncommittedMessages[msgUuid] = uncommittedMessage{msg: msg, timeStamp: time.Now()}
-		r.mu.Unlock()
+		msgUuid := r.uncommittedMessageService.AddMsgToUncommitted(msg)
 
 		var botDataDto KafkaConsumerDataDto
 		if err = json.Unmarshal(msg.Value, &botDataDto); err != nil {

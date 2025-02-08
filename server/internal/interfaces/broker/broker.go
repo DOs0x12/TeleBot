@@ -8,8 +8,8 @@ import (
 )
 
 type MessageBroker interface {
-	StartReceivingData(ctx context.Context) (<-chan broker.DataFrom, error)
+	StartReceivingData(ctx context.Context) (<-chan broker.DataFrom, <-chan broker.CommandFrom, <-chan error)
 	Commit(ctx context.Context, msgUuid uuid.UUID) error
 	TransmitData(ctx context.Context, data broker.DataTo) error
-	Close()
+	Close() error
 }

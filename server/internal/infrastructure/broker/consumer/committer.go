@@ -3,7 +3,6 @@ package consumer
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/DOs0x12/TeleBot/server/v2/internal/common/retry"
 	"github.com/google/uuid"
@@ -11,38 +10,27 @@ import (
 )
 
 func (kr KafkaConsumer) Commit(ctx context.Context, msgUuid uuid.UUID) error {
-	kr.mu.Lock()
-
-	threshold := 48 * time.Hour
-	removeOldMessages(kr.uncommittedMessages, threshold)
-	removeOldOffsets(kr.offsets, threshold)
-	uncomMsg, ok := kr.uncommittedMessages[msgUuid]
+	uncomMsg, ok := kr.uncommittedMessageService.GetMsgFromUncommited(msgUuid)
 	if !ok {
-		kr.mu.Unlock()
-
 		return fmt.Errorf("no key %v between the processing messages", msgUuid)
 	}
 
-	kr.mu.Unlock()
-
-	err := kr.commitMesWithRetries(ctx, uncomMsg.msg)
+	err := kr.commitMesWithRetries(ctx, uncomMsg.Msg)
 	if err != nil {
 		return fmt.Errorf("failed to commit a message in the broker: %w", err)
 
 	}
 
-	kr.mu.Lock()
-	kr.offsets[uncomMsg.msg.Partition] = offsetWithTimeStamp{value: uncomMsg.msg.Offset, timeStamp: time.Now()}
-	delete(kr.uncommittedMessages, msgUuid)
-	kr.mu.Unlock()
+	kr.offsetService.AddOrUpdateOffset(uncomMsg.Msg.Partition, uncomMsg.Msg.Offset)
+	kr.uncommittedMessageService.DelMsgFromUncommitted(msgUuid)
 
 	return nil
 }
 
-func (kr *KafkaConsumer) commitMesWithRetries(ctx context.Context, msg kafka.Message) error {
+func (kr KafkaConsumer) commitMesWithRetries(ctx context.Context, msg kafka.Message) error {
 	act := func(ctx context.Context) error {
-		lastOffsetWithTimeStamp, ok := kr.offsets[msg.Partition]
-		if ok && lastOffsetWithTimeStamp.value > msg.Offset {
+		lastOffsetWithTimeStamp, ok := kr.offsetService.GetOffset(msg.Partition)
+		if ok && lastOffsetWithTimeStamp.Value > msg.Offset {
 			return nil
 		}
 
@@ -50,24 +38,4 @@ func (kr *KafkaConsumer) commitMesWithRetries(ctx context.Context, msg kafka.Mes
 	}
 
 	return retry.ExecuteWithRetries(ctx, act)
-}
-
-func removeOldMessages(uncommittedMessages map[uuid.UUID]uncommittedMessage, threshold time.Duration) {
-	now := time.Now()
-
-	for msgUuid, procMsg := range uncommittedMessages {
-		if procMsg.timeStamp.Add(threshold).Before(now) {
-			delete(uncommittedMessages, msgUuid)
-		}
-	}
-}
-
-func removeOldOffsets(offsets map[int]offsetWithTimeStamp, threashold time.Duration) {
-	now := time.Now()
-
-	for part, offset := range offsets {
-		if offset.timeStamp.Add(threashold).Before(now) {
-			delete(offsets, part)
-		}
-	}
 }
