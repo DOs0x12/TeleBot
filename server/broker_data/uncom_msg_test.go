@@ -5,6 +5,7 @@ import (
 	"time"
 
 	kafka "github.com/segmentio/kafka-go"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestRemoveOldMessages(t *testing.T) {
@@ -26,9 +27,7 @@ func TestRemoveOldMessages(t *testing.T) {
 
 			msgService.removeOldMessages(tt.input)
 			_, ok := msgService.GetMsgFromUncommited(testUuid)
-			if tt.want != ok {
-				t.Errorf("have the message: %v, want: %v", ok, tt.want)
-			}
+			assert.Equal(t, tt.want, ok)
 		})
 	}
 }

@@ -3,6 +3,8 @@ package broker_data
 import (
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestRemoveOldOffsets(t *testing.T) {
@@ -25,10 +27,9 @@ func TestRemoveOldOffsets(t *testing.T) {
 			offsetService.AddOrUpdateOffset(partVal, offsetVal)
 
 			offsetService.removeOldOffsets(tt.input)
+
 			_, ok := offsetService.GetOffset(partVal)
-			if tt.want != ok {
-				t.Errorf("have the offset: %v, want: %v", ok, tt.want)
-			}
+			assert.Equal(t, tt.want, ok)
 		})
 	}
 }
