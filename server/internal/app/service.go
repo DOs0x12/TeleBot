@@ -25,9 +25,11 @@ type service struct {
 	msgBroker brokerInterf.MessageBroker
 }
 
-func NewService(ctx context.Context,
+func NewService(
+	ctx context.Context,
 	botConf BotConf,
-	msgBroker brokerInterf.MessageBroker) service {
+	msgBroker brokerInterf.MessageBroker,
+) service {
 
 	return service{ctx: ctx, botConf: botConf, msgBroker: msgBroker}
 }
@@ -50,10 +52,12 @@ func (s service) Process() error {
 	return nil
 }
 
-func (s service) handleServices(fromBrokerDataChan <-chan broker.DataFrom,
+func (s service) handleServices(
+	fromBrokerDataChan <-chan broker.DataFrom,
 	fromBrokerCommChan <-chan broker.CommandFrom,
 	fromBotDataChan <-chan botEnt.Data,
-	receiverErrChan <-chan error) {
+	receiverErrChan <-chan error,
+) {
 	for {
 		select {
 		case <-s.ctx.Done():

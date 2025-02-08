@@ -40,7 +40,8 @@ func (s service) registerBotCommand(botNewComm botEnt.Command) error {
 
 func searchBotCommandByName(
 	commName string,
-	commands *[]botEnt.Command) *botEnt.Command {
+	commands *[]botEnt.Command,
+) *botEnt.Command {
 	for _, command := range *commands {
 		if commName == command.Name {
 			return &command

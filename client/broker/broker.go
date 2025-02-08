@@ -54,9 +54,11 @@ func (b *KafkaBroker) StartGetData(ctx context.Context) <-chan BrokerData {
 	return brMsgs
 }
 
-func pipelineConsData(ctx context.Context,
+func pipelineConsData(
+	ctx context.Context,
 	consMsgs <-chan consumer.KafkaConsumerData,
-	brMsgs chan<- BrokerData) {
+	brMsgs chan<- BrokerData,
+) {
 
 	for {
 		select {
@@ -89,9 +91,11 @@ func (b *KafkaBroker) SendData(ctx context.Context, data BrokerData) error {
 }
 
 // RegisterCommand registers a command in the bot application server.
-func (s *KafkaBroker) RegisterCommand(ctx context.Context,
+func (s *KafkaBroker) RegisterCommand(
+	ctx context.Context,
 	commData BrokerCommandData,
-	serviceName string) error {
+	serviceName string,
+) error {
 	prodCommData := producer.CommandData{Name: commData.Name, Description: commData.Description}
 
 	return s.prod.RegisterCommand(ctx, prodCommData, serviceName)
