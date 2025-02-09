@@ -10,6 +10,8 @@ services:
     volumes:
       - ${data_folder}:/var/lib/telebot
       - ${config_path}:/config.yml
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
   greeter:
     image: greeter:v2.0.6
     build: ../greeter
@@ -18,6 +20,8 @@ services:
       - "kafka-network"
     volumes:
       - ${data_folder}:/var/lib/telebot
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
 networks:
   kafka-network:
     external: true
