@@ -25,14 +25,15 @@ func NewTelebot(ctx context.Context, botKey string, commands []botEnt.Command) (
 	return bot, nil
 }
 
-func (t telebot) Start(ctx context.Context) <-chan botEnt.Data {
+func (t telebot) Start(ctx context.Context) (<-chan botEnt.Data, <-chan error) {
 	updConfig := tgbot.NewUpdate(0)
 	botInDataChan := make(chan botEnt.Data)
+	botErrChan := make(chan error)
 	updChan := t.bot.GetUpdatesChan(updConfig)
 
-	go t.receiveInData(ctx, updChan, botInDataChan)
+	go t.receiveInData(ctx, updChan, botInDataChan, botErrChan)
 
-	return botInDataChan
+	return botInDataChan, botErrChan
 }
 
 func (t telebot) Stop() {

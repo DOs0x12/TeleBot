@@ -7,7 +7,7 @@ import (
 )
 
 type Worker interface {
-	Start(ctx context.Context) <-chan bot.Data
+	Start(ctx context.Context) (<-chan bot.Data, <-chan error)
 	Stop()
 	SendMessage(ctx context.Context, msg string, chatID int64) error
 	RegisterCommands(ctx context.Context, commands []bot.Command) error

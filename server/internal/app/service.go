@@ -36,7 +36,7 @@ func NewService(
 
 func (s service) Process() error {
 	fromBrokerDataChan, fromBrokerCommChan, errChan := s.msgBroker.StartReceivingData(s.ctx)
-	fromBotDataChan := s.botConf.BotWorker.Start(s.ctx)
+	fromBotDataChan, botErrChan := s.botConf.BotWorker.Start(s.ctx)
 	err := s.loadBotCommands()
 	if err != nil {
 		return err
@@ -47,7 +47,7 @@ func (s service) Process() error {
 		return fmt.Errorf("failed to register the loaded commands: %w", err)
 	}
 
-	s.handleServices(fromBrokerDataChan, fromBrokerCommChan, fromBotDataChan, errChan)
+	s.handleServices(fromBrokerDataChan, fromBrokerCommChan, fromBotDataChan, errChan, botErrChan)
 
 	return nil
 }
@@ -57,6 +57,7 @@ func (s service) handleServices(
 	fromBrokerCommChan <-chan broker.CommandFrom,
 	fromBotDataChan <-chan botEnt.Data,
 	receiverErrChan <-chan error,
+	botErrChan <-chan error,
 ) {
 	for {
 		select {
@@ -72,6 +73,8 @@ func (s service) handleServices(
 			logrus.Error("Failed to receive broker data: ", recErr)
 		case fromBotData := <-fromBotDataChan:
 			go s.processFromBotData(fromBotData)
+		case botErr := <-botErrChan:
+			logrus.Error("Failed to receive bot data: ", botErr)
 		}
 	}
 }
