@@ -30,7 +30,7 @@ func (t telebot) Start(ctx context.Context) <-chan botEnt.Data {
 	botInDataChan := make(chan botEnt.Data)
 	updChan := t.bot.GetUpdatesChan(updConfig)
 
-	go receiveInData(ctx, updChan, botInDataChan)
+	go t.receiveInData(ctx, updChan, botInDataChan)
 
 	return botInDataChan
 }

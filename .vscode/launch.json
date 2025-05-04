@@ -10,7 +10,7 @@
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/server/cmd/",
-            "args": [],
+            "args": ["--conf", "/home/osetrov/telebot-test/config.yml"],
             "asRoot": true,
             "console": "integratedTerminal"
         },
