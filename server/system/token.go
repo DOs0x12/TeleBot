@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/thanhpk/randstr"
 )
@@ -76,7 +77,7 @@ func generateSystemIDIfNotExist() error {
 		return err
 	}
 
-	systemID = string(fileData)
+	systemID = strings.Trim(string(fileData), "\n")
 	if systemID == "" {
 		systemID = generateNewID()
 		_, err = file.WriteString(systemID)
