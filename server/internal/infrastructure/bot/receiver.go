@@ -2,6 +2,7 @@ package bot
 
 import (
 	"context"
+	"encoding/json"
 	"io"
 	"net/http"
 
@@ -9,6 +10,11 @@ import (
 	tgbot "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/sirupsen/logrus"
 )
+
+type FileDto struct {
+	Name,
+	Data string
+}
 
 func (t telebot) receiveInData(
 	ctx context.Context,
@@ -35,12 +41,20 @@ func (t telebot) processBotData(botInDataChan chan<- botEnt.Data, upd tgbot.Upda
 	var mesVal string
 	if upd.Message.Document != nil {
 		var err error
-		mesVal, err = getFileData(t, upd.Message.Document.FileID)
+		fileData, err := getFileData(t, upd.Message.Document.FileID)
 		if err != nil {
 			logrus.Errorf("failed to get a file data from the bot API: %v", err)
 
 			return
 		}
+
+		fileDto := FileDto{Name: upd.Message.Document.FileName, Data: fileData}
+		rawMesVal, err := json.Marshal(fileDto)
+		if err != nil {
+			logrus.Errorf("failed to marshal a file DTO: %v", err)
+		}
+
+		mesVal = string(rawMesVal)
 	} else {
 		mesVal = upd.Message.Text
 	}
