@@ -22,8 +22,6 @@ type ProducerDataDto struct {
 	Value    string
 }
 
-var lastCommand string
-
 func NewKafkaProducer(address string) KafkaProducer {
 	w := &kafka.Writer{
 		Addr:     kafka.TCP(address),
@@ -41,6 +39,11 @@ func (kt KafkaProducer) TransmitData(ctx context.Context, data broker.DataTo) er
 	return retry.ExecuteWithRetries(ctx, act)
 }
 
+var (
+	lastCommand,
+	lastToken string
+)
+
 func (kt KafkaProducer) sendMessage(ctx context.Context, data broker.DataTo) error {
 	if lastCommand == "" && data.CommName == "" {
 		logrus.Warn("Got an empty message")
@@ -50,6 +53,7 @@ func (kt KafkaProducer) sendMessage(ctx context.Context, data broker.DataTo) err
 
 	if data.CommName == "" {
 		data.CommName = lastCommand
+		data.Token = lastToken
 	}
 
 	dataDto := ProducerDataDto{CommName: data.CommName, ChatID: data.ChatID, Value: data.Value}
@@ -66,6 +70,7 @@ func (kt KafkaProducer) sendMessage(ctx context.Context, data broker.DataTo) err
 	}
 
 	lastCommand = data.CommName
+	lastToken = data.Token
 
 	return nil
 }
