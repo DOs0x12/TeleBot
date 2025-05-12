@@ -49,28 +49,22 @@ func (b *KafkaBroker) StartGetData(ctx context.Context) <-chan BrokerData {
 	consMsgs := b.cons.StartGetData(ctx)
 	brMsgs := make(chan BrokerData)
 
-	go pipelineConsData(ctx, consMsgs, brMsgs)
+	go pipelineConsData(consMsgs, brMsgs)
 
 	return brMsgs
 }
 
 func pipelineConsData(
-	ctx context.Context,
 	consMsgs <-chan consumer.KafkaConsumerData,
 	brMsgs chan<- BrokerData,
 ) {
 
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case consData := <-consMsgs:
-			brMsgs <- BrokerData{
-				CommName:    consData.CommName,
-				ChatID:      consData.ChatID,
-				Value:       consData.Value,
-				MessageUuid: consData.MessageUuid,
-			}
+	for consData := range consMsgs {
+		brMsgs <- BrokerData{
+			CommName:    consData.CommName,
+			ChatID:      consData.ChatID,
+			Value:       consData.Value,
+			MessageUuid: consData.MessageUuid,
 		}
 	}
 }

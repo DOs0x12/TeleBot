@@ -71,6 +71,13 @@ func (r KafkaConsumer) StartGetData(ctx context.Context) <-chan KafkaConsumerDat
 }
 
 func (r KafkaConsumer) consumeMessages(ctx context.Context, dataChan chan<- KafkaConsumerData) {
+	defer func() {
+		close(dataChan)
+		if err := r.reader.Close(); err != nil {
+			logrus.Fatal("failed to close the reader:", err)
+		}
+	}()
+
 	for {
 		if ctx.Err() != nil {
 			break
@@ -98,10 +105,6 @@ func (r KafkaConsumer) consumeMessages(ctx context.Context, dataChan chan<- Kafk
 		}
 
 		dataChan <- botData
-	}
-
-	if err := r.reader.Close(); err != nil {
-		logrus.Fatal("failed to close the reader:", err)
 	}
 }
 
