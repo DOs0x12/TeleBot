@@ -48,6 +48,7 @@ func (s service) Process() error {
 	}
 
 	s.handleServices(fromBrokerDataChan, fromBrokerCommChan, fromBotDataChan, errChan, botErrChan)
+	s.stopServices()
 
 	return nil
 }
@@ -61,19 +62,30 @@ func (s service) handleServices(
 ) {
 	for {
 		select {
-		case <-s.ctx.Done():
-			s.stopServices()
-
-			return
-		case fromBrokerData := <-fromBrokerDataChan:
+		case fromBrokerData, ok := <-fromBrokerDataChan:
+			if !ok {
+				return
+			}
 			go s.processFromBrokerData(fromBrokerData)
-		case fromBrokerComm := <-fromBrokerCommChan:
+		case fromBrokerComm, ok := <-fromBrokerCommChan:
+			if !ok {
+				return
+			}
 			go s.processFromBrokerCommand(fromBrokerComm)
-		case recErr := <-receiverErrChan:
+		case recErr, ok := <-receiverErrChan:
+			if !ok {
+				return
+			}
 			logrus.Error("Failed to receive broker data: ", recErr)
-		case fromBotData := <-fromBotDataChan:
+		case fromBotData, ok := <-fromBotDataChan:
+			if !ok {
+				return
+			}
 			go s.processFromBotData(fromBotData)
-		case botErr := <-botErrChan:
+		case botErr, ok := <-botErrChan:
+			if !ok {
+				return
+			}
 			logrus.Error("Failed to receive bot data: ", botErr)
 		}
 	}
