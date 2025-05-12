@@ -18,6 +18,18 @@ func (t telebot) SendMessage(ctx context.Context, msg string, chatID int64) erro
 	return nil
 }
 
+func (t telebot) SendDocument(ctx context.Context, chatID int64, docData, docName string) error {
+	f := tgbot.FileBytes{Name: docName, Bytes: []byte(docData)}
+	doc := tgbot.NewDocument(chatID, f)
+
+	_, err := t.bot.Send(doc)
+	if err != nil {
+		return fmt.Errorf("failed to send a file %v: %w", docName, err)
+	}
+
+	return nil
+}
+
 func (t telebot) sendWithRetries(ctx context.Context, msg tgbot.MessageConfig) error {
 	act := func(ctx context.Context) error {
 		_, err := t.bot.Send(msg)
