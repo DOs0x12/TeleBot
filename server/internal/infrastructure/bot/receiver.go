@@ -44,6 +44,7 @@ func (t telebot) processBotData(botInDataChan chan<- botEnt.Data, upd tgbot.Upda
 	isComm := upd.Message.Command() != ""
 
 	var mesVal string
+	isFile := false
 	if upd.Message.Document != nil {
 		var err error
 		fileData, err := getFileData(t, upd.Message.Document.FileID)
@@ -58,6 +59,7 @@ func (t telebot) processBotData(botInDataChan chan<- botEnt.Data, upd tgbot.Upda
 		}
 
 		mesVal = string(rawMesVal)
+		isFile = true
 	} else {
 		mesVal = upd.Message.Text
 	}
@@ -66,6 +68,7 @@ func (t telebot) processBotData(botInDataChan chan<- botEnt.Data, upd tgbot.Upda
 		ChatID:    upd.Message.Chat.ID,
 		Value:     mesVal,
 		IsCommand: isComm,
+		IsFile:    isFile,
 	}
 
 	return nil

@@ -120,7 +120,11 @@ func (s service) processFromBrokerCommand(fromBrokerComm broker.CommandFrom) {
 
 func (s service) toBrokerData(fromBotData botEnt.Data) (broker.DataTo, error) {
 	if !fromBotData.IsCommand {
-		return broker.DataTo{ChatID: fromBotData.ChatID, Value: fromBotData.Value}, nil
+		return broker.DataTo{
+			ChatID: fromBotData.ChatID,
+			Value:  fromBotData.Value,
+			IsFile: fromBotData.IsFile,
+		}, nil
 	}
 
 	botCommand := searchBotCommandByName(fromBotData.Value, s.botConf.BotCommands)

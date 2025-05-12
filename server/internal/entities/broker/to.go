@@ -5,4 +5,5 @@ type DataTo struct {
 	ChatID   int64
 	Value    string
 	Token    string
+	IsFile   bool
 }

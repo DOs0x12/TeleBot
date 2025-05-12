@@ -1,6 +1,7 @@
 package telebot
 
 import (
+	"encoding/json"
 	"fmt"
 
 	botEnt "github.com/DOs0x12/TeleBot/server/v2/internal/entities/bot"
@@ -65,7 +66,26 @@ func (s service) processBotCommand(fromBrokerComm broker.CommandFrom) error {
 	return nil
 }
 
+type FileDto struct {
+	Name,
+	Data string
+}
+
 func (s service) processBotData(fromBrokerData broker.DataFrom) error {
+	if fromBrokerData.IsFile {
+		var fd FileDto
+		err := json.Unmarshal([]byte(fromBrokerData.Value), &fd)
+		if err != nil {
+			return fmt.Errorf("failed to unmarshal file data from broker: %w", err)
+		}
+
+		err = s.botConf.BotWorker.SendDocument(s.ctx, fromBrokerData.ChatID, fd.Data, fd.Name)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
 	err := s.botConf.BotWorker.SendMessage(s.ctx, fromBrokerData.Value, fromBrokerData.ChatID)
 	if err != nil {
 		return fmt.Errorf("failed to send a message to the bot: %w", err)

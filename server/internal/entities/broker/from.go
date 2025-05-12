@@ -6,6 +6,7 @@ type DataFrom struct {
 	ChatID  int64
 	Value   string
 	MsgUuid uuid.UUID
+	IsFile  bool
 }
 
 type CommandFrom struct {
