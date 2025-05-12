@@ -24,6 +24,7 @@ type KafkaConsumerData struct {
 	ChatID      int64
 	Value       string
 	MessageUuid uuid.UUID
+	IsFile      bool
 }
 
 // KafkaConsumer gets data from the bot app. It implements a way to store

@@ -16,6 +16,7 @@ type KafkaProducerData struct {
 	ChatID      int64
 	Value       string
 	MessageUuid uuid.UUID
+	IsFile      bool
 }
 
 // Producer works with the Kafka to send data to the bot application.

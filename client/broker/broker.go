@@ -15,6 +15,7 @@ type BrokerData struct {
 	ChatID      int64
 	Value       string
 	MessageUuid uuid.UUID
+	IsFile      bool
 }
 
 // BrokerCommandData is the data that represents a command to the bot application.
@@ -65,6 +66,7 @@ func pipelineConsData(
 			ChatID:      consData.ChatID,
 			Value:       consData.Value,
 			MessageUuid: consData.MessageUuid,
+			IsFile:      consData.IsFile,
 		}
 	}
 }
@@ -80,7 +82,9 @@ func (b *KafkaBroker) SendData(ctx context.Context, data BrokerData) error {
 		ChatID:      data.ChatID,
 		Value:       data.Value,
 		MessageUuid: data.MessageUuid,
+		IsFile:      data.IsFile,
 	}
+
 	return b.prod.SendData(ctx, prData)
 }
 
