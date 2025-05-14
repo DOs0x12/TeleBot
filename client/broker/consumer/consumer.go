@@ -16,6 +16,7 @@ type KafkaConsumerDataDto struct {
 	CommName string
 	ChatID   int64
 	Value    string
+	IsFile   bool
 }
 
 // KafkaConsumerData is the data to work with a consumer.
@@ -103,6 +104,7 @@ func (r KafkaConsumer) consumeMessages(ctx context.Context, dataChan chan<- Kafk
 			ChatID:      botDataDto.ChatID,
 			Value:       botDataDto.Value,
 			MessageUuid: msgUuid,
+			IsFile:      botDataDto.IsFile,
 		}
 
 		dataChan <- botData
