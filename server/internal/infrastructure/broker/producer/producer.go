@@ -20,6 +20,7 @@ type ProducerDataDto struct {
 	CommName string
 	ChatID   int64
 	Value    string
+	IsFile   bool
 }
 
 func NewKafkaProducer(address string) KafkaProducer {
@@ -56,7 +57,12 @@ func (kt KafkaProducer) sendMessage(ctx context.Context, data broker.DataTo) err
 		data.Token = lastToken
 	}
 
-	dataDto := ProducerDataDto{CommName: data.CommName, ChatID: data.ChatID, Value: data.Value}
+	dataDto := ProducerDataDto{
+		CommName: data.CommName,
+		ChatID:   data.ChatID,
+		Value:    data.Value,
+		IsFile:   data.IsFile,
+	}
 
 	rawData, err := json.Marshal(dataDto)
 	if err != nil {

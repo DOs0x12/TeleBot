@@ -135,6 +135,7 @@ func unmarshalBotCommand(rawComm []byte) (broker.CommandFrom, error) {
 type BotDataDto struct {
 	ChatID int64
 	Value  string
+	IsFile bool
 }
 
 func unmarshalBotData(rawBotData []byte) (broker.DataFrom, error) {
@@ -144,7 +145,7 @@ func unmarshalBotData(rawBotData []byte) (broker.DataFrom, error) {
 		return broker.DataFrom{}, err
 	}
 
-	return broker.DataFrom{ChatID: botData.ChatID, Value: botData.Value}, nil
+	return broker.DataFrom{ChatID: botData.ChatID, Value: botData.Value, IsFile: botData.IsFile}, nil
 }
 
 func (kr KafkaConsumer) fetchMesWithRetries(ctx context.Context) (kafka.Message, error) {
