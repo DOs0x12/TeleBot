@@ -61,7 +61,7 @@ func (kr KafkaConsumer) StartReceivingData(ctx context.Context) (
 	kr.uncommittedMessageService.StartCleanupUncommittedMessages(ctx)
 	kr.offsetService.StartCleanupOffsets(ctx)
 
-	return dataChan, commChan, nil
+	return dataChan, commChan, errChan
 }
 
 func (kr KafkaConsumer) consumeMessages(ctx context.Context,
