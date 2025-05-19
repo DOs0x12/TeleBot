@@ -15,7 +15,7 @@ import (
 type KafkaConsumerDataDto struct {
 	CommName string
 	ChatID   int64
-	Value    string
+	Value    []byte
 	IsFile   bool
 }
 
@@ -23,7 +23,7 @@ type KafkaConsumerDataDto struct {
 type KafkaConsumerData struct {
 	CommName    string
 	ChatID      int64
-	Value       string
+	Value       []byte
 	MessageUuid uuid.UUID
 	IsFile      bool
 }

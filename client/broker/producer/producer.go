@@ -14,7 +14,7 @@ import (
 // KafkaProducerData stores the data for the producer.
 type KafkaProducerData struct {
 	ChatID      int64
-	Value       string
+	Value       []byte
 	MessageUuid uuid.UUID
 	IsFile      bool
 }
