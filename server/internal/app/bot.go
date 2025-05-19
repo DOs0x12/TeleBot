@@ -67,8 +67,8 @@ func (s service) processBotCommand(fromBrokerComm broker.CommandFrom) error {
 }
 
 type FileDto struct {
-	Name,
-	Data string
+	Name string
+	Data []byte
 }
 
 func (s service) processBotData(fromBrokerData broker.DataFrom) error {
@@ -86,7 +86,7 @@ func (s service) processBotData(fromBrokerData broker.DataFrom) error {
 
 		return nil
 	}
-	err := s.botConf.BotWorker.SendMessage(s.ctx, fromBrokerData.Value, fromBrokerData.ChatID)
+	err := s.botConf.BotWorker.SendMessage(s.ctx, string(fromBrokerData.Value), fromBrokerData.ChatID)
 	if err != nil {
 		return fmt.Errorf("failed to send a message to the bot: %w", err)
 	}

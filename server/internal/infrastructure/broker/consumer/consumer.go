@@ -134,7 +134,7 @@ func unmarshalBotCommand(rawComm []byte) (broker.CommandFrom, error) {
 
 type BotDataDto struct {
 	ChatID int64
-	Value  string
+	Value  []byte
 	IsFile bool
 }
 

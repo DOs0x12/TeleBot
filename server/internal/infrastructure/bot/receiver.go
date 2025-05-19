@@ -13,8 +13,8 @@ import (
 )
 
 type FileDto struct {
-	Name,
-	Data string
+	Name string
+	Data []byte
 }
 
 func (t telebot) receiveInData(
@@ -43,7 +43,7 @@ func (t telebot) processBotData(botInDataChan chan<- botEnt.Data, upd tgbot.Upda
 
 	isComm := upd.Message.Command() != ""
 
-	var mesVal string
+	var mesVal []byte
 	isFile := false
 	if upd.Message.Document != nil {
 		var err error
@@ -58,10 +58,10 @@ func (t telebot) processBotData(botInDataChan chan<- botEnt.Data, upd tgbot.Upda
 			return fmt.Errorf("failed to marshal a file DTO: %w", err)
 		}
 
-		mesVal = string(rawMesVal)
+		mesVal = rawMesVal
 		isFile = true
 	} else {
-		mesVal = upd.Message.Text
+		mesVal = []byte(upd.Message.Text)
 	}
 
 	botInDataChan <- botEnt.Data{
@@ -74,23 +74,23 @@ func (t telebot) processBotData(botInDataChan chan<- botEnt.Data, upd tgbot.Upda
 	return nil
 }
 
-func getFileData(t telebot, fileID string) (string, error) {
+func getFileData(t telebot, fileID string) ([]byte, error) {
 	fileUrl, err := t.bot.GetFileDirectURL(fileID)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	resp, err := http.Get(fileUrl)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	defer resp.Body.Close()
 
 	fileData, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return string(fileData), nil
+	return fileData, nil
 }

@@ -139,7 +139,7 @@ func (s service) toBrokerData(fromBotData botEnt.Data) (broker.DataTo, error) {
 		}, nil
 	}
 
-	botCommand := searchBotCommandByName(fromBotData.Value, s.botConf.BotCommands)
+	botCommand := searchBotCommandByName(string(fromBotData.Value), s.botConf.BotCommands)
 	if botCommand == nil {
 		return broker.DataTo{}, fmt.Errorf("no commands with the name %v", fromBotData.Value)
 	}

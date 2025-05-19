@@ -19,7 +19,7 @@ type KafkaProducer struct {
 type ProducerDataDto struct {
 	CommName string
 	ChatID   int64
-	Value    string
+	Value    []byte
 	IsFile   bool
 }
 
