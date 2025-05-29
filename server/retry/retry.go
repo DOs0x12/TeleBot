@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 type action func(ctx context.Context) error
@@ -21,6 +23,7 @@ func ExecuteWithRetries(ctx context.Context, act action, retryCnt int, waitTime 
 			return nil
 		}
 
+		logrus.Errorf("an error occurs: %v\nRetry %v after %v", err, i, waitTime)
 		waitWithContext(ctx, waitTime)
 	}
 
