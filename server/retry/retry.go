@@ -10,7 +10,8 @@ import (
 
 type action func(ctx context.Context) error
 
-func ExecuteWithRetries(ctx context.Context, act action, retryCnt int, waitTime time.Duration) error {
+// ExecuteWithRetries executes a function with retries using a defined retry count and delay between executes.
+func ExecuteWithRetries(ctx context.Context, act action, retryCnt int, delay time.Duration) error {
 	var err error
 
 	for i := range retryCnt {
@@ -23,8 +24,8 @@ func ExecuteWithRetries(ctx context.Context, act action, retryCnt int, waitTime 
 			return nil
 		}
 
-		logrus.Errorf("an error occurs: %v\nRetry %v after %v", err, i, waitTime)
-		waitWithContext(ctx, waitTime)
+		logrus.Errorf("an error occurs: %v\nRetry %v after %v", err, i, delay)
+		waitWithContext(ctx, delay)
 	}
 
 	return fmt.Errorf("retries are exceeded: %w", err)
