@@ -8,12 +8,10 @@ import (
 
 type action func(ctx context.Context) error
 
-func ExecuteWithRetries(ctx context.Context, act action) error {
-	retryNum := 10
-	waitTime := 5 * time.Second
+func ExecuteWithRetries(ctx context.Context, act action, retryCnt int, waitTime time.Duration) error {
 	var err error
 
-	for i := 0; i < retryNum; i++ {
+	for i := 0; i < retryCnt; i++ {
 		if ctx.Err() != nil {
 			return nil
 		}
