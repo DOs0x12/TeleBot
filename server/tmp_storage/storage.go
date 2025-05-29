@@ -68,6 +68,12 @@ func (s TmpStorage) AddObj(obj any) uuid.UUID {
 	return objUuid
 }
 
+// AddObjByUuid adds an object to the storage with a defined UUID.
+func (s TmpStorage) AddObjByUuid(obj any, uuid uuid.UUID) {
+	sObj := storageObj{Obj: obj, timeStamp: time.Now()}
+	s.storage.Store(uuid, sObj)
+}
+
 // DelObj deletes a single object from the storage by UUID.
 func (s TmpStorage) DelObj(objUuid uuid.UUID) {
 	s.storage.Delete(objUuid)
