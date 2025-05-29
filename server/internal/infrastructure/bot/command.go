@@ -41,7 +41,7 @@ func (t telebot) requestWithRetries(ctx context.Context, conf tgbot.SetMyCommand
 	}
 	rCnt := 5
 	rDur := 1 * time.Second
-	err := retry.ExecuteWithRetries(ctx, act)
+	err := retry.ExecuteWithRetries(ctx, act, rCnt, rDur)
 
 	return resp, err
 }
