@@ -10,19 +10,18 @@ import (
 )
 
 func (kr KafkaConsumer) Commit(ctx context.Context, msgUuid uuid.UUID) error {
-	uncomMsg, ok := kr.uncommittedMessageService.GetMsgFromUncommited(msgUuid)
+	sObj, ok := kr.uncommittedMessageService.GetObj(msgUuid)
 	if !ok {
 		return fmt.Errorf("no key %v between the processing messages", msgUuid)
 	}
-
-	err := kr.commitMesWithRetries(ctx, uncomMsg.Msg)
+	uncomMsg := sObj.Obj.(kafka.Message)
+	err := kr.commitMesWithRetries(ctx, uncomMsg)
 	if err != nil {
 		return fmt.Errorf("failed to commit a message in the broker: %w", err)
-
 	}
 
-	kr.offsetService.AddOrUpdateOffset(uncomMsg.Msg.Partition, uncomMsg.Msg.Offset)
-	kr.uncommittedMessageService.DelMsgFromUncommitted(msgUuid)
+	kr.offsetService.AddOrUpdateOffset(uncomMsg.Partition, uncomMsg.Offset)
+	kr.uncommittedMessageService.DelObj(msgUuid)
 
 	return nil
 }

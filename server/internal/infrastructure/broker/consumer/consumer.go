@@ -4,12 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/DOs0x12/TeleBot/server/v2/broker_data"
 	"github.com/DOs0x12/TeleBot/server/v2/internal/common/retry"
 	"github.com/DOs0x12/TeleBot/server/v2/internal/entities/broker"
 	"github.com/DOs0x12/TeleBot/server/v2/internal/infrastructure/broker/topic"
 	"github.com/DOs0x12/TeleBot/server/v2/system"
+	"github.com/DOs0x12/TeleBot/server/v2/tmp_storage"
 
 	kafka "github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"
@@ -17,7 +19,7 @@ import (
 
 type KafkaConsumer struct {
 	offsetService             broker_data.OffsetService
-	uncommittedMessageService broker_data.UncommitedMessageService
+	uncommittedMessageService tmp_storage.TmpStorage
 	reader                    *kafka.Reader
 }
 
@@ -42,7 +44,7 @@ func NewKafkaConsumer(address string) (*KafkaConsumer, error) {
 
 	cons := KafkaConsumer{
 		offsetService:             broker_data.NewOffsetService(),
-		uncommittedMessageService: broker_data.NewUncommitedMessageService(),
+		uncommittedMessageService: tmp_storage.NewTmpStorage(),
 		reader:                    reader,
 	}
 
@@ -58,7 +60,9 @@ func (kr KafkaConsumer) StartReceivingData(ctx context.Context) (
 	errChan := make(chan error)
 
 	go kr.consumeMessages(ctx, dataChan, commChan, errChan)
-	kr.uncommittedMessageService.StartCleanupUncommittedMessages(ctx)
+	objLifetime := 48 * time.Hour
+	objClPer := 1 * time.Hour
+	kr.uncommittedMessageService.StartCleanupOldObjs(ctx, objLifetime, objClPer)
 	kr.offsetService.StartCleanupOffsets(ctx)
 
 	return dataChan, commChan, errChan
@@ -80,7 +84,7 @@ func (kr KafkaConsumer) consumeMessages(ctx context.Context,
 			continue
 		}
 
-		msgUuid := kr.uncommittedMessageService.AddMsgToUncommitted(msg)
+		msgUuid := kr.uncommittedMessageService.AddObj(msg)
 		commandKey := "command"
 		isCommand := string(msg.Key) == commandKey
 		if isCommand {
