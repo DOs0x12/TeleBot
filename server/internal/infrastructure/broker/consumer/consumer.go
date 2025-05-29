@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/DOs0x12/TeleBot/server/v2/broker_data"
-	"github.com/DOs0x12/TeleBot/server/v2/internal/common/retry"
 	"github.com/DOs0x12/TeleBot/server/v2/internal/entities/broker"
 	"github.com/DOs0x12/TeleBot/server/v2/internal/infrastructure/broker/topic"
+	"github.com/DOs0x12/TeleBot/server/v2/retry"
 	"github.com/DOs0x12/TeleBot/server/v2/system"
 	"github.com/DOs0x12/TeleBot/server/v2/tmp_storage"
 
@@ -161,8 +161,9 @@ func (kr KafkaConsumer) fetchMesWithRetries(ctx context.Context) (kafka.Message,
 
 		return err
 	}
-
-	err := retry.ExecuteWithRetries(ctx, act)
+	rCnt := 5
+	rDur := 1 * time.Second
+	err := retry.ExecuteWithRetries(ctx, act, rCnt, rDur)
 
 	return msg, err
 }

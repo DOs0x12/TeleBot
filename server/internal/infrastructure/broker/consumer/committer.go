@@ -3,8 +3,9 @@ package consumer
 import (
 	"context"
 	"fmt"
+	"time"
 
-	"github.com/DOs0x12/TeleBot/server/v2/internal/common/retry"
+	"github.com/DOs0x12/TeleBot/server/v2/retry"
 	"github.com/google/uuid"
 	kafka "github.com/segmentio/kafka-go"
 )
@@ -35,6 +36,7 @@ func (kr KafkaConsumer) commitMesWithRetries(ctx context.Context, msg kafka.Mess
 
 		return kr.reader.CommitMessages(ctx, msg)
 	}
-
-	return retry.ExecuteWithRetries(ctx, act)
+	rCnt := 5
+	rDur := 1 * time.Second
+	return retry.ExecuteWithRetries(ctx, act, rCnt, rDur)
 }

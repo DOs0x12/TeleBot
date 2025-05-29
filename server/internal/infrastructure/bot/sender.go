@@ -3,8 +3,9 @@ package bot
 import (
 	"context"
 	"fmt"
+	"time"
 
-	"github.com/DOs0x12/TeleBot/server/v2/internal/common/retry"
+	"github.com/DOs0x12/TeleBot/server/v2/retry"
 	tgbot "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
@@ -36,6 +37,7 @@ func (t telebot) sendWithRetries(ctx context.Context, msg tgbot.MessageConfig) e
 
 		return err
 	}
-
-	return retry.ExecuteWithRetries(ctx, act)
+	rCnt := 5
+	rDur := 1 * time.Second
+	return retry.ExecuteWithRetries(ctx, act, rCnt, rDur)
 }
