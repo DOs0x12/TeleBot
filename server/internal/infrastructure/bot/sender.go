@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/DOs0x12/TeleBot/server/v2/retry"
+	"github.com/DOs0x12/TeleBot/server/v3/retry"
 	tgbot "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 

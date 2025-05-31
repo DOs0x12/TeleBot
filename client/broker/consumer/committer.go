@@ -5,27 +5,29 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/segmentio/kafka-go"
 )
 
 // Commit commits the processed messages. The method also removes old messages and offsets.
 func (r KafkaConsumer) Commit(ctx context.Context, msgUuid uuid.UUID) error {
 
-	uncomMsg, ok := r.uncommittedMessageService.GetMsgFromUncommited(msgUuid)
+	stObj, ok := r.uncomMsgStorage.GetObj(msgUuid)
 	if !ok {
 		return fmt.Errorf("no key %v between the processing messages", msgUuid)
 	}
 
-	lastOffsetWithTimeStamp, ok := r.offsetService.GetOffset(uncomMsg.Msg.Partition)
-	if !ok || lastOffsetWithTimeStamp.Value < uncomMsg.Msg.Offset {
-		err := r.reader.CommitMessages(ctx, uncomMsg.Msg)
+	uncomMsg := stObj.Obj.(kafka.Message)
+	lastOffsetWithTimeStamp, ok := r.offsetService.GetOffset(uncomMsg.Partition)
+	if !ok || lastOffsetWithTimeStamp.Value < uncomMsg.Offset {
+		err := r.reader.CommitMessages(ctx, uncomMsg)
 		if err != nil {
 			return fmt.Errorf("failed to commit a message in the broker: %w", err)
 
 		}
 	}
 
-	r.offsetService.AddOrUpdateOffset(uncomMsg.Msg.Partition, uncomMsg.Msg.Offset)
-	r.uncommittedMessageService.DelMsgFromUncommitted(msgUuid)
+	r.offsetService.AddOrUpdateOffset(uncomMsg.Partition, uncomMsg.Offset)
+	r.uncomMsgStorage.DelObj(msgUuid)
 
 	return nil
 }

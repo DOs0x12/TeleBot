@@ -8,7 +8,7 @@ import (
 	"io"
 	"net/http"
 
-	botEnt "github.com/DOs0x12/TeleBot/server/v2/internal/entities/bot"
+	botEnt "github.com/DOs0x12/TeleBot/server/v3/internal/entities/bot"
 	tgbot "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 

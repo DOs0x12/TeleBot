@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/DOs0x12/TeleBot/server/v2/internal/entities/broker"
-	"github.com/DOs0x12/TeleBot/server/v2/retry"
+	"github.com/DOs0x12/TeleBot/server/v3/internal/entities/broker"
+	"github.com/DOs0x12/TeleBot/server/v3/retry"
 
 	kafka "github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"
