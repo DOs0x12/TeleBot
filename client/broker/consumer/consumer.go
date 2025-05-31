@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/DOs0x12/TeleBot/server/v2/broker_data"
-	"github.com/DOs0x12/TeleBot/server/v2/system"
+	"github.com/DOs0x12/TeleBot/server/v3/broker_data"
+	"github.com/DOs0x12/TeleBot/server/v3/system"
 	"github.com/google/uuid"
 	"github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"

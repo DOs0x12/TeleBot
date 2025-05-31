@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/DOs0x12/TeleBot/server/v2/internal/entities/config"
+	"github.com/DOs0x12/TeleBot/server/v3/internal/entities/config"
 
 	"gopkg.in/yaml.v3"
 )

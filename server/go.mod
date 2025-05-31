@@ -1,4 +1,4 @@
-module github.com/DOs0x12/TeleBot/server/v2
+module github.com/DOs0x12/TeleBot/server/v3
 
 go 1.23.3
 

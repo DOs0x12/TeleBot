@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/DOs0x12/TeleBot/server/v2/internal/entities/broker"
-	"github.com/DOs0x12/TeleBot/server/v2/internal/infrastructure/broker/consumer"
-	"github.com/DOs0x12/TeleBot/server/v2/internal/infrastructure/broker/producer"
+	"github.com/DOs0x12/TeleBot/server/v3/internal/entities/broker"
+	"github.com/DOs0x12/TeleBot/server/v3/internal/infrastructure/broker/consumer"
+	"github.com/DOs0x12/TeleBot/server/v3/internal/infrastructure/broker/producer"
 	"github.com/google/uuid"
 )
 

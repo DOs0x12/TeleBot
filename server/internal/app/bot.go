@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	botEnt "github.com/DOs0x12/TeleBot/server/v2/internal/entities/bot"
-	"github.com/DOs0x12/TeleBot/server/v2/internal/entities/broker"
+	botEnt "github.com/DOs0x12/TeleBot/server/v3/internal/entities/bot"
+	"github.com/DOs0x12/TeleBot/server/v3/internal/entities/broker"
 )
 
 func (s service) loadBotCommands() error {

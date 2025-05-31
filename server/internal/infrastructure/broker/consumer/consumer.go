@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/DOs0x12/TeleBot/server/v2/broker_data"
-	"github.com/DOs0x12/TeleBot/server/v2/internal/entities/broker"
-	"github.com/DOs0x12/TeleBot/server/v2/internal/infrastructure/broker/topic"
-	"github.com/DOs0x12/TeleBot/server/v2/retry"
-	"github.com/DOs0x12/TeleBot/server/v2/system"
-	"github.com/DOs0x12/TeleBot/server/v2/tmp_storage"
+	"github.com/DOs0x12/TeleBot/server/v3/broker_data"
+	"github.com/DOs0x12/TeleBot/server/v3/internal/entities/broker"
+	"github.com/DOs0x12/TeleBot/server/v3/internal/infrastructure/broker/topic"
+	"github.com/DOs0x12/TeleBot/server/v3/retry"
+	"github.com/DOs0x12/TeleBot/server/v3/system"
+	"github.com/DOs0x12/TeleBot/server/v3/tmp_storage"
 
 	kafka "github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"

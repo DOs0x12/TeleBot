@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/DOs0x12/TeleBot/server/v2/system"
+	"github.com/DOs0x12/TeleBot/server/v3/system"
 	"github.com/segmentio/kafka-go"
 )
 
