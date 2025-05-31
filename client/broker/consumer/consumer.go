@@ -4,9 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/DOs0x12/TeleBot/server/v3/broker_data"
 	"github.com/DOs0x12/TeleBot/server/v3/system"
+	"github.com/DOs0x12/TeleBot/server/v3/tmp_storage"
 	"github.com/google/uuid"
 	"github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"
@@ -31,9 +33,9 @@ type KafkaConsumerData struct {
 // KafkaConsumer gets data from the bot app. It implements a way to store
 // the uncommitted messages and offsets to commit them later.
 type KafkaConsumer struct {
-	offsetService             broker_data.OffsetService
-	uncommittedMessageService broker_data.UncommitedMessageService
-	reader                    *kafka.Reader
+	offsetService   broker_data.OffsetService
+	uncomMsgStorage tmp_storage.TmpStorage
+	reader          *kafka.Reader
 }
 
 // NewKafkaConsumer creates a consumer to read data from a Kafka instance.
@@ -52,9 +54,9 @@ func NewKafkaConsumer(address string, serviceName string) (*KafkaConsumer, error
 	})
 
 	rec := KafkaConsumer{
-		offsetService:             broker_data.NewOffsetService(),
-		uncommittedMessageService: broker_data.NewUncommitedMessageService(),
-		reader:                    r,
+		offsetService:   broker_data.NewOffsetService(),
+		uncomMsgStorage: tmp_storage.NewTmpStorage(),
+		reader:          r,
 	}
 
 	return &rec, nil
@@ -66,7 +68,9 @@ func (r KafkaConsumer) StartGetData(ctx context.Context) <-chan KafkaConsumerDat
 	dataChan := make(chan KafkaConsumerData)
 
 	go r.consumeMessages(ctx, dataChan)
-	r.uncommittedMessageService.StartCleanupUncommittedMessages(ctx)
+	msgLifetime := 48 * time.Hour
+	clPeriod := 1 * time.Hour
+	r.uncomMsgStorage.StartCleanupOldObjs(ctx, msgLifetime, clPeriod)
 	r.offsetService.StartCleanupOffsets(ctx)
 
 	return dataChan
@@ -90,7 +94,7 @@ func (r KafkaConsumer) consumeMessages(ctx context.Context, dataChan chan<- Kafk
 			continue
 		}
 
-		msgUuid := r.uncommittedMessageService.AddMsgToUncommitted(msg)
+		msgUuid := r.uncomMsgStorage.AddObj(msg)
 
 		var botDataDto KafkaConsumerDataDto
 		if err = json.Unmarshal(msg.Value, &botDataDto); err != nil {
