@@ -1,6 +1,6 @@
 services:
   telebot:
-    image: telebot:v2.0.5
+    image: telebot:v3.0.0
     build:
       context: ../server
     restart: unless-stopped
@@ -13,7 +13,7 @@ services:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
   greeter:
-    image: greeter:v2.0.6
+    image: greeter:v3.0.0
     build: ../greeter
     restart: unless-stopped
     networks:
