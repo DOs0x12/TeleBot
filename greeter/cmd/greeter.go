@@ -6,7 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/DOs0x12/TeleBot/client/v2/broker"
+	"github.com/DOs0x12/TeleBot/client/v3/broker"
 
 	"github.com/sirupsen/logrus"
 )
@@ -40,7 +40,7 @@ func main() {
 		case <-ctx.Done():
 			return
 		case inData := <-inDataChan:
-			outData := broker.BrokerData{ChatID: inData.ChatID, Value: "Hello there!"}
+			outData := broker.BrokerData{ChatID: inData.ChatID, Value: []byte("Hello there!")}
 			err := br.SendData(ctx, outData)
 			if err != nil {
 				logrus.Error("Failed to send data: ", err)
