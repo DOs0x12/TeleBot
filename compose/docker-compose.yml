@@ -1,6 +1,6 @@
 services:
   telebot:
-    image: telebot:v2.0.5
+    image: telebot:v3.0.0
     build:
       context: ../server
     restart: unless-stopped
@@ -10,14 +10,18 @@ services:
     volumes:
       - ${data_folder}:/var/lib/telebot
       - ${config_path}:/config.yml
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
   greeter:
-    image: greeter:v2.0.6
+    image: greeter:v3.0.0
     build: ../greeter
     restart: unless-stopped
     networks:
       - "kafka-network"
     volumes:
       - ${data_folder}:/var/lib/telebot
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
 networks:
   kafka-network:
     external: true

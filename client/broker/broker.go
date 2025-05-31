@@ -13,8 +13,9 @@ import (
 type BrokerData struct {
 	CommName    string
 	ChatID      int64
-	Value       string
+	Value       []byte
 	MessageUuid uuid.UUID
+	IsFile      bool
 }
 
 // BrokerCommandData is the data that represents a command to the bot application.
@@ -49,28 +50,23 @@ func (b *KafkaBroker) StartGetData(ctx context.Context) <-chan BrokerData {
 	consMsgs := b.cons.StartGetData(ctx)
 	brMsgs := make(chan BrokerData)
 
-	go pipelineConsData(ctx, consMsgs, brMsgs)
+	go pipelineConsData(consMsgs, brMsgs)
 
 	return brMsgs
 }
 
 func pipelineConsData(
-	ctx context.Context,
 	consMsgs <-chan consumer.KafkaConsumerData,
 	brMsgs chan<- BrokerData,
 ) {
 
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case consData := <-consMsgs:
-			brMsgs <- BrokerData{
-				CommName:    consData.CommName,
-				ChatID:      consData.ChatID,
-				Value:       consData.Value,
-				MessageUuid: consData.MessageUuid,
-			}
+	for consData := range consMsgs {
+		brMsgs <- BrokerData{
+			CommName:    consData.CommName,
+			ChatID:      consData.ChatID,
+			Value:       consData.Value,
+			MessageUuid: consData.MessageUuid,
+			IsFile:      consData.IsFile,
 		}
 	}
 }
@@ -86,7 +82,9 @@ func (b *KafkaBroker) SendData(ctx context.Context, data BrokerData) error {
 		ChatID:      data.ChatID,
 		Value:       data.Value,
 		MessageUuid: data.MessageUuid,
+		IsFile:      data.IsFile,
 	}
+
 	return b.prod.SendData(ctx, prData)
 }
 

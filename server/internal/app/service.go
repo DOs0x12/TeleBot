@@ -36,7 +36,7 @@ func NewService(
 
 func (s service) Process() error {
 	fromBrokerDataChan, fromBrokerCommChan, errChan := s.msgBroker.StartReceivingData(s.ctx)
-	fromBotDataChan := s.botConf.BotWorker.Start(s.ctx)
+	fromBotDataChan, botErrChan := s.botConf.BotWorker.Start(s.ctx)
 	err := s.loadBotCommands()
 	if err != nil {
 		return err
@@ -47,7 +47,8 @@ func (s service) Process() error {
 		return fmt.Errorf("failed to register the loaded commands: %w", err)
 	}
 
-	s.handleServices(fromBrokerDataChan, fromBrokerCommChan, fromBotDataChan, errChan)
+	s.handleServices(fromBrokerDataChan, fromBrokerCommChan, fromBotDataChan, errChan, botErrChan)
+	s.stopServices()
 
 	return nil
 }
@@ -57,21 +58,35 @@ func (s service) handleServices(
 	fromBrokerCommChan <-chan broker.CommandFrom,
 	fromBotDataChan <-chan botEnt.Data,
 	receiverErrChan <-chan error,
+	botErrChan <-chan error,
 ) {
 	for {
 		select {
-		case <-s.ctx.Done():
-			s.stopServices()
-
-			return
-		case fromBrokerData := <-fromBrokerDataChan:
+		case fromBrokerData, ok := <-fromBrokerDataChan:
+			if !ok {
+				return
+			}
 			go s.processFromBrokerData(fromBrokerData)
-		case fromBrokerComm := <-fromBrokerCommChan:
+		case fromBrokerComm, ok := <-fromBrokerCommChan:
+			if !ok {
+				return
+			}
 			go s.processFromBrokerCommand(fromBrokerComm)
-		case recErr := <-receiverErrChan:
+		case recErr, ok := <-receiverErrChan:
+			if !ok {
+				return
+			}
 			logrus.Error("Failed to receive broker data: ", recErr)
-		case fromBotData := <-fromBotDataChan:
+		case fromBotData, ok := <-fromBotDataChan:
+			if !ok {
+				return
+			}
 			go s.processFromBotData(fromBotData)
+		case botErr, ok := <-botErrChan:
+			if !ok {
+				return
+			}
+			logrus.Error("Failed to receive bot data: ", botErr)
 		}
 	}
 }
@@ -117,10 +132,14 @@ func (s service) processFromBrokerCommand(fromBrokerComm broker.CommandFrom) {
 
 func (s service) toBrokerData(fromBotData botEnt.Data) (broker.DataTo, error) {
 	if !fromBotData.IsCommand {
-		return broker.DataTo{ChatID: fromBotData.ChatID, Value: fromBotData.Value}, nil
+		return broker.DataTo{
+			ChatID: fromBotData.ChatID,
+			Value:  fromBotData.Value,
+			IsFile: fromBotData.IsFile,
+		}, nil
 	}
 
-	botCommand := searchBotCommandByName(fromBotData.Value, s.botConf.BotCommands)
+	botCommand := searchBotCommandByName(string(fromBotData.Value), s.botConf.BotCommands)
 	if botCommand == nil {
 		return broker.DataTo{}, fmt.Errorf("no commands with the name %v", fromBotData.Value)
 	}

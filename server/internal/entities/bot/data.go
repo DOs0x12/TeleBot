@@ -2,6 +2,7 @@ package bot
 
 type Data struct {
 	ChatID    int64
-	Value     string
+	Value     []byte
 	IsCommand bool
+	IsFile    bool
 }

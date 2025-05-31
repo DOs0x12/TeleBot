@@ -4,8 +4,9 @@ import "github.com/google/uuid"
 
 type DataFrom struct {
 	ChatID  int64
-	Value   string
+	Value   []byte
 	MsgUuid uuid.UUID
+	IsFile  bool
 }
 
 type CommandFrom struct {

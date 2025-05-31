@@ -4,9 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
-	"github.com/DOs0x12/TeleBot/server/v2/internal/common/retry"
 	"github.com/DOs0x12/TeleBot/server/v2/internal/entities/broker"
+	"github.com/DOs0x12/TeleBot/server/v2/retry"
 
 	kafka "github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"
@@ -19,10 +20,9 @@ type KafkaProducer struct {
 type ProducerDataDto struct {
 	CommName string
 	ChatID   int64
-	Value    string
+	Value    []byte
+	IsFile   bool
 }
-
-var lastCommand string
 
 func NewKafkaProducer(address string) KafkaProducer {
 	w := &kafka.Writer{
@@ -37,9 +37,15 @@ func (kt KafkaProducer) TransmitData(ctx context.Context, data broker.DataTo) er
 	act := func(ctx context.Context) error {
 		return kt.sendMessage(ctx, data)
 	}
-
-	return retry.ExecuteWithRetries(ctx, act)
+	rCnt := 5
+	rDur := 1 * time.Second
+	return retry.ExecuteWithRetries(ctx, act, rCnt, rDur)
 }
+
+var (
+	lastCommand,
+	lastToken string
+)
 
 func (kt KafkaProducer) sendMessage(ctx context.Context, data broker.DataTo) error {
 	if lastCommand == "" && data.CommName == "" {
@@ -50,9 +56,15 @@ func (kt KafkaProducer) sendMessage(ctx context.Context, data broker.DataTo) err
 
 	if data.CommName == "" {
 		data.CommName = lastCommand
+		data.Token = lastToken
 	}
 
-	dataDto := ProducerDataDto{CommName: data.CommName, ChatID: data.ChatID, Value: data.Value}
+	dataDto := ProducerDataDto{
+		CommName: data.CommName,
+		ChatID:   data.ChatID,
+		Value:    data.Value,
+		IsFile:   data.IsFile,
+	}
 
 	rawData, err := json.Marshal(dataDto)
 	if err != nil {
@@ -66,6 +78,7 @@ func (kt KafkaProducer) sendMessage(ctx context.Context, data broker.DataTo) err
 	}
 
 	lastCommand = data.CommName
+	lastToken = data.Token
 
 	return nil
 }

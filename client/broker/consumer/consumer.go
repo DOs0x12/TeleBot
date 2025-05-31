@@ -15,15 +15,17 @@ import (
 type KafkaConsumerDataDto struct {
 	CommName string
 	ChatID   int64
-	Value    string
+	Value    []byte
+	IsFile   bool
 }
 
 // KafkaConsumerData is the data to work with a consumer.
 type KafkaConsumerData struct {
 	CommName    string
 	ChatID      int64
-	Value       string
+	Value       []byte
 	MessageUuid uuid.UUID
+	IsFile      bool
 }
 
 // KafkaConsumer gets data from the bot app. It implements a way to store
@@ -71,6 +73,13 @@ func (r KafkaConsumer) StartGetData(ctx context.Context) <-chan KafkaConsumerDat
 }
 
 func (r KafkaConsumer) consumeMessages(ctx context.Context, dataChan chan<- KafkaConsumerData) {
+	defer func() {
+		close(dataChan)
+		if err := r.reader.Close(); err != nil {
+			logrus.Fatal("failed to close the reader:", err)
+		}
+	}()
+
 	for {
 		if ctx.Err() != nil {
 			break
@@ -95,13 +104,10 @@ func (r KafkaConsumer) consumeMessages(ctx context.Context, dataChan chan<- Kafk
 			ChatID:      botDataDto.ChatID,
 			Value:       botDataDto.Value,
 			MessageUuid: msgUuid,
+			IsFile:      botDataDto.IsFile,
 		}
 
 		dataChan <- botData
-	}
-
-	if err := r.reader.Close(); err != nil {
-		logrus.Fatal("failed to close the reader:", err)
 	}
 }
 
